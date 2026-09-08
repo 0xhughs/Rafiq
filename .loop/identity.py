@@ -186,8 +186,8 @@ def extract_slices_contract(text: str) -> str:
         if line.startswith("## "):
             if line.strip() in drop_exact:
                 skipping = True
-                if line.strip() in {"## Now", "## Later"}:
-                    in_slice_area = True
+            if line.strip() in {"## Now", "## Later", "## Shipped"}:
+                in_slice_area = True
                 continue
             skipping = False
             in_slice_area = False

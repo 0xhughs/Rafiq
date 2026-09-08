@@ -80,13 +80,13 @@ Review events:
 - ev-002 / d-20260908-003-implrev-01 / implementation / APPROVE_IMPLEMENTATION / contract:4db465f5267ec9d6deda0bfce6ef8277091d3e84d1d936736a7c90e1eed0ddc2 snapshot:84a55200ef09c2d1ab29df0892a002ef291488986cc14560efa95647d94d0b1d / gaps: none / identities matched coordinator recompute; isolated re-run of typecheck/lint/build/vitest/playwright all 0 / rejection count 0 / no-progress 0
 Budget limit / consumed / measurement: Not configured; no execution budget was supplied.
 Blocker / resume status / resume action / recheck condition / deadline: none
-Advance phase: archive written; next selected
-Next slice ID / draft: 02 / pending draft-proposal
+Advance phase: archive pending
+Next slice ID / draft: none
 Receipt slice ID: 01
 
 ## Status
 Shipped
 
 ## Next
-Archive verified. Dispatch Builder draft-proposal for slice 02 (no code). Replace BUILD.md only after the draft returns.
+Archive accepted BUILD to slices/01-wake-up-and-meet-the-robot.md, add 01 to Shipped, then draft-propose slice 02. No code during advance.
 

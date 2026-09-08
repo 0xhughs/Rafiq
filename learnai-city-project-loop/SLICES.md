@@ -110,9 +110,6 @@ Each row names the **primary earning action** and slice that owns its evidence. 
 - Existing lesson 6.4's review intent is preserved as a capstone. Its legacy 25-question/25-minute exam and percentage thresholds are deliberately replaced by game evidence under the user's new concept.
 
 ## Shipped
-- None. Existing LearnAI implementation is reference material, not work accepted under this new protocol.
-
-## Now
 ### 01 Wake up and meet the robot
 Goal: Play the complete opening and choose to help the robot.
 Provides:
@@ -121,8 +118,12 @@ Provides:
 Depends on: none
 Target membership: inside
 Out: persistent saves, store puzzle, full campaign, live AI and certificate.
+Archive: `slices/01-wake-up-and-meet-the-robot.md`
+Approved contract: `4db465f5267ec9d6deda0bfce6ef8277091d3e84d1d936736a7c90e1eed0ddc2`
+Approved candidate: `84a55200ef09c2d1ab29df0892a002ef291488986cc14560efa95647d94d0b1d`
+Implementation approval dispatch: `d-20260908-003-implrev-01`
 
-## Later
+## Now
 ### 02 Return to a living neighborhood
 Goal: Continue a saved adventure reliably and navigate its shared city spaces.
 Provides:
@@ -130,6 +131,8 @@ Provides:
 - Reusable NPC interactions, doors, companion presence and idempotent story gates; original course saves remain separate.
 Depends on: 01
 Target membership: inside
+
+## Later
 
 ### 03 The price that was never checked
 Goal: Help the shopkeeper using supported information instead of the robot's confidence.
