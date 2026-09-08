@@ -51,17 +51,17 @@ Transitions must be explicit and idempotent. Refresh resets this first slice and
 Not completed yet.
 
 ## Review
-Pending plan review.
-Plan approval: none
+Plan approved. Implementation not started.
+Plan approval: APPROVE_PLAN by reviewer bc-033d48dd-e4de-56c6-9b23-a982b0db9022 on dispatch d-20260908-001-plan-01. Contract `4db465f5267ec9d6deda0bfce6ef8277091d3e84d1d936736a7c90e1eed0ddc2`. Snapshot `4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945`. Blockers: none. Residual notes (non-blocking): AC05 unseen-local-fact beat must be implemented; T05 uses this checkout's `app/` build, not LearnAI migrate.
 Implementation approval: none
 Each result records dispatch ID, reviewer identity, verdict, contract identity, snapshot identity, evidence and criterion-specific blockers.
 
 ## Loop state
 Execution mode / tool adapter: Cursor Cloud Agent coordinator with Task-spawned Builder and Reviewer subagents. Spawn = Task(generalPurpose). Send = Task resume. Wait = blocking Task completion. Stop = subagent completion; coordinator does not start a second writer in this checkout. Reviewer contexts are fresh and do not receive Builder reasoning. Mutating Reviewer checks, if needed, run on an isolated copy.
 Coordinator: cloud agent bc-6380229a-c83f-493f-af1c-47e5f2b00c70 (https://cursor.com/agents/bc-6380229a-c83f-493f-af1c-47e5f2b00c70), role Coordinator, checkout /workspace on branch cursor/rafiq-ai-city-adventure-0c70
-Worker / role / phase: pending launch / Reviewer / plan
-Dispatch ID / launch state / input identity: d-20260908-001-plan-01 / pending launch / contract:4db465f5267ec9d6deda0bfce6ef8277091d3e84d1d936736a7c90e1eed0ddc2 baseline:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
-Pending result / last consumed dispatch: none
+Worker / role / phase: pending launch / Builder / implementation
+Dispatch ID / launch state / input identity: d-20260908-002-impl-01 / pending launch / contract:4db465f5267ec9d6deda0bfce6ef8277091d3e84d1d936736a7c90e1eed0ddc2 baseline:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945
+Pending result / last consumed dispatch: none / d-20260908-001-plan-01
 Snapshot capture and recheck commands / coverage / exclusions: Capture = `python3 .loop/identity.py snapshot --label <label>` from repository root. Recheck = same command; compare `.loop/snapshots/<label>.digest` and the JSON `digest` field. Contract = `python3 .loop/identity.py contract`; identity is `.loop/contract/hashes.json` field `contract`. Combined = `python3 .loop/identity.py both --label <label>`.
 Coverage: `app`, `evidence`, root `package.json`/`package-lock.json`/`pnpm-lock.yaml`/`yarn.lock`, `index.html`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `playwright.config.ts`, `vitest.config.ts`, `README.md`, `public`. Missing paths are skipped. Detect add/delete by regenerating the covered file list.
 Exclusions: `.git`, `.loop`, `learnai-city-project-loop`, `node_modules`, `app/node_modules`, `app/dist`, `dist`, `coverage`, `test-results`, `playwright-report`, `.vite`, `app/.vite`. Protocol files are identified by contract hash, not candidate snapshot.
@@ -72,15 +72,16 @@ Rejection count: 0
 Consecutive no-progress repairs: 0
 Open acceptance gaps / prior failing evidence: none
 Repair awaiting review: false
-Review events: none
+Review events:
+- ev-001 / d-20260908-001-plan-01 / plan / APPROVE_PLAN / contract:4db465f5267ec9d6deda0bfce6ef8277091d3e84d1d936736a7c90e1eed0ddc2 snapshot:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945 / gaps: none / identities matched coordinator recompute / rejection count 0 / no-progress 0
 Budget limit / consumed / measurement: Not configured; no execution budget was supplied.
 Blocker / resume status / resume action / recheck condition / deadline: none
 Advance phase: none
 Next slice ID / draft: none
 
 ## Status
-Proposed
+Building
 
 ## Next
-Coordinator configured tools and identities. Next: independent plan review of slice 01. Do not begin implementation or mark Not started before a matching APPROVE_PLAN.
+Builder implements slice 01 under dispatch d-20260908-002-impl-01. Coordinator waits for proof; no self-approval.
 
