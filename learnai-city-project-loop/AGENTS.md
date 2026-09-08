@@ -1,7 +1,7 @@
 # AGENTS.md
 
 ## Working rules
-- Work only within the active BUILD contract and SLICES Loop target, and only after execution is authorized. This delivery prepares a plan; it does not authorize implementation.
+- Work only within the active BUILD contract and SLICES Loop target. Execution of slices 01–17 is authorized for this checkout. Do not implement slice 18 or deploy/publish.
 - Preserve explicit product and future scope. Inspect relevant code, tests and repository instructions before changes; retain applicable rules and unrelated user work when integrating this pack.
 - Make ordinary reversible implementation choices independently; escalate only beyond existing authority or LOOP limits.
 - Coordinator alone persists protocol files and archives. Builder writes implementation and proposes proof. Reviewer verifies independently without fixing the reviewed work.

@@ -30,17 +30,16 @@ These are explicit design proposals chosen to make the pack usable. They can be 
 - Reference projects inform design; they do not replace this product. See REFERENCES.md for the eight related game repositories, corrected LearnAI source, historical wrong-repo pointer and per-source reuse decisions.
 
 ## Loop target
-Proposed target for a future authorized run: complete and independently accept slices **01–17**, then satisfy the release gates below and stop.
-Current authorization: prepare and export this planning pack only. No build loop, deployment, repository modification, scheduler or background work has been authorized by this delivery.
-Before execution, confirm the user's authorized target; an explicit request to run this pack's full target may adopt 01–17. If the user authorizes only a subset, update target membership and milestone gates before dispatch. Slice 18 is outside the target.
+Authorized target for this run: complete and independently accept slices **01–17**, then satisfy the release gates below and stop.
+Current authorization: On 8 September 2026 the user asked to read the project files, start the loop, and complete each loop until the full website is fully built. That request adopts slices 01–17. Slice 18 remains outside the target. This checkout (`github.com/0xhughs/Rafiq`) is the implementation repository. The adventure is a separate Vite + React + TypeScript app under `app/`; joufbot/LearnAI is curriculum/reference only and is not modified.
 
 ## Run status
-Prepared
+Running
 
 ## Open decisions
 - Product name, robot name and final art treatment: working title and visual baseline are provisional; settle before production-art approval. They do not block the opening prototype.
 - Exact intended age range and reading level: beginners are specified, ages are not. Use clear Arabic without adult-only assumptions; resolve before broad user testing.
-- Runtime destination: a separate implementation project versus an isolated integration in joufbot/LearnAI must be identified when execution begins. This export changes neither repository.
+- Runtime destination: resolved 8 September 2026 under existing authority. Implement in this Rafiq checkout as `app/`. Do not integrate into joufbot/LearnAI. Do not replace any running LearnAI course.
 - Optional legacy services: public certificate verification, a locked server-side name registry and remote analytics exist in LearnAI, but are not requirements in the user's game concept. Baseline v1 uses local saves and local certificate downloads. Any retained public registry or new personal-data collection needs an explicit product decision before that service is implemented.
 - Browser release matrix proposed: current stable Chrome and Edge on Windows, Firefox on Windows, and Safari on macOS, with tested versions recorded at release. If a test environment is unavailable, retain the untested gap or obtain an explicit release-scope decision; do not claim support from code inspection alone.
 
