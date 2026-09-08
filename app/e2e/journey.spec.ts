@@ -4,7 +4,6 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WORLD_POS } from '../src/engine/maps';
 import {
-  advanceUntilChoices,
   assertNoLessonUi,
   getState,
   interactAt,
@@ -49,7 +48,16 @@ test('happy path: name, trash, street, dumpster, robot, agree', async ({ page })
 
   await interactAt(page, 'street', WORLD_POS.robot.x, WORLD_POS.robot.y);
   await expect(page.getByTestId('dialogue-text')).toHaveText('ما هذا؟ روبوت؟');
-  await advanceUntilChoices(page);
+  const spoken: string[] = [];
+  for (let i = 0; i < 12; i += 1) {
+    spoken.push(await page.getByTestId('dialogue-text').innerText());
+    if (await page.getByTestId('dialogue-agree').isVisible().catch(() => false)) {
+      break;
+    }
+    await page.getByTestId('dialogue-advance').click();
+  }
+  expect(spoken.join('\n')).toMatch(/زرقاء/);
+  expect(spoken.join('\n')).toMatch(/لم أدخل|لم أر/);
   await expect(page.getByTestId('dialogue-text')).toContainText('هل تساعدني');
   await page.getByTestId('dialogue-agree').click();
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-encounter', 'help_accepted');

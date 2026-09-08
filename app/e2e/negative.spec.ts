@@ -60,6 +60,7 @@ test('holding interact advances a single bubble', async ({ page }) => {
   await page.getByTestId('dialogue-advance').click();
   await interactAt(page, 'apartment', WORLD_POS.apartmentDoor.x, WORLD_POS.apartmentDoor.y);
   await interactAt(page, 'street', WORLD_POS.dumpsterApproach.x, WORLD_POS.dumpsterApproach.y);
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-encounter', 'available');
   await interactAt(page, 'street', WORLD_POS.robot.x, WORLD_POS.robot.y);
   await expect(page.getByTestId('dialogue-text')).toHaveText('ما هذا؟ روبوت؟');
   await page.getByTestId('game-root').focus();
@@ -76,6 +77,7 @@ test('postpone then reopen still allows agreeing', async ({ page }) => {
   await page.getByTestId('dialogue-advance').click();
   await interactAt(page, 'apartment', WORLD_POS.apartmentDoor.x, WORLD_POS.apartmentDoor.y);
   await interactAt(page, 'street', WORLD_POS.dumpsterApproach.x, WORLD_POS.dumpsterApproach.y);
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-encounter', 'available');
   await interactAt(page, 'street', WORLD_POS.robot.x, WORLD_POS.robot.y);
   await advanceUntilChoices(page);
   await page.getByTestId('dialogue-postpone').click();

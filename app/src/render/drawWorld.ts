@@ -104,16 +104,15 @@ function drawApartment(ctx: CanvasRenderingContext2D): void {
 
   const rug = FURNITURE.apartment.rug;
   fillRound(ctx, rug.x + 4, rug.y + 4, rug.w - 8, rug.h - 8, 10, PALETTE.rug);
-  ctx.strokeStyle = PALETTE.rugLight;
-  ctx.lineWidth = 3;
-  roundRect(ctx, rug.x + 12, rug.y + 12, rug.w - 24, rug.h - 24, 6);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(rug.x + rug.w / 2, rug.y + 18);
-  ctx.lineTo(rug.x + rug.w / 2, rug.y + rug.h - 18);
-  ctx.moveTo(rug.x + 18, rug.y + rug.h / 2);
-  ctx.lineTo(rug.x + rug.w - 18, rug.y + rug.h / 2);
-  ctx.stroke();
+  ctx.fillStyle = PALETTE.rugLight;
+  roundRect(ctx, rug.x + 14, rug.y + 14, rug.w - 28, rug.h - 28, 8);
+  ctx.fill();
+  ctx.fillStyle = PALETTE.rug;
+  for (let i = 0; i < 3; i += 1) {
+    ctx.beginPath();
+    ctx.arc(rug.x + 28 + i * 28, rug.y + rug.h / 2, 6, 0, Math.PI * 2);
+    ctx.fill();
+  }
 
   const bed = FURNITURE.apartment.bed;
   fillRound(ctx, bed.x + 4, bed.y + 4, bed.w - 8, bed.h - 8, 8, PALETTE.bedFrame);
@@ -122,17 +121,26 @@ function drawApartment(ctx: CanvasRenderingContext2D): void {
   fillRound(ctx, bed.x + 52, bed.y + 22, bed.w - 70, 22, 6, PALETTE.blanket);
 
   const table = FURNITURE.apartment.table;
-  fillRound(ctx, table.x + 6, table.y + 8, table.w - 12, table.h - 16, 8, PALETTE.table);
+  ctx.fillStyle = PALETTE.table;
+  ctx.beginPath();
+  ctx.ellipse(table.x + table.w / 2, table.y + table.h / 2, table.w / 2 - 6, table.h / 2 - 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#4a2e16';
+  ctx.fillRect(table.x + 18, table.y + table.h - 10, 6, 10);
+  ctx.fillRect(table.x + table.w - 24, table.y + table.h - 10, 6, 10);
   ctx.fillStyle = PALETTE.teapot;
   ctx.beginPath();
-  ctx.ellipse(table.x + table.w / 2, table.y + table.h / 2, 14, 12, 0, 0, Math.PI * 2);
+  ctx.ellipse(table.x + table.w / 2, table.y + table.h / 2 - 2, 16, 13, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = PALETTE.teapot;
-  ctx.fillRect(table.x + table.w / 2 + 10, table.y + table.h / 2 - 4, 10, 5);
+  ctx.fillRect(table.x + table.w / 2 + 12, table.y + table.h / 2 - 6, 12, 6);
+  ctx.fillStyle = '#8a6a2a';
+  ctx.beginPath();
+  ctx.arc(table.x + table.w / 2, table.y + table.h / 2 - 14, 5, 0, Math.PI * 2);
+  ctx.fill();
   ctx.fillStyle = PALETTE.cup;
   ctx.beginPath();
-  ctx.arc(table.x + 22, table.y + table.h / 2 + 8, 6, 0, Math.PI * 2);
-  ctx.arc(table.x + table.w - 22, table.y + table.h / 2 + 8, 6, 0, Math.PI * 2);
+  ctx.arc(table.x + 28, table.y + table.h / 2 + 10, 7, 0, Math.PI * 2);
+  ctx.arc(table.x + table.w - 28, table.y + table.h / 2 + 10, 7, 0, Math.PI * 2);
   ctx.fill();
 
   const kitchen = FURNITURE.apartment.kitchen;
@@ -202,22 +210,22 @@ function drawStreet(ctx: CanvasRenderingContext2D): void {
 function drawTrashBag(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   ctx.fillStyle = PALETTE.shadow;
   ctx.beginPath();
-  ctx.ellipse(x, y + 12, 16, 7, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y + 16, 20, 8, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = PALETTE.trash;
   ctx.beginPath();
-  ctx.ellipse(x, y, 14, 16, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y, 18, 20, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = PALETTE.trashHighlight;
   ctx.beginPath();
-  ctx.arc(x - 4, y - 4, 4, 0, Math.PI * 2);
+  ctx.ellipse(x - 5, y - 4, 6, 8, -0.4, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = '#1b211c';
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 3;
   ctx.beginPath();
-  ctx.moveTo(x - 5, y - 14);
-  ctx.lineTo(x, y - 20);
-  ctx.lineTo(x + 5, y - 14);
+  ctx.moveTo(x - 7, y - 16);
+  ctx.lineTo(x, y - 26);
+  ctx.lineTo(x + 7, y - 16);
   ctx.stroke();
 }
 

@@ -44,9 +44,16 @@ export async function interactAt(
   x: number,
   y: number,
 ): Promise<void> {
-  await teleport(page, map, x, y);
-  await page.waitForTimeout(50);
-  await pressInteract(page);
+  await page.evaluate(
+    ({ map, x, y }) => {
+      const api = window.__RAFIQ_TEST__;
+      if (!api) throw new Error('missing __RAFIQ_TEST__');
+      api.teleport(map, x, y);
+      api.dispatch({ type: 'INTERACT' });
+    },
+    { map, x, y },
+  );
+  await page.waitForTimeout(30);
 }
 
 export async function advanceUntilChoices(page: Page): Promise<void> {
