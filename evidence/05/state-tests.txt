@@ -1,0 +1,31 @@
+T01 state tests — Rafiq slice 05
+cwd: /workspace/app
+date: 2026-09-09T04:36:47Z
+command: npm test (vitest run)
+
+74 tests passed (5 files). Coverage of AC01–AC08 unit claims:
+
+- inner door F locked until commsRepaired; after parcel success F enters map archive; 01-04 landmarks unchanged
+- 2-slot window starts festival+mango; FIFO overflow drops oldest; pin does not award 1.4
+- 1.4 only after overflowSeen and recitation of constraint from constraint+hold in the limited window
+- community file contains نورة الشمري / خالد العتيبي / ٠٥٥٠٠٠١١٢٢ / بيت ١٢ الزقاق الغربي plus م-٤ / بعد العصر / المواصفات في القاعة فقط; player name never in source
+- unredacted give fails; hiding needed facts fails; 1.5 only on clean needed payload
+- named pack «حزمة إصلاح رفيق» needs spec+delivery, rejects decoys/unnamed/festival stamp; 1.4 window is not the 2.5 path
+- after 1.4+1.5+2.5 spec readable, contextModule cassette, robot still unsupported, newsroom not opened
+- hydrate missing libraryQuest as unstarted; saveVersion 1
+
+----- raw vitest -----
+
+
+> app@0.0.0 test
+> vitest run
+
+
+ RUN  v5.0.0 /workspace/app
+
+
+ Test Files  5 passed (5)
+      Tests  74 passed (74)
+   Start at  04:36:47
+   Duration  486ms (transform 74%, import 14%, tests 10%, worker 2%)
+

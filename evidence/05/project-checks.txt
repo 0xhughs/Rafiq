@@ -1,0 +1,113 @@
+T05 project checks — Rafiq slice 05
+cwd: /workspace/app
+date: 2026-09-09T04:36:57Z
+node: v22.14.0
+npm: 10.9.7
+chrome: Google Chrome 148.0.7778.96   (/usr/bin/google-chrome)
+
+Note: this Cloud Agent environment exported BASE_URL=http://127.0.0.1:5277
+(a reviewer checkout on another port). Playwright was run with that variable
+overridden so tests hit this checkout's preview (4180) and Vite dev (5173).
+
+===== typecheck (tsc -b) =====
+
+
+> app@0.0.0 typecheck
+> tsc -b --pretty false
+
+
+typecheck exit: 0
+
+===== production build (tsc -b && vite build) =====
+
+
+> app@0.0.0 build
+> tsc -b && vite build
+
+vite v6.4.3 building for production...
+transforming...
+✓ 66 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                                      0.64 kB │ gzip:  0.39 kB
+dist/assets/noto-naskh-arabic-symbols-400-normal-BoBMuTRv.woff2      5.42 kB
+dist/assets/noto-naskh-arabic-symbols-700-normal-s-Hxeun5.woff2      5.70 kB
+dist/assets/noto-naskh-arabic-latin-ext-400-normal-BbeOg8Tq.woff2    6.46 kB
+dist/assets/noto-naskh-arabic-latin-ext-700-normal-BdpHOyev.woff2    6.62 kB
+dist/assets/noto-naskh-arabic-symbols-400-normal-Dyan2v4O.woff       6.74 kB
+dist/assets/noto-naskh-arabic-symbols-700-normal-BzCgKmvF.woff       7.03 kB
+dist/assets/cairo-latin-ext-400-normal-xCL67Y2R.woff2                7.34 kB
+dist/assets/cairo-latin-ext-700-normal-Cscux539.woff2                7.46 kB
+dist/assets/cairo-latin-ext-600-normal-DuRnqffh.woff2                7.48 kB
+dist/assets/noto-naskh-arabic-latin-ext-400-normal-Er5jWGmQ.woff     8.18 kB
+dist/assets/noto-naskh-arabic-math-400-normal-tNY49amj.woff2         8.33 kB
+dist/assets/noto-naskh-arabic-latin-ext-700-normal-kZwI4aZI.woff     8.34 kB
+dist/assets/noto-naskh-arabic-math-700-normal-BP-LajJh.woff2         8.65 kB
+dist/assets/cairo-latin-ext-400-normal-C_BIE9Qe.woff                10.16 kB
+dist/assets/cairo-latin-ext-600-normal-DAfLYaOC.woff                10.24 kB
+dist/assets/cairo-latin-ext-700-normal-htXca11Z.woff                10.25 kB
+dist/assets/noto-naskh-arabic-math-400-normal-C570QcAC.woff         10.42 kB
+dist/assets/noto-naskh-arabic-math-700-normal-CDAZVDWY.woff         10.74 kB
+dist/assets/noto-naskh-arabic-latin-400-normal-Dajb6q3W.woff2       11.50 kB
+dist/assets/noto-naskh-arabic-latin-700-normal-CG_vrPqD.woff2       12.05 kB
+dist/assets/cairo-arabic-400-normal-DN15VWMM.woff2                  13.29 kB
+dist/assets/cairo-arabic-600-normal-rkrvveqO.woff2                  13.90 kB
+dist/assets/cairo-arabic-700-normal-D3nDedWX.woff2                  13.95 kB
+dist/assets/noto-naskh-arabic-latin-400-normal-pwOnwvFs.woff        14.39 kB
+dist/assets/noto-naskh-arabic-latin-700-normal-DP4-Rtre.woff        14.92 kB
+dist/assets/cairo-latin-400-normal-Dh7otpdh.woff2                   15.02 kB
+dist/assets/cairo-latin-600-normal-mGS0uvCM.woff2                   15.28 kB
+dist/assets/cairo-latin-700-normal-C3GYtKbV.woff2                   15.28 kB
+dist/assets/cairo-arabic-400-normal-CAYwymWN.woff                   16.81 kB
+dist/assets/cairo-arabic-700-normal-CyOqhaeK.woff                   17.26 kB
+dist/assets/cairo-arabic-600-normal-B3EOalmC.woff                   17.34 kB
+dist/assets/cairo-latin-400-normal-b1R3q6Pf.woff                    19.49 kB
+dist/assets/cairo-latin-600-normal-buYOP1M3.woff                    19.68 kB
+dist/assets/cairo-latin-700-normal-6fcUy4Rc.woff                    19.74 kB
+dist/assets/noto-naskh-arabic-arabic-400-normal-U_i0HMfG.woff2      52.67 kB
+dist/assets/noto-naskh-arabic-arabic-700-normal-BdBAMxnO.woff2      53.02 kB
+dist/assets/noto-naskh-arabic-arabic-400-normal-1AoZhAAW.woff       87.40 kB
+dist/assets/noto-naskh-arabic-arabic-700-normal-fm10sHOa.woff       87.67 kB
+dist/assets/index-DSIkcR3D.css                                      20.15 kB │ gzip:  4.32 kB
+dist/assets/index-CnTapi8E.js                                      341.39 kB │ gzip: 99.22 kB
+✓ built in 777ms
+
+build exit: 0
+
+===== lint =====
+
+
+> app@0.0.0 lint
+> eslint .
+
+
+lint exit: 0
+
+===== vitest =====
+
+
+> app@0.0.0 test
+> vitest run
+
+
+ RUN  v5.0.0 /workspace/app
+
+
+ Test Files  5 passed (5)
+      Tests  74 passed (74)
+   Start at  04:37:02
+   Duration  421ms (transform 72%, import 14%, tests 11%, worker 2%)
+
+
+vitest exit: 0
+
+===== playwright preview (env -u BASE_URL, vite preview 4180) =====
+
+Running 30 tests using 1 worker
+  30 passed (58.2s)
+playwright preview exit: 0
+
+===== playwright dev (BASE_URL=http://127.0.0.1:5173) =====
+
+  30 passed (59.8s)
+playwright dev exit: 0
