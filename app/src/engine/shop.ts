@@ -517,6 +517,7 @@ export function reduceCrateDecide(state: GameState, who: 'shopkeeper' | 'robot')
       mode: 'dialogue',
       dialogueNode: 'shop_success_thanks',
       robotUnderstood: null,
+      storyObjective: OBJECTIVES.repairLead,
     };
   }
   return {

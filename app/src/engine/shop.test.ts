@@ -172,6 +172,7 @@ function playCrate(state: GameState): GameState {
   next = act(next, { type: 'CRATE_DECIDE', who: 'shopkeeper' });
   expect(next.evidence['1.6']).toBe('demonstrated');
   expect(next.dialogueNode).toBe('shop_success_thanks');
+  expect(next.storyObjective).toBe(OBJECTIVES.repairLead);
   next = act(next, { type: 'ADVANCE_DIALOGUE' });
   expect(next.dialogueNode).toBe('shop_repair_lead');
   next = act(next, { type: 'ADVANCE_DIALOGUE' });

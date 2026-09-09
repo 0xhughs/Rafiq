@@ -10,7 +10,7 @@ interface Props {
 
 export function NoticeOverlay({ state, onApply, onPost, onClose }: Props) {
   const posted = state.shopQuest.noticePosted;
-  const body = posted ? noticeBody(state.shopQuest) : noticeBody(state.shopQuest);
+  const body = noticeBody(state.shopQuest);
   return (
     <div className="overlay" data-testid="notice-overlay" role="dialog" aria-modal="true">
       <article className="paper-card notice-card" data-testid="notice">
@@ -18,11 +18,7 @@ export function NoticeOverlay({ state, onApply, onPost, onClose }: Props) {
         <pre className="notice-body" data-testid={posted ? 'notice-posted' : 'notice-draft'}>
           {posted ? body : NOTICE_DRAFT}
         </pre>
-        {posted ? (
-          <pre className="notice-body notice-working" data-testid="notice-working">
-            {body}
-          </pre>
-        ) : (
+        {posted ? null : (
           <>
             <p className="field-label">ورقة التصحيح</p>
             <pre className="notice-body notice-working" data-testid="notice-working">
