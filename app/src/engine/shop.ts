@@ -369,6 +369,7 @@ export function finishShopSuccess(state: GameState): GameState {
     mode: 'playing',
     dialogueNode: null,
     explainTopic: null,
+    robotUnderstood: null,
     shopQuest: quest,
     journalEvents: recordEvent(state.journalEvents, 'shop_helped'),
     storyObjective: OBJECTIVES.repairLead,
@@ -506,7 +507,12 @@ export function reduceCrateDecide(state: GameState, who: 'shopkeeper' | 'robot')
     shopFeedback: null,
   });
   if (allShopEvidence(next.evidence)) {
-    return { ...next, mode: 'dialogue', dialogueNode: 'shop_success_thanks' };
+    return {
+      ...next,
+      mode: 'dialogue',
+      dialogueNode: 'shop_success_thanks',
+      robotUnderstood: null,
+    };
   }
   return {
     ...next,
@@ -578,6 +584,7 @@ export function skipExplain(state: GameState): GameState {
     ...state,
     mode: 'playing',
     explainTopic: null,
+    robotUnderstood: null,
     storyObjective: shopObjective(state.shopQuest),
   };
 }

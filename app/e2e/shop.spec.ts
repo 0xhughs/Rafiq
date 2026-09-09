@@ -34,7 +34,7 @@ test('help-accepted through shop success with physical actions', async ({ page }
   await expect(page.getByTestId('shelf-record-west')).toContainText('لبن');
   await expect(page.getByTestId('shelf-record-west')).toContainText('ماء');
   await expect(page.getByTestId('shelf-record-west')).toContainText('متوفر');
-  await expect(page.getByTestId('shelf-record-west')).not.toContainText('مانجو');
+  await expect(page.getByTestId('shelf-record-west')).toContainText('لا يوجد عصير مانجو');
   await page.waitForTimeout(200);
   await page.screenshot({ path: path.join(evidenceDir, 'shelf-record.png'), fullPage: true });
   await page.getByTestId('inspect-close').click();
@@ -51,7 +51,7 @@ test('help-accepted through shop success with physical actions', async ({ page }
   await interactAt(page, 'shop', WORLD_POS.shelfEast.x, WORLD_POS.shelfEast.y);
   await expect(page.getByTestId('shelf-record-east')).toContainText('تمر الخلاص');
   await expect(page.getByTestId('shelf-record-east')).toContainText('٩');
-  await expect(page.getByTestId('shelf-record-east')).not.toContainText('مانجو');
+  await expect(page.getByTestId('shelf-record-east')).toContainText('لا يوجد مانجو');
   await page.getByTestId('inspect-close').click();
 
   await interactAt(page, 'shop', WORLD_POS.priceList.x, WORLD_POS.priceList.y);
@@ -96,7 +96,7 @@ test('help-accepted through shop success with physical actions', async ({ page }
   await page.getByTestId('inspect-close').click();
   await interactAt(page, 'shop', WORLD_POS.shopkeeper.x, WORLD_POS.shopkeeper.y);
   await clickChoice(page, 'dialogue-choice-correct_dates');
-  await expect(page.getByTestId('dialogue-text')).toMatch(/ماء|نفد|خمسة/);
+  await expect(page.getByTestId('dialogue-text')).toContainText(/ماء|نفد|خمسة/);
   await clickChoice(page, 'dialogue-choice-verify_later');
   await interactAt(page, 'shop', WORLD_POS.shelfWest.x, WORLD_POS.shelfWest.y);
   await page.getByTestId('inspect-close').click();
@@ -110,18 +110,18 @@ test('help-accepted through shop success with physical actions', async ({ page }
   await page.getByTestId('crate-ask-shopkeeper').click();
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-evidence', '1.1,1.2,1.3,1.6');
   await expect(page.getByTestId('dialogue-text')).toContainText('شكراً');
+  await page.waitForTimeout(200);
+  await page.screenshot({ path: path.join(evidenceDir, 'success.png'), fullPage: true });
   await advanceDialogue(page);
   await expect(page.getByTestId('dialogue-text')).toContainText('طرد');
   await advanceDialogue(page);
-  await expect(page.getByTestId('dialogue-text')).toMatch(/المكتبة|الفجر/);
+  await expect(page.getByTestId('dialogue-text')).toContainText(/المكتبة|الفجر/);
   await advanceDialogue(page);
   await skipExplainIfOpen(page);
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-shop-quest', 'helped');
   await page.getByTestId('help-button').click();
   await expect(page.getByTestId('journal-events')).toContainText('طرد');
   await page.getByTestId('resume-button').click();
-  await page.waitForTimeout(200);
-  await page.screenshot({ path: path.join(evidenceDir, 'success.png'), fullPage: true });
   await assertNoLessonUi(page);
 
   const done = await getState(page);
@@ -137,7 +137,7 @@ test('help-accepted through shop success with physical actions', async ({ page }
   await expect(page.getByTestId('dialogue-text')).toContainText('طرد الإصلاح');
   await closeOverlay(page);
   await interactAt(page, 'street', WORLD_POS.robot.x, WORLD_POS.robot.y);
-  await expect(page.getByTestId('dialogue-text')).toMatch(/المكتبة|الفجر/);
+  await expect(page.getByTestId('dialogue-text')).toContainText(/المكتبة|الفجر/);
 });
 
 test('shop overlays stay inside 1366 and 1920 viewports', async ({ page }) => {

@@ -1,4 +1,4 @@
-url=http://127.0.0.1:4173/
+url=http://127.0.0.1:5173/
 title=رفيق — جواز إلى مدينة الذكاء الاصطناعي
 localStorage_keys=rafiq.adventure.v1,rafiq.adventure.v1.prev
 learnai_keys=none

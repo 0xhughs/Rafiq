@@ -1,0 +1,33 @@
+T01 state tests — Rafiq slice 03
+cwd: /workspace/app
+date: 2026-09-09T01:43:41+00:00
+command: npm test (vitest run)
+
+56 tests passed (3 files). Coverage of AC01–AC08 unit claims:
+
+- inspect-only does not award 1.1; sourced line without inspect fails; robot mango/12 fails recoverably
+- 1.1 after inspect + sourced fact; optional explain skippable
+- unchecked notice draft and missing calculator 17 do not award 1.2
+- calculator is not a lookup tool for 1.1
+- trusting date price 18 fails; refuse + inspect + correct + independent water check awards 1.3
+- second-claim copy does not name west shelf / water card
+- crate robot decision does not award 1.6; البقال decision does
+- after helped: repair lead, library inner still locked, robot still unsupported
+- evidence keys only 1.1 1.2 1.3 1.6; unknown keys dropped
+- old evidence: {} hydrates as shop unstarted
+- Arabic NL variants for lookup; unsupported phrasing clarified
+- 02 portal/companion/save regressions still in state.test.ts
+
+----- raw vitest -----
+
+> app@0.0.0 test
+> vitest run
+
+
+ RUN  v5.0.0 /workspace/app
+
+
+ Test Files  3 passed (3)
+      Tests  56 passed (56)
+   Start at  01:43:41
+   Duration  258ms (transform 79%, import 11%, tests 7%, worker 2%)

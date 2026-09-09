@@ -1,0 +1,81 @@
+T05 project checks — Rafiq slice 03
+cwd: /workspace/app
+date: 2026-09-09T01:44:10+00:00
+node: v22.14.0
+npm: 10.9.7
+
+===== typecheck (tsc -b) =====
+
+> app@0.0.0 typecheck
+> tsc -b --pretty false
+
+typecheck exit: 0
+
+===== production build (tsc -b && vite build) =====
+
+> app@0.0.0 build
+> tsc -b && vite build
+
+vite v6.4.3 building for production...
+✓ 59 modules transformed.
+dist/assets/index-DXjsR5pi.css  19.61 kB
+dist/assets/index-Bj4dMCQN.js  276.07 kB
+✓ built in 659ms
+build exit: 0
+
+===== lint =====
+
+> app@0.0.0 lint
+> eslint .
+
+lint exit: 0
+
+===== vitest =====
+
+> app@0.0.0 test
+> vitest run
+
+
+ RUN  v5.0.0 /workspace/app
+
+
+ Test Files  3 passed (3)
+      Tests  56 passed (56)
+   Start at  01:44:10
+   Duration  289ms
+
+vitest exit: 0
+
+===== playwright preview (BASE_URL=http://127.0.0.1:4173 then rebuilt 4174) =====
+
+Running 21 tests using 1 worker
+
+  ✓   1 e2e/journey.spec.ts:20:1 › happy path: name, trash, street, dumpster, robot, agree
+  ✓   2 e2e/negative.spec.ts:14:1 › rejects blank and overlong names with inline Arabic errors
+  ✓   3 e2e/negative.spec.ts:27:1 › renders markup-like names as literal text
+  ✓   4 e2e/negative.spec.ts:36:1 › exit without bag is recoverable and walls block movement
+  ✓   5 e2e/negative.spec.ts:57:1 › holding interact advances a single bubble
+  ✓   6 e2e/negative.spec.ts:74:1 › postpone then reopen still allows agreeing
+  ✓   7 e2e/negative.spec.ts:92:1 › typing on the name field never moves the player
+  ✓   8 e2e/neighborhood.spec.ts:21:1 › walks from the slice 01 checkpoint into shop and library
+  ✓   9 e2e/privacy.spec.ts:15:1 › keeps the confirmed name out of the URL, title, console, and LearnAI keys
+  ✓  10 e2e/save.spec.ts:21:1 › reload resumes at the last checkpoint without name entry
+  ✓  11 e2e/save.spec.ts:38:1 › NPC postpone saves and duplicate trash does not clone the bag
+  ✓  12 e2e/save.spec.ts:66:1 › corrupt primary save restores the backup with a notice
+  ✓  13 e2e/save.spec.ts:85:1 › storage failure shows a warning and the session stays playable
+  ✓  14 e2e/save.spec.ts:102:1 › new adventure clears only Rafiq keys
+  ✓  15 e2e/shop-retry.spec.ts:36:1 › trusting the invented date price fails, retry succeeds, second claim does not point
+  ✓  16 e2e/shop.spec.ts:26:1 › help-accepted through shop success with physical actions
+  ✓  17 e2e/shop.spec.ts:143:1 › shop overlays stay inside 1366 and 1920 viewports
+  ✓  18 e2e/viewports.spec.ts:13:5 › readable overlays at 1366x768 for عبد الرحمن الطويل الأحمدي
+  ✓  19 e2e/viewports.spec.ts:13:5 › readable overlays at 1366x768 for Sara علي-Khan
+  ✓  20 e2e/viewports.spec.ts:13:5 › readable overlays at 1920x1080 for عبد الرحمن الطويل الأحمدي
+  ✓  21 e2e/viewports.spec.ts:13:5 › readable overlays at 1920x1080 for Sara علي-Khan
+
+  21 passed (22.5s)
+playwright preview exit: 0
+
+===== playwright dev (BASE_URL=http://127.0.0.1:5173) =====
+
+  21 passed (23.6s)
+playwright dev exit: 0
