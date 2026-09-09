@@ -37,7 +37,10 @@ Evidence union adds `'2.1' | '2.2' | '2.4'`. MapId `parcel`. `parcelQuest` phase
 - Reviewer maps AC01–AC08 and verifies snapshot.
 
 ## Proof
-Not completed yet.
+Builder proposed (d-20260908-014-impl-04). Not independently accepted.
+- Candidate: `7cba3a83b9f8733ca19d79f67624b3b477a53b9819a90e009d2c923ae719695f` (92 files; coordinator matched).
+- Evidence: `evidence/04/`.
+Reviewer must re-run checks.
 
 ## Review
 Plan approved. Implementation not started.
@@ -48,20 +51,21 @@ Each result records dispatch ID, reviewer identity, verdict, contract identity, 
 ## Loop state
 Execution mode / tool adapter: Cursor Cloud Agent coordinator with Task-spawned Builder and Reviewer subagents. Spawn = Task(generalPurpose). Send = Task resume. Wait = blocking Task completion. Stop = subagent completion; coordinator does not start a second writer in this checkout. Reviewer contexts are fresh and do not receive Builder reasoning. Mutating Reviewer checks, if needed, run on an isolated copy.
 Coordinator: cloud agent bc-6380229a-c83f-493f-af1c-47e5f2b00c70 (https://cursor.com/agents/bc-6380229a-c83f-493f-af1c-47e5f2b00c70), role Coordinator, checkout /workspace on branch cursor/rafiq-ai-city-adventure-0c70
-Worker / role / phase: pending launch / Reviewer / plan
-Dispatch ID / launch state / input identity: d-20260908-013-plan-04 / pending launch / contract:14ded8bd2eba6ee19c51093e7a790df7feb1bec1ce8718d1a15d7104d4a4e63d baseline:92f284d762df78170e148633ff3eb9e82626225306a9b4807463de7380c89257
-Pending result / last consumed dispatch: none / d-20260908-012-draft-04
+Worker / role / phase: pending launch / Reviewer / implementation
+Dispatch ID / launch state / input identity: d-20260908-015-implrev-04 / pending launch / contract:14ded8bd2eba6ee19c51093e7a790df7feb1bec1ce8718d1a15d7104d4a4e63d candidate:7cba3a83b9f8733ca19d79f67624b3b477a53b9819a90e009d2c923ae719695f
+Pending result / last consumed dispatch: builder d-20260908-014-impl-04 / d-20260908-013-plan-04
 Snapshot capture and recheck commands / coverage / exclusions: Capture = `python3 .loop/identity.py snapshot --label <label>` from repository root. Recheck = same command; compare `.loop/snapshots/<label>.digest` and the JSON `digest` field. Contract = `python3 .loop/identity.py contract`; identity is `.loop/contract/hashes.json` field `contract`. Combined = `python3 .loop/identity.py both --label <label>`.
 Coverage: `app`, `evidence`, root `package.json`/`package-lock.json`/`pnpm-lock.yaml`/`yarn.lock`, `index.html`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `playwright.config.ts`, `vitest.config.ts`, `README.md`, `public`. Missing paths are skipped. Detect add/delete by regenerating the covered file list.
 Exclusions: `.git`, `.loop`, `learnai-city-project-loop`, `node_modules`, `app/node_modules`, `app/dist`, `dist`, `coverage`, `test-results`, `playwright-report`, `.vite`, `app/.vite`. Protocol files are identified by contract hash, not candidate snapshot.
 Baseline snapshot: shipped slice 03 `92f284d762df78170e148633ff3eb9e82626225306a9b4807463de7380c89257` (76 covered files)
 Contract identity: `14ded8bd2eba6ee19c51093e7a790df7feb1bec1ce8718d1a15d7104d4a4e63d` (`.loop/contract/hashes.json`)
-Candidate snapshot: none
+Candidate snapshot: `7cba3a83b9f8733ca19d79f67624b3b477a53b9819a90e009d2c923ae719695f` (92 files)
 Rejection count: 0
 Consecutive no-progress repairs: 0
 Open acceptance gaps / prior failing evidence: none
 Repair awaiting review: false
-Review events: none
+Review events:
+- ev-001 / d-20260908-013-plan-04 / plan / APPROVE_PLAN / contract:14ded8bd2eba6ee19c51093e7a790df7feb1bec1ce8718d1a15d7104d4a4e63d snapshot:92f284d762df78170e148633ff3eb9e82626225306a9b4807463de7380c89257 / gaps: none / identities matched / rejection count 0 / no-progress 0
 Budget limit / consumed / measurement: Not configured; no execution budget was supplied.
 Blocker / resume status / resume action / recheck condition / deadline: none
 Advance phase: none
@@ -69,7 +73,7 @@ Next slice ID / draft: none
 Prior shipped receipt: slice 03 archive `slices/03-the-price-that-was-never-checked.md`
 
 ## Status
-Proposed
+Ready for review
 
 ## Next
-Independent plan review of slice 04. Do not implement before APPROVE_PLAN.
+Independent implementation review d-20260908-015-implrev-04.
