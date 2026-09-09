@@ -43,28 +43,29 @@ Typed `evidence` for `'1.1' | '1.2' | '1.3' | '1.6'` as `'demonstrated'` only. `
 Not completed yet.
 
 ## Review
-Pending plan review.
-Plan approval: none
+Plan approved. Implementation not started.
+Plan approval: APPROVE_PLAN by reviewer bc-95b79bcd-aacc-54f5-a1be-f8081e34edad on dispatch d-20260908-009-plan-03. Contract `a609b8b90a350d89b672c4a997de338b496688cb8440d5428e23518b304ee8ca`. Snapshot `f1feab0147e6f41f01c86f58a8d05e136cce7c84a706e1508b3d8bfcb424eb4f`. Blockers: none.
 Implementation approval: none
 Each result records dispatch ID, reviewer identity, verdict, contract identity, snapshot identity, evidence and criterion-specific blockers.
 
 ## Loop state
 Execution mode / tool adapter: Cursor Cloud Agent coordinator with Task-spawned Builder and Reviewer subagents. Spawn = Task(generalPurpose). Send = Task resume. Wait = blocking Task completion. Stop = subagent completion; coordinator does not start a second writer in this checkout. Reviewer contexts are fresh and do not receive Builder reasoning. Mutating Reviewer checks, if needed, run on an isolated copy.
 Coordinator: cloud agent bc-6380229a-c83f-493f-af1c-47e5f2b00c70 (https://cursor.com/agents/bc-6380229a-c83f-493f-af1c-47e5f2b00c70), role Coordinator, checkout /workspace on branch cursor/rafiq-ai-city-adventure-0c70
-Worker / role / phase: pending launch / Reviewer / plan
-Dispatch ID / launch state / input identity: d-20260908-009-plan-03 / pending launch / contract:a609b8b90a350d89b672c4a997de338b496688cb8440d5428e23518b304ee8ca baseline:f1feab0147e6f41f01c86f58a8d05e136cce7c84a706e1508b3d8bfcb424eb4f
-Pending result / last consumed dispatch: none / d-20260908-008-draft-03
+Worker / role / phase: pending launch / Builder / implementation
+Dispatch ID / launch state / input identity: d-20260908-010-impl-03 / pending launch / contract:a609b8b90a350d89b672c4a997de338b496688cb8440d5428e23518b304ee8ca baseline:f1feab0147e6f41f01c86f58a8d05e136cce7c84a706e1508b3d8bfcb424eb4f
+Pending result / last consumed dispatch: none / d-20260908-009-plan-03
 Snapshot capture and recheck commands / coverage / exclusions: Capture = `python3 .loop/identity.py snapshot --label <label>` from repository root. Recheck = same command; compare `.loop/snapshots/<label>.digest` and the JSON `digest` field. Contract = `python3 .loop/identity.py contract`; identity is `.loop/contract/hashes.json` field `contract`. Combined = `python3 .loop/identity.py both --label <label>`.
 Coverage: `app`, `evidence`, root `package.json`/`package-lock.json`/`pnpm-lock.yaml`/`yarn.lock`, `index.html`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `playwright.config.ts`, `vitest.config.ts`, `README.md`, `public`. Missing paths are skipped. Detect add/delete by regenerating the covered file list.
 Exclusions: `.git`, `.loop`, `learnai-city-project-loop`, `node_modules`, `app/node_modules`, `app/dist`, `dist`, `coverage`, `test-results`, `playwright-report`, `.vite`, `app/.vite`. Protocol files are identified by contract hash, not candidate snapshot.
 Baseline snapshot: shipped slice 02 `f1feab0147e6f41f01c86f58a8d05e136cce7c84a706e1508b3d8bfcb424eb4f` (59 covered files)
-Contract identity: none
+Contract identity: `a609b8b90a350d89b672c4a997de338b496688cb8440d5428e23518b304ee8ca` (`.loop/contract/hashes.json`)
 Candidate snapshot: none
 Rejection count: 0
 Consecutive no-progress repairs: 0
 Open acceptance gaps / prior failing evidence: none
 Repair awaiting review: false
-Review events: none
+Review events:
+- ev-001 / d-20260908-009-plan-03 / plan / APPROVE_PLAN / contract:a609b8b90a350d89b672c4a997de338b496688cb8440d5428e23518b304ee8ca snapshot:f1feab0147e6f41f01c86f58a8d05e136cce7c84a706e1508b3d8bfcb424eb4f / gaps: none / identities matched / rejection count 0 / no-progress 0
 Budget limit / consumed / measurement: Not configured; no execution budget was supplied.
 Blocker / resume status / resume action / recheck condition / deadline: none
 Advance phase: none
@@ -72,7 +73,7 @@ Next slice ID / draft: none
 Prior shipped receipt: slice 02 archive `slices/02-return-to-a-living-neighborhood.md`
 
 ## Status
-Proposed
+Building
 
 ## Next
-Independent plan review of slice 03. Do not implement before APPROVE_PLAN.
+Builder implements slice 03 under dispatch d-20260908-010-impl-03.
