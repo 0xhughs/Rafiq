@@ -35,7 +35,8 @@ No new `MapId`. Evidence union adds `'4.5' | '4.6' | '5.4'`. Interactables: `lab
 
 ## Proof
 Builder claims for d-20260908-038-impl-10 (not independently accepted):
-- Candidate (coordinator recomputed): `d545ac5454cb3765daf9123b717a7f9c0cd912b73ed66a448430f0550b8e992d` (207 files).
+- Candidate (coordinator recomputed on git HEAD after restoring uncommitted Playwright PNG/txt churn in `evidence/01`–`evidence/09`): `4849c5ae734e5476a7d86cfc2bd98cf8b013c9b5c3a53883eb867e4921cf1fdc` (207 files).
+- Prior recorded digest `d545ac5454cb3765daf9123b717a7f9c0cd912b73ed66a448430f0550b8e992d` differed only in those 43 prior-slice evidence files; `app/` and `evidence/10/` bytes matched HEAD. That dirty digest is not the shippable candidate.
 - Contract unchanged: `0e6d7f4d7cc607b401b35ab541646c8ae3ca5cf9bf271461fcc1b604d3ad61c5`.
 - Claimed checks: tsc/lint/build exit 0; vitest 105; Playwright 45/45 on preview :4188 and Vite :5192.
 - Claimed artifacts: `evidence/10/` per T02 plus overlays.png, state-tests.txt, project-checks.txt, browser-checks.md.
@@ -50,22 +51,23 @@ Each result records dispatch ID, reviewer identity, verdict, contract identity, 
 
 ## Loop state
 Execution mode / tool adapter: Cursor Cloud Agent coordinator with Task-spawned Builder and Reviewer subagents. Spawn = Task(generalPurpose). Send = Task resume. Wait = blocking Task completion. Stop = subagent completion; coordinator does not start a second writer in this checkout. Reviewer contexts are fresh and do not receive Builder reasoning. Mutating Reviewer checks, if needed, run on an isolated copy.
-Coordinator: cloud agent bc-6380229a-c83f-493f-af1c-47e5f2b00c70 (https://cursor.com/agents/bc-6380229a-c83f-493f-af1c-47e5f2b00c70), role Coordinator, checkout /workspace on branch cursor/rafiq-ai-city-adventure-0c70
+Coordinator: cloud agent bc-6380229a-c83f-493f-af1c-47e5f2b00c70 (https://cursor.com/agents/bc-6380229a-c83f-493f-af1c-47e5f2b00c70), role Coordinator, checkout /workspace on branch cursor/rafiq-continue-slices-0c70
 Worker / role / phase: pending launch / Reviewer / implementation
-Dispatch ID / launch state / input identity: d-20260908-039-implrev-10 / pending launch / contract:0e6d7f4d7cc607b401b35ab541646c8ae3ca5cf9bf271461fcc1b604d3ad61c5 candidate:d545ac5454cb3765daf9123b717a7f9c0cd912b73ed66a448430f0550b8e992d
-Pending result / last consumed dispatch: none / d-20260908-038-impl-10
+Dispatch ID / launch state / input identity: d-20260909-040-implrev-10 / pending launch / contract:0e6d7f4d7cc607b401b35ab541646c8ae3ca5cf9bf271461fcc1b604d3ad61c5 candidate:4849c5ae734e5476a7d86cfc2bd98cf8b013c9b5c3a53883eb867e4921cf1fdc
+Pending result / last consumed dispatch: none / d-20260908-039-implrev-10
 Snapshot capture and recheck commands / coverage / exclusions: Capture = `python3 .loop/identity.py snapshot --label <label>` from repository root. Recheck = same command; compare `.loop/snapshots/<label>.digest` and the JSON `digest` field. Contract = `python3 .loop/identity.py contract`; identity is `.loop/contract/hashes.json` field `contract`. Combined = `python3 .loop/identity.py both --label <label>`.
 Coverage: `app`, `evidence`, root `package.json`/`package-lock.json`/`pnpm-lock.yaml`/`yarn.lock`, `index.html`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `playwright.config.ts`, `vitest.config.ts`, `README.md`, `public`. Missing paths are skipped. Detect add/delete by regenerating the covered file list.
 Exclusions: `.git`, `.loop`, `learnai-city-project-loop`, `node_modules`, `app/node_modules`, `app/dist`, `dist`, `coverage`, `test-results`, `playwright-report`, `.vite`, `app/.vite`. Protocol files are identified by contract hash, not candidate snapshot.
 Baseline snapshot: shipped slice 09 `a6c3018582acd8bf0737ff9e684ed063eeb4a9ed32a8d3362184e1af3bc248b6` (187 covered files)
 Contract identity: `0e6d7f4d7cc607b401b35ab541646c8ae3ca5cf9bf271461fcc1b604d3ad61c5` (`.loop/contract/hashes.json`)
-Candidate snapshot: `d545ac5454cb3765daf9123b717a7f9c0cd912b73ed66a448430f0550b8e992d` (207 files)
+Candidate snapshot: `4849c5ae734e5476a7d86cfc2bd98cf8b013c9b5c3a53883eb867e4921cf1fdc` (207 files)
 Rejection count: 0
 Consecutive no-progress repairs: 0
 Open acceptance gaps / prior failing evidence: none
 Repair awaiting review: false
 Review events:
 - ev-001 / d-20260908-037-plan-10 / plan / APPROVE_PLAN / contract:0e6d7f4d7cc607b401b35ab541646c8ae3ca5cf9bf271461fcc1b604d3ad61c5 snapshot:a6c3018582acd8bf0737ff9e684ed063eeb4a9ed32a8d3362184e1af3bc248b6 / gaps: none / identities matched / rejection count 0 / no-progress 0
+- ev-002 / d-20260908-039-implrev-10 / implementation / CONTROL_IDENTITY_MISMATCH / contract:0e6d7f4d7cc607b401b35ab541646c8ae3ca5cf9bf271461fcc1b604d3ad61c5 snapshot-reported:d545ac5454cb3765daf9123b717a7f9c0cd912b73ed66a448430f0550b8e992d current-HEAD:4849c5ae734e5476a7d86cfc2bd98cf8b013c9b5c3a53883eb867e4921cf1fdc / gaps: none / uncommitted Playwright rewrites of evidence/01–09 invalidated that digest; restored to git HEAD; verdict not applied to Shipped; not a rejection / rejection count 0 / no-progress 0
 Budget limit / consumed / measurement: Not configured; no execution budget was supplied.
 Blocker / resume status / resume action / recheck condition / deadline: none
 Advance phase: none
@@ -76,4 +78,4 @@ Prior shipped receipt: slice 09 archive `slices/09-the-kiosk-speaks-arabic.md`
 Ready for review
 
 ## Next
-Independent implementation review of slice 10 under dispatch d-20260908-039-implrev-10.
+Independent implementation review of slice 10 under dispatch d-20260909-040-implrev-10 against restored git HEAD candidate `4849c5ae734e5476a7d86cfc2bd98cf8b013c9b5c3a53883eb867e4921cf1fdc`.
