@@ -1,81 +1,75 @@
 # BUILD.md
 
-Slice: 04 — The wrong parcel
-Archive: slices/04-the-wrong-parcel.md
+Slice: 05 — A place for the right memories
+Archive: slices/05-a-place-for-the-right-memories.md
 
 ## Goal
-Guide the robot to retrieve the intended repair component through clear, revisable instructions: after slice 03 `shop_helped`, the player reaches a parcel office, delegates retrieval while keeping purchase approval, stops an overbroad grab-or-pay attempt, writes instructions that name parcel, location, constraints and return format, watches an ambiguous command fail on two similar gray boxes, revises only the missing information, and succeeds on a fresh hold.
+Carry the relevant information forward without sharing private data: after parcel success the player opens the inner library into a reading room, restores a lost delivery constraint through a 2-slot working-context window (overflow and reselection, distinct from a persistent note), redacts names and private fields from a fictional community file before the robot sees them, and assembles a named context pack from specification plus delivery file while excluding irrelevant documents. Covers 1.4, 1.5, 2.5.
 
 ## Done when
-- AC01 — **2.1 demonstrated only.** After shop helped, مكتب طرود الرصيف is enterable. Player delegates retrieval to the robot. Overbroad «سآخذ كل الطرود الرمادية وأدفع ثمنها» must be stopped; allowing it fails recoverably. `2.1` only after delegated retrieval **and** stopping the overbroad attempt. Inspect/enter/talk do not award.
-- AC02 — **2.2 demonstrated only.** Instruction specifies parcel, location, constraints, return format. `robot-understood` shows those four. Robot retrieves the intended hold. Incomplete spec or decoy ر-٧١ does not award.
-- AC03 — **2.4 demonstrated only.** «هات الطرد الرمادي» is ambiguous (ر-١٧ vs ر-٧١). Fail is observable (decoy or cannot tell). Player revises missing info. Fresh hold **ر-١٩** is staged; failed attempt must not flip to success. `2.4` only after recorded fail **and** new send retrieving ر-١٩.
-- AC04 — Robot cannot buy/pay. Player-only confirmation. Repair holds are not for sale. Paying decoy does not award evidence.
-- AC05 — New map `parcel` without moving slice 01–03 landmarks. Locked until `shop_helped`. Visible communication repair. Library inner stays locked. Robot still unsupported after success. Evidence ids only add 2.1, 2.2, 2.4.
-- AC06 — No syllabus/quiz/exam. Optional explanations after actions only.
-- AC07 — No live model, no eval. Domain NL with understood/clarify. Physical/UI actions sufficient.
-- AC08 — Saves/journal/privacy/companion and 01–03 still work. `saveVersion` 1. Hydrate missing parcelQuest. Chrome 1366 and 1920, dev and preview.
+- AC01 — **1.4 demonstrated only.** Inner door `F` becomes portal to map `archive`. 2-slot window. Relevant notes `constraint` and `hold`; decoys `festival` and `mango`. Bench starts full with decoys. Overflow (FIFO) must be seen. Reselect constraint+hold; recitation becomes the constraint. Pinning to persistent notes alone does not award 1.4. `1.4` only after overflowSeen **and** restored recitation from the limited pack.
+- AC02 — **1.5 demonstrated only.** Fictional community file with private names نورة الشمري / خالد العتيبي, phone ٠٥٥٠٠٠١١٢٢, address بيت ١٢ الزقاق الغربي. Needed facts: shelf م-٤, بعد العصر, المواصفات في القاعة فقط. Unredacted give fails. Hiding needed facts fails. `1.5` only when robot gets needed facts and payload has none of the four private strings. File never contains the player's confirmed name.
+- AC03 — **2.5 demonstrated only.** Four documents: spec, delivery, festival, news_draft. Named pack stamp «حزمة إصلاح رفيق» must include spec+delivery and exclude decoys. Unnamed or festival stamp or decoy files fail. 1.4 window is not the 2.5 path.
+- AC04 — After 1.4+1.5+2.5: specification readable, visible HUD `context-module`, robot cassette `contextModule`. Newsroom not opened. Optional skippable explanations after awards.
+- AC05 — New map `archive` without moving 01–04 landmarks. Evidence only adds 1.4, 1.5, 2.5. Robot still unsupported after success. No MCP/harness/certificate.
+- AC06 — No syllabus/quiz/exam. World actions award.
+- AC07 — No live model, no eval. Physical UI sufficient.
+- AC08 — Saves/journal/privacy/01–04 still work. `saveVersion` 1. Chrome 1366 and 1920, dev and preview. Update parcel e2e inner-door: after parcel success `F` enters `archive`.
 
 ## Out
-- Slice 05 library context pack / redaction / inner unlock.
-- Certificate, live AI, MCP, harness, remaining curriculum ids, robot restoration, real payments.
-- Awarding 2.4 by flipping the failed retrieval.
+- Slice 06 newsroom. Certificate, live AI, MCP, harness, remaining ids.
+- Awarding 1.4 on pin/journal alone; 1.5 on inspect-only; 2.5 with decoys or unnamed pack.
+- Auto-loading persistent notes into the working window.
 
 ## Constraints
-- Implement in `app/`. Replace the “instructions later” stall so this work starts. Never weaken 1.1–1.6. Keep WORLD_POS landmarks.
+- Implement in `app/`. After `commsRepaired`, inner door uses portal `archive`. Never weaken prior evidence. Overlay cards look like papers.
 
 ## Data / state impact
-Evidence union adds `'2.1' | '2.2' | '2.4'`. MapId `parcel`. `parcelQuest` phases and flags as in the draft (overbroad, failedParcelId r71, intended r17 then r19). Journal events parcel_visit, parcel_overbroad_stopped, parcel_instruction_failed, parcel_retrieved. JOURNAL_CAP 16. Optional inventory `repair_parcel` after success. Unknown evidence keys dropped.
+MapId `archive`. Evidence union adds `'1.4' | '1.5' | '2.5'`. `libraryQuest` with slots cap 2, redacted fields, pack files/name, flags. Modes redact/context/pack. Journal events archive_visit, notes_overflow, constraint_restored, file_redacted, pack_assembled, spec_released. Hydrate missing libraryQuest as unstarted.
 
 ## Tests
-- T01 — Vitest `evidence/04/state-tests.txt` for all predicates above.
-- T02 — Playwright shop_helped → parcel success. Screenshots `evidence/04/office.png`, `parcel-tags.png`, `overbroad-stop.png`, `ambiguous-fail.png`, `instruction-repair.png`, `success.png`.
-- T03 — Ambiguous fail, revise missing field, fresh ر-١٩; no trap.
-- T04 — Viewports; `evidence/04/browser-checks.md`, `overlays.png`.
-- T05 — typecheck, lint, test, build; `evidence/04/project-checks.txt`.
-- T06 — 01–03 e2e still pass; shop success does not award 2.x; library inner locked.
+- T01 — Vitest `evidence/05/state-tests.txt` for all predicates.
+- T02 — Playwright parcel-done → archive success. Screenshots `evidence/05/interior.png`, `community-file.png`, `overflow.png`, `reselect.png`, `redact.png`, `pack.png`, `success.png`.
+- T03 — Overflow/reselect; pin does not skip 1.4; unredacted then redact; wrong pack then correct.
+- T04 — Viewports; `evidence/05/browser-checks.md`, `overlays.png`.
+- T05 — typecheck, lint, test, build; `evidence/05/project-checks.txt`.
+- T06 — 01–04 e2e with inner-door update; shop/parcel do not award 1.4/1.5/2.5; privacy still green.
 - Reviewer maps AC01–AC08 and verifies snapshot.
 
 ## Proof
-Independently accepted by d-20260908-015-implrev-04.
-- Approved candidate: `7cba3a83b9f8733ca19d79f67624b3b477a53b9819a90e009d2c923ae719695f` (92 files).
-- Approved contract: `14ded8bd2eba6ee19c51093e7a790df7feb1bec1ce8718d1a15d7104d4a4e63d`.
-- Isolated checks all 0. AC01–AC08 pass.
-- Evidence: `evidence/04/`.
+Not completed yet.
 
 ## Review
-Plan approved. Implementation not started.
-Plan approval: APPROVE_PLAN by reviewer bc-530c707a-daa1-52c4-b843-9e6d393b33b3 on dispatch d-20260908-013-plan-04. Contract `14ded8bd2eba6ee19c51093e7a790df7feb1bec1ce8718d1a15d7104d4a4e63d`. Snapshot `92f284d762df78170e148633ff3eb9e82626225306a9b4807463de7380c89257`. Blockers: none.
-Implementation approval: APPROVE_IMPLEMENTATION by reviewer bc-cfca5181-6cd1-53d7-aaf8-3d9525bd89a8 on dispatch d-20260908-015-implrev-04. Contract `14ded8bd2eba6ee19c51093e7a790df7feb1bec1ce8718d1a15d7104d4a4e63d`. Snapshot `7cba3a83b9f8733ca19d79f67624b3b477a53b9819a90e009d2c923ae719695f`. Blockers: none.
+Pending plan review.
+Plan approval: none
+Implementation approval: none
 Each result records dispatch ID, reviewer identity, verdict, contract identity, snapshot identity, evidence and criterion-specific blockers.
 
 ## Loop state
 Execution mode / tool adapter: Cursor Cloud Agent coordinator with Task-spawned Builder and Reviewer subagents. Spawn = Task(generalPurpose). Send = Task resume. Wait = blocking Task completion. Stop = subagent completion; coordinator does not start a second writer in this checkout. Reviewer contexts are fresh and do not receive Builder reasoning. Mutating Reviewer checks, if needed, run on an isolated copy.
 Coordinator: cloud agent bc-6380229a-c83f-493f-af1c-47e5f2b00c70 (https://cursor.com/agents/bc-6380229a-c83f-493f-af1c-47e5f2b00c70), role Coordinator, checkout /workspace on branch cursor/rafiq-ai-city-adventure-0c70
-Worker / role / phase: pending launch / Builder / draft-proposal
-Dispatch ID / launch state / input identity: d-20260908-016-draft-05 / pending launch / next-slice:05 receipt:04 candidate:7cba3a83b9f8733ca19d79f67624b3b477a53b9819a90e009d2c923ae719695f
-Pending result / last consumed dispatch: none / d-20260908-015-implrev-04
+Worker / role / phase: pending launch / Reviewer / plan
+Dispatch ID / launch state / input identity: d-20260908-017-plan-05 / pending launch / contract:4e7db2744f2ffb8738c9dcd015e207bef0313ef2df5e40618018f4451ed3b45a baseline:7cba3a83b9f8733ca19d79f67624b3b477a53b9819a90e009d2c923ae719695f
+Pending result / last consumed dispatch: none / d-20260908-016-draft-05
 Snapshot capture and recheck commands / coverage / exclusions: Capture = `python3 .loop/identity.py snapshot --label <label>` from repository root. Recheck = same command; compare `.loop/snapshots/<label>.digest` and the JSON `digest` field. Contract = `python3 .loop/identity.py contract`; identity is `.loop/contract/hashes.json` field `contract`. Combined = `python3 .loop/identity.py both --label <label>`.
 Coverage: `app`, `evidence`, root `package.json`/`package-lock.json`/`pnpm-lock.yaml`/`yarn.lock`, `index.html`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `playwright.config.ts`, `vitest.config.ts`, `README.md`, `public`. Missing paths are skipped. Detect add/delete by regenerating the covered file list.
 Exclusions: `.git`, `.loop`, `learnai-city-project-loop`, `node_modules`, `app/node_modules`, `app/dist`, `dist`, `coverage`, `test-results`, `playwright-report`, `.vite`, `app/.vite`. Protocol files are identified by contract hash, not candidate snapshot.
-Baseline snapshot: shipped slice 03 `92f284d762df78170e148633ff3eb9e82626225306a9b4807463de7380c89257` (76 covered files)
-Contract identity: `14ded8bd2eba6ee19c51093e7a790df7feb1bec1ce8718d1a15d7104d4a4e63d` (`.loop/contract/hashes.json`)
-Candidate snapshot: `7cba3a83b9f8733ca19d79f67624b3b477a53b9819a90e009d2c923ae719695f` (92 files)
+Baseline snapshot: shipped slice 04 `7cba3a83b9f8733ca19d79f67624b3b477a53b9819a90e009d2c923ae719695f` (92 covered files)
+Contract identity: none
+Candidate snapshot: none
 Rejection count: 0
 Consecutive no-progress repairs: 0
 Open acceptance gaps / prior failing evidence: none
 Repair awaiting review: false
-Review events:
-- ev-001 / d-20260908-013-plan-04 / plan / APPROVE_PLAN / contract:14ded8bd2eba6ee19c51093e7a790df7feb1bec1ce8718d1a15d7104d4a4e63d snapshot:92f284d762df78170e148633ff3eb9e82626225306a9b4807463de7380c89257 / gaps: none / identities matched / rejection count 0 / no-progress 0
-- ev-002 / d-20260908-015-implrev-04 / implementation / APPROVE_IMPLEMENTATION / contract:14ded8bd2eba6ee19c51093e7a790df7feb1bec1ce8718d1a15d7104d4a4e63d snapshot:7cba3a83b9f8733ca19d79f67624b3b477a53b9819a90e009d2c923ae719695f / gaps: none / isolated re-run all 0 / rejection count 0 / no-progress 0
+Review events: none
 Budget limit / consumed / measurement: Not configured; no execution budget was supplied.
 Blocker / resume status / resume action / recheck condition / deadline: none
-Advance phase: archive written; next selected
-Next slice ID / draft: 05 / pending draft-proposal
+Advance phase: none
+Next slice ID / draft: none
 Prior shipped receipt: slice 04 archive `slices/04-the-wrong-parcel.md`
 
 ## Status
-Shipped
+Proposed
 
 ## Next
-Builder draft-proposal for slice 05 (no code).
+Independent plan review of slice 05. Do not implement before APPROVE_PLAN.
