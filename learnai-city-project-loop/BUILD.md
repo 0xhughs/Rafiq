@@ -37,17 +37,17 @@ No new `MapId`. Evidence union adds `'6.1' | '6.2'`. Interactables: `crew_desk`,
 Not completed yet.
 
 ## Review
-Pending plan review.
-Plan approval: none
+Plan approved. Implementation not started.
+Plan approval: APPROVE_PLAN by reviewer bc-3c4469f3-8c90-5736-9b69-e6e61943017c on dispatch d-20260909-058-plan-15. Contract `722db4a4435bff7d87c38da436c28402dbb7df706d06444efaca3f5ebab9bef9`. Snapshot `4d122eda21ed6315dfeeeec5b8f650f13be2f1dce77b88500d4d637b244ac629`. Blockers: none.
 Implementation approval: none
 Each result records dispatch ID, reviewer identity, verdict, contract identity, snapshot identity, evidence and criterion-specific blockers.
 
 ## Loop state
 Execution mode / tool adapter: Cursor Cloud Agent coordinator with Task-spawned Builder and Reviewer subagents. Spawn = Task(generalPurpose). Send = Task resume. Wait = blocking Task completion. Stop = subagent completion; coordinator does not start a second writer in this checkout. Reviewer contexts are fresh and do not receive Builder reasoning. Mutating Reviewer checks, if needed, run on an isolated copy.
 Coordinator: cloud agent bc-6380229a-c83f-493f-af1c-47e5f2b00c70 (https://cursor.com/agents/bc-6380229a-c83f-493f-af1c-47e5f2b00c70), role Coordinator, checkout /workspace on branch cursor/rafiq-continue-slices-0c70
-Worker / role / phase: pending launch / Reviewer / plan
-Dispatch ID / launch state / input identity: d-20260909-058-plan-15 / pending launch / contract:722db4a4435bff7d87c38da436c28402dbb7df706d06444efaca3f5ebab9bef9 baseline:4d122eda21ed6315dfeeeec5b8f650f13be2f1dce77b88500d4d637b244ac629
-Pending result / last consumed dispatch: none / d-20260909-057-draft-15
+Worker / role / phase: pending launch / Builder / implementation
+Dispatch ID / launch state / input identity: d-20260909-059-impl-15 / pending launch / contract:722db4a4435bff7d87c38da436c28402dbb7df706d06444efaca3f5ebab9bef9 baseline:4d122eda21ed6315dfeeeec5b8f650f13be2f1dce77b88500d4d637b244ac629
+Pending result / last consumed dispatch: none / d-20260909-058-plan-15
 Snapshot capture and recheck commands / coverage / exclusions: Capture = `python3 .loop/identity.py snapshot --label <label>` from repository root. Recheck = same command; compare `.loop/snapshots/<label>.digest` and the JSON `digest` field. Contract = `python3 .loop/identity.py contract`; identity is `.loop/contract/hashes.json` field `contract`. Combined = `python3 .loop/identity.py both --label <label>`.
 Coverage: `app`, `evidence`, root `package.json`/`package-lock.json`/`pnpm-lock.yaml`/`yarn.lock`, `index.html`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `playwright.config.ts`, `vitest.config.ts`, `README.md`, `public`. Missing paths are skipped. Detect add/delete by regenerating the covered file list.
 Exclusions: `.git`, `.loop`, `learnai-city-project-loop`, `node_modules`, `app/node_modules`, `app/dist`, `dist`, `coverage`, `test-results`, `playwright-report`, `.vite`, `app/.vite`. Protocol files are identified by contract hash, not candidate snapshot.
@@ -58,7 +58,8 @@ Rejection count: 0
 Consecutive no-progress repairs: 0
 Open acceptance gaps / prior failing evidence: none
 Repair awaiting review: false
-Review events: none
+Review events:
+- ev-001 / d-20260909-058-plan-15 / plan / APPROVE_PLAN / contract:722db4a4435bff7d87c38da436c28402dbb7df706d06444efaca3f5ebab9bef9 snapshot:4d122eda21ed6315dfeeeec5b8f650f13be2f1dce77b88500d4d637b244ac629 / gaps: none / identities matched / rejection count 0 / no-progress 0
 Budget limit / consumed / measurement: Not configured; no execution budget was supplied.
 Blocker / resume status / resume action / recheck condition / deadline: none
 Advance phase: none
@@ -66,7 +67,7 @@ Next slice ID / draft: none
 Prior shipped receipt: slice 14 archive `slices/14-the-decision-stays-with-you.md`
 
 ## Status
-Proposed
+Building
 
 ## Next
-Independent plan review of slice 15. Do not implement before APPROVE_PLAN.
+Builder implements slice 15 under dispatch d-20260909-059-impl-15. Do not edit protocol files.
