@@ -40,8 +40,8 @@ Evidence union adds `'2.1' | '2.2' | '2.4'`. MapId `parcel`. `parcelQuest` phase
 Not completed yet.
 
 ## Review
-Pending plan review.
-Plan approval: none
+Plan approved. Implementation not started.
+Plan approval: APPROVE_PLAN by reviewer bc-530c707a-daa1-52c4-b843-9e6d393b33b3 on dispatch d-20260908-013-plan-04. Contract `14ded8bd2eba6ee19c51093e7a790df7feb1bec1ce8718d1a15d7104d4a4e63d`. Snapshot `92f284d762df78170e148633ff3eb9e82626225306a9b4807463de7380c89257`. Blockers: none.
 Implementation approval: none
 Each result records dispatch ID, reviewer identity, verdict, contract identity, snapshot identity, evidence and criterion-specific blockers.
 
@@ -55,7 +55,7 @@ Snapshot capture and recheck commands / coverage / exclusions: Capture = `python
 Coverage: `app`, `evidence`, root `package.json`/`package-lock.json`/`pnpm-lock.yaml`/`yarn.lock`, `index.html`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `playwright.config.ts`, `vitest.config.ts`, `README.md`, `public`. Missing paths are skipped. Detect add/delete by regenerating the covered file list.
 Exclusions: `.git`, `.loop`, `learnai-city-project-loop`, `node_modules`, `app/node_modules`, `app/dist`, `dist`, `coverage`, `test-results`, `playwright-report`, `.vite`, `app/.vite`. Protocol files are identified by contract hash, not candidate snapshot.
 Baseline snapshot: shipped slice 03 `92f284d762df78170e148633ff3eb9e82626225306a9b4807463de7380c89257` (76 covered files)
-Contract identity: none
+Contract identity: `14ded8bd2eba6ee19c51093e7a790df7feb1bec1ce8718d1a15d7104d4a4e63d` (`.loop/contract/hashes.json`)
 Candidate snapshot: none
 Rejection count: 0
 Consecutive no-progress repairs: 0
