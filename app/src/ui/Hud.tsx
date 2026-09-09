@@ -104,6 +104,11 @@ export function Hud({ state, onHelp, onDismissRestore }: Props) {
           كiosk صالح
         </p>
       ) : null}
+      {state.labQuest.labReady ? (
+        <p className="inventory cassette-chip" data-testid="lab-ready">
+          إنتاج مُصلح
+        </p>
+      ) : null}
     </header>
   );
 }

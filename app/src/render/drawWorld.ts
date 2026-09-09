@@ -720,6 +720,14 @@ function drawWorkshop(ctx: CanvasRenderingContext2D): void {
   fillRound(ctx, kiosk.x + 4, kiosk.y + 6, kiosk.w - 8, kiosk.h - 10, 4, '#f6d6c8');
   ctx.fillStyle = '#7a241c';
   ctx.fillText('كiosk', kiosk.x + kiosk.w / 2, kiosk.y + 28);
+  const lab = FURNITURE.workshop.lab;
+  fillRound(ctx, lab.x + 4, lab.y + 6, lab.w - 8, lab.h - 10, 4, '#d7efe4');
+  ctx.fillStyle = '#163238';
+  ctx.fillText('نشر', lab.x + lab.w / 2, lab.y + 28);
+  const prod = FURNITURE.workshop.prod;
+  fillRound(ctx, prod.x + 4, prod.y + 6, prod.w - 8, prod.h - 10, 4, '#f3d0c4');
+  ctx.fillStyle = '#7a241c';
+  ctx.fillText('إنتاج', prod.x + prod.w / 2, prod.y + 28);
   const counter = FURNITURE.workshop.counter;
   fillRound(ctx, counter.x + 2, counter.y + 6, counter.w - 4, counter.h - 10, 6, PALETTE.workshop);
   ctx.fillStyle = '#ead9c0';

@@ -4,7 +4,7 @@ import type { GameAction, MapId, SerializedTestState } from '../src/engine/types
 
 export async function waitForGame(page: Page): Promise<void> {
   await page.waitForFunction(() => Boolean(window.__RAFIQ_TEST__));
-  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '09');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '10');
 }
 
 export async function getState(page: Page): Promise<SerializedTestState> {
@@ -445,5 +445,36 @@ export async function playToWorkshopDone(page: Page, name = 'علي حسن'): Pr
   expect(done.evidence['4.2']).toBe('demonstrated');
   expect(done.evidence['4.3']).toBeUndefined();
   expect(done.evidence['4.4']).toBeUndefined();
+  expect(done.evidence['4.5']).toBeUndefined();
+  expect(done.evidence['4.6']).toBeUndefined();
+  expect(done.evidence['5.4']).toBeUndefined();
   expect(done.kioskQuest.kioskReady).toBe(false);
+}
+
+export async function playToKioskDone(page: Page, name = 'علي حسن'): Promise<void> {
+  await playToWorkshopDone(page, name);
+  await interactAt(page, 'workshop', WORLD_POS.kioskDocs.x, WORLD_POS.kioskDocs.y);
+  await page.getByTestId('inspect-close').click();
+  await interactAt(page, 'workshop', WORLD_POS.kioskFace.x, WORLD_POS.kioskFace.y);
+  await page.getByTestId('kiosk-send').click();
+  await page.getByTestId('kiosk-strip').click();
+  await page.getByTestId('kiosk-send').click();
+  await page.getByTestId('kiosk-move-vault').click();
+  await page.getByTestId('kiosk-send').click();
+  await page.getByTestId('kiosk-set-rtl').click();
+  await page.getByTestId('kiosk-isolate').click();
+  await page.getByTestId('kiosk-lookup-sunday').click();
+  await page.getByTestId('kiosk-check-title').click();
+  await page.getByTestId('kiosk-check-slot').click();
+  await page.getByTestId('kiosk-check-lookup').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  const done = await getState(page);
+  expect(done.kioskQuest.kioskReady).toBe(true);
+  expect(done.evidence['4.3']).toBe('demonstrated');
+  expect(done.evidence['4.4']).toBe('demonstrated');
+  expect(done.evidence['4.5']).toBeUndefined();
+  expect(done.evidence['4.6']).toBeUndefined();
+  expect(done.evidence['5.4']).toBeUndefined();
+  expect(done.labQuest.labReady).toBe(false);
 }

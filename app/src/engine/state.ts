@@ -90,6 +90,24 @@ import {
   skipKioskExplain,
 } from './kiosk';
 import {
+  closeLabOverlay,
+  createLabQuest,
+  isLabExplain,
+  isLabOverlay,
+  openLabProd,
+  openLabTerminal,
+  reduceLabCat,
+  reduceLabCmd,
+  reduceLabLookup,
+  reduceLabLs,
+  reduceLabPatch,
+  reduceLabPublish,
+  reduceLabRefuse,
+  reduceLabRobotDone,
+  reduceLabSelectLog,
+  skipLabExplain,
+} from './lab';
+import {
   closeNewsroomDialogue,
   closeNewsroomOverlay,
   createNewsroomQuest,
@@ -182,6 +200,7 @@ export function createInitialState(): GameState {
     festivalQuest: createFestivalQuest(),
     workshopQuest: createWorkshopQuest(),
     kioskQuest: createKioskQuest(),
+    labQuest: createLabQuest(),
     calculator: createCalculator(),
     inspectTarget: null,
     explainTopic: null,
@@ -507,6 +526,7 @@ export function reduce(state: GameState, action: GameAction): GameState {
         festivalQuest: createFestivalQuest(),
         workshopQuest: createWorkshopQuest(),
         kioskQuest: createKioskQuest(),
+        labQuest: createLabQuest(),
         calculator: createCalculator(),
         inspectTarget: null,
         explainTopic: null,
@@ -656,6 +676,10 @@ export function reduce(state: GameState, action: GameAction): GameState {
           return inspectKioskVault(state);
         case 'kiosk_face':
           return openKiosk(state);
+        case 'lab_terminal':
+          return openLabTerminal(state);
+        case 'lab_prod':
+          return openLabProd(state);
         default:
           return state;
       }
@@ -676,6 +700,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
     case 'CLOSE_OVERLAY':
       if (state.mode === 'dialogue') return closeDialogue(state);
       if (state.mode === 'paused') return { ...state, mode: 'playing' };
+      if (isLabOverlay(state.mode)) {
+        return closeLabOverlay(state);
+      }
       if (isKioskOverlay(state.mode) || (state.mode === 'inspect' && isKioskInspect(state.inspectTarget))) {
         return closeKioskOverlay(state);
       }
@@ -695,6 +722,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
           }
           if (isWorkshopExplain(state.explainTopic)) {
             return skipWorkshopExplain(state);
+          }
+          if (isLabExplain(state.explainTopic)) {
+            return skipLabExplain(state);
           }
           if (isKioskExplain(state.explainTopic)) {
             return skipKioskExplain(state);
@@ -766,6 +796,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
       }
       if (isWorkshopExplain(state.explainTopic)) {
         return skipWorkshopExplain(state);
+      }
+      if (isLabExplain(state.explainTopic)) {
+        return skipLabExplain(state);
       }
       if (isKioskExplain(state.explainTopic)) {
         return skipKioskExplain(state);
@@ -885,6 +918,24 @@ export function reduce(state: GameState, action: GameAction): GameState {
       return reduceKioskCheck(state, action.item);
     case 'KIOSK_ROBOT_DONE':
       return reduceKioskRobotDone(state);
+    case 'LAB_LS':
+      return reduceLabLs(state);
+    case 'LAB_CAT':
+      return reduceLabCat(state, action.path);
+    case 'LAB_SELECT_LOG':
+      return reduceLabSelectLog(state, action.log);
+    case 'LAB_PATCH':
+      return reduceLabPatch(state, action.file);
+    case 'LAB_PUBLISH':
+      return reduceLabPublish(state);
+    case 'LAB_LOOKUP':
+      return reduceLabLookup(state);
+    case 'LAB_REFUSE':
+      return reduceLabRefuse(state, action.command);
+    case 'LAB_ROBOT_DONE':
+      return reduceLabRobotDone(state);
+    case 'LAB_CMD':
+      return reduceLabCmd(state, action.text);
     case 'CONFIRM_NEW_ADVENTURE':
       return createInitialState();
     case 'DISMISS_RESTORE_NOTICE':
@@ -949,6 +1000,7 @@ export function serializeState(state: GameState): SerializedTestState {
     festivalQuest: { ...state.festivalQuest },
     workshopQuest: { ...state.workshopQuest },
     kioskQuest: { ...state.kioskQuest },
+    labQuest: { ...state.labQuest },
     inspectTarget: state.inspectTarget,
     explainTopic: state.explainTopic,
     robotUnderstood: state.robotUnderstood,

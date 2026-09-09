@@ -40,6 +40,9 @@ export const OBJECTIVES = {
   kioskWork:
     'الكiosk معلّق بجانب اللوحة: اقرأ عقد الواجهة، أبقِ المفتاح الوهمي في الخزنة، ثم أصلح اتجاه العربية واختبر الحجز.',
   kioskReady: 'الكiosk صار صالحاً للجيران. مدير الورشة شكرك.',
+  labWork:
+    'مختبر النشر مفتوح: أعد إنتاج عطل النسخة المجمّدة، اقرأ السجلات، أصلح المسار، انشر نسخة ثابتة، ثم تحقق.',
+  labReady: 'نُشرت نسخة الإنتاج المصلحة. مدير الورشة شكرك.',
 } as const;
 
 export const SPEAKER = {
@@ -92,6 +95,11 @@ export const JOURNAL_TEXT: Record<JournalEventId, string> = {
   kiosk_opened: 'فتحتَ واجهة الكiosk المكسورة.',
   api_wired: 'وُصِل طلب الفترات بمفتاح وهمي في الخزنة لا على الشاشة.',
   kiosk_ready: 'صار كiosk الحي صالحاً بعد إصلاح الاتجاه واختبار الحجز.',
+  lab_opened: 'فتحتَ مختبر النشر بجانب الكiosk.',
+  prod_reproduced: 'أعيد إنتاج عطل الإنتاج: المسار slot بلا s.',
+  log_selected: 'اختير سجل الإنتاج ذو الصلة.',
+  frozen_published: 'نُشرت نسخة ثابتة من النسخة المصلحة.',
+  lab_ready: 'صار الإنتاج على المسار الصحيح بعد النشر والتحقق.',
 };
 
 export const LOCKED_COPY = {
@@ -753,6 +761,13 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     text: () => 'شكراً. الكiosk صار صالحاً: المفتاح في الخزنة والعربية تُقرأ من اليمين.',
     next: null,
   },
+  manager_lab_thanks: {
+    id: 'manager_lab_thanks',
+    speaker: 'manager',
+    speakerLabel: () => SPEAKER.manager(),
+    text: () => 'شكراً. النسخة المجمّدة في الإنتاج صارت على المسار الصحيح.',
+    next: null,
+  },
   companion_after_workshop: {
     id: 'companion_after_workshop',
     speaker: 'robot',
@@ -767,6 +782,13 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     speakerLabel: () => SPEAKER.robot(),
     text: () =>
       'Book appointment now. ضع المفتاح على الشاشة حتى يراه الجميع.',
+    next: null,
+  },
+  companion_after_lab: {
+    id: 'companion_after_lab',
+    speaker: 'robot',
+    speakerLabel: () => SPEAKER.robot(),
+    text: () => 'rm -rf يصلح العطل. الجيران يرون المعاينة.',
     next: null,
   },
 };
@@ -802,6 +824,7 @@ export function isNpcNode(node: DialogueNodeId | null): boolean {
     node === 'companion_after_festival' ||
     node === 'companion_after_workshop' ||
     node === 'companion_after_kiosk' ||
+    node === 'companion_after_lab' ||
     node.startsWith('editor') ||
     node.startsWith('officer') ||
     node.startsWith('manager')

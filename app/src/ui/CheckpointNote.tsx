@@ -10,6 +10,7 @@ interface Props {
   workshopStarted: boolean;
   servicePosted: boolean;
   kioskReady: boolean;
+  labReady: boolean;
 }
 
 export function CheckpointNote({
@@ -24,12 +25,16 @@ export function CheckpointNote({
   workshopStarted,
   servicePosted,
   kioskReady,
+  labReady,
 }: Props) {
   if (!visible) return null;
   let text =
     'رفيق أصبح رفيقك في الحي. البقالة عند الزاوية مفتوحة الآن، وبعدها واجهة المكتبة. بقية ألغاز المغامرة ما زالت قيد التطوير.';
-  if (kioskReady) {
-    text = 'الكiosk صار صالحاً للجيران. مدير الورشة شكرك.';
+  if (labReady) {
+    text = 'نُشرت نسخة الإنتاج المصلحة. مدير الورشة شكرك.';
+  } else if (kioskReady) {
+    text =
+      'مختبر النشر مفتوح: أعد إنتاج عطل النسخة المجمّدة، اقرأ السجلات، أصلح المسار، انشر نسخة ثابتة، ثم تحقق.';
   } else if (servicePosted) {
     text =
       'الكiosk معلّق بجانب اللوحة: اقرأ عقد الواجهة، أبقِ المفتاح الوهمي في الخزنة، ثم أصلح اتجاه العربية واختبر الحجز.';

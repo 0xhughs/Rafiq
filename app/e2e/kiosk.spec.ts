@@ -127,6 +127,10 @@ test('workshop-success through kiosk success with physical actions', async ({ pa
   expect(done.evidence['4.3']).toBe('demonstrated');
   expect(done.evidence['4.4']).toBe('demonstrated');
   expect(done.kioskQuest.kioskReady).toBe(true);
+  expect(done.evidence['4.5']).toBeUndefined();
+  expect(done.evidence['4.6']).toBeUndefined();
+  expect(done.evidence['5.4']).toBeUndefined();
+  expect(done.labQuest.labReady).toBe(false);
 
   await interactAt(page, 'workshop', WORLD_POS.manager.x, WORLD_POS.manager.y);
   await expect(page.getByTestId('dialogue-text')).toContainText('كiosk');

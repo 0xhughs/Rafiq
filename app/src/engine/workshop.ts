@@ -297,7 +297,8 @@ function syncPhase(quest: WorkshopQuest): WorkshopQuest {
 
 export function workshopObjective(state: GameState): string {
   const quest = state.workshopQuest;
-  if (state.kioskQuest.kioskReady) return OBJECTIVES.kioskReady;
+  if (state.labQuest.labReady) return OBJECTIVES.labReady;
+  if (state.kioskQuest.kioskReady) return OBJECTIVES.labWork;
   if (quest.servicePosted) return OBJECTIVES.kioskWork;
   if (state.map === 'workshop' || quest.briefed || state.festivalQuest.workshopMaterials) {
     return OBJECTIVES.workshopWork;
@@ -336,6 +337,7 @@ export function awardWorkshopEvidence(state: GameState): GameState {
 
 export function managerNode(state: GameState): DialogueNodeId {
   const quest = state.workshopQuest;
+  if (state.labQuest.labReady) return 'manager_lab_thanks';
   if (state.kioskQuest.kioskReady) return 'manager_kiosk_thanks';
   if (quest.servicePosted) return 'manager_thanks';
   if (quest.briefed) return 'manager_revisit';
@@ -362,7 +364,8 @@ export function closeWorkshopDialogue(state: GameState): GameState | null {
   if (
     node.startsWith('manager') ||
     node === 'companion_after_workshop' ||
-    node === 'companion_after_kiosk'
+    node === 'companion_after_kiosk' ||
+    node === 'companion_after_lab'
   ) {
     return {
       ...state,

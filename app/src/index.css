@@ -366,6 +366,20 @@ input {
   font-family: ui-monospace, 'Cascadia Code', 'Noto Sans Mono', monospace;
 }
 
+.path-ltr {
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-family: ui-monospace, 'Cascadia Code', 'Noto Sans Mono', monospace;
+}
+
+input.path-ltr {
+  min-width: 12rem;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: #fffaf0;
+}
+
 
 .stage {
   position: absolute;

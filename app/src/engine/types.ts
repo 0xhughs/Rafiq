@@ -45,7 +45,8 @@ export type Mode =
   | 'submit'
   | 'brief'
   | 'board'
-  | 'kiosk';
+  | 'kiosk'
+  | 'lab';
 
 export type TrashState = 'home' | 'carried' | 'disposed';
 
@@ -87,6 +88,9 @@ export const EVIDENCE_IDS = [
   '4.2',
   '4.3',
   '4.4',
+  '4.5',
+  '4.6',
+  '5.4',
 ] as const;
 export type EvidenceId = (typeof EVIDENCE_IDS)[number];
 export type EvidenceStatus = 'demonstrated';
@@ -147,7 +151,10 @@ export type ExplainTopic =
   | 'product'
   | 'appointments'
   | 'api_contract'
-  | 'arabic_rtl';
+  | 'arabic_rtl'
+  | 'debug_logs'
+  | 'frozen_publish'
+  | 'shell_limits';
 export type ContextNoteId = 'constraint' | 'hold' | 'festival' | 'mango';
 export type PackFileId = 'spec' | 'delivery' | 'festival' | 'news_draft';
 export type PackStampId = 'rafiq_repair' | 'festival' | 'unnamed';
@@ -346,6 +353,39 @@ export interface KioskQuest {
   pendingExplain: ExplainTopic | null;
 }
 
+export const LAB_PHASES = ['unstarted', 'working', 'ready'] as const;
+export type LabPhase = (typeof LAB_PHASES)[number];
+export type LabView = 'terminal' | 'prod';
+export type LabLogId = 'production.error' | 'preview.log' | 'builder.warn';
+export type LabFilePath =
+  | 'preview/kiosk.js'
+  | 'production/kiosk.js'
+  | 'logs/preview.log'
+  | 'logs/production.error'
+  | 'notes/builder.warn';
+export type LabPatchTarget = 'production/kiosk.js' | 'preview/kiosk.js' | 'notes/builder.warn';
+export type LabRefuseCommand = 'rm -rf /' | 'format-disk';
+
+export interface LabQuest {
+  phase: LabPhase;
+  openedLab: boolean;
+  listedDir: boolean;
+  readPreviewFile: boolean;
+  readProdFile: boolean;
+  readPreviewLog: boolean;
+  readProdLog: boolean;
+  readDecoy: boolean;
+  selectedLog: LabLogId | null;
+  reproducedBroken: boolean;
+  fileRepaired: boolean;
+  publishedVersion: 1 | 2;
+  verifiedProd: boolean;
+  refusedDestructive: boolean;
+  labReady: boolean;
+  pendingExplain: ExplainTopic | null;
+  view: LabView;
+}
+
 export type ParcelId = 'r17' | 'r19' | 'r71';
 export type ParcelPick = ParcelId | 'gray' | null;
 export type LocationPick = 'west' | 'east' | 'any' | null;
@@ -481,7 +521,12 @@ export type JournalEventId =
   | 'service_posted'
   | 'kiosk_opened'
   | 'api_wired'
-  | 'kiosk_ready';
+  | 'kiosk_ready'
+  | 'lab_opened'
+  | 'prod_reproduced'
+  | 'log_selected'
+  | 'frozen_published'
+  | 'lab_ready';
 
 export interface JournalEvent {
   id: JournalEventId;
@@ -570,8 +615,10 @@ export type DialogueNodeId =
   | 'manager_revisit'
   | 'manager_thanks'
   | 'manager_kiosk_thanks'
+  | 'manager_lab_thanks'
   | 'companion_after_workshop'
-  | 'companion_after_kiosk';
+  | 'companion_after_kiosk'
+  | 'companion_after_lab';
 
 export type DialogueChoiceId =
   | 'agree'
@@ -647,7 +694,9 @@ export type InteractableId =
   | 'appointment_board'
   | 'kiosk_docs'
   | 'kiosk_vault'
-  | 'kiosk_face';
+  | 'kiosk_face'
+  | 'lab_terminal'
+  | 'lab_prod';
 
 export type PortalId =
   | 'home'
@@ -712,6 +761,7 @@ export interface GameState {
   festivalQuest: FestivalQuest;
   workshopQuest: WorkshopQuest;
   kioskQuest: KioskQuest;
+  labQuest: LabQuest;
   calculator: CalculatorState;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
@@ -794,7 +844,16 @@ export type GameAction =
   | { type: 'KIOSK_ISOLATE' }
   | { type: 'KIOSK_LOOKUP'; slot: AppointmentSlot }
   | { type: 'KIOSK_CHECK'; item: KioskCheckItem }
-  | { type: 'KIOSK_ROBOT_DONE' };
+  | { type: 'KIOSK_ROBOT_DONE' }
+  | { type: 'LAB_LS' }
+  | { type: 'LAB_CAT'; path: LabFilePath }
+  | { type: 'LAB_SELECT_LOG'; log: LabLogId }
+  | { type: 'LAB_PATCH'; file: LabPatchTarget }
+  | { type: 'LAB_PUBLISH' }
+  | { type: 'LAB_LOOKUP' }
+  | { type: 'LAB_REFUSE'; command: LabRefuseCommand }
+  | { type: 'LAB_ROBOT_DONE' }
+  | { type: 'LAB_CMD'; text: string };
 
 export interface DialogueChoice {
   id: DialogueChoiceId;
@@ -858,6 +917,7 @@ export interface SerializedTestState {
   festivalQuest: FestivalQuest;
   workshopQuest: WorkshopQuest;
   kioskQuest: KioskQuest;
+  labQuest: LabQuest;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
   robotUnderstood: string | null;
@@ -892,6 +952,7 @@ export interface SaveEnvelope {
   festivalQuest: FestivalQuest;
   workshopQuest: WorkshopQuest;
   kioskQuest: KioskQuest;
+  labQuest: LabQuest;
   robot: { companion: boolean };
   endingState: EndingState;
   mapsVisited: MapId[];

@@ -90,6 +90,10 @@ function workshopRect(id: InteractableId): { x: number; y: number; w: number; h:
       return room.vault;
     case 'kiosk_face':
       return room.kiosk;
+    case 'lab_terminal':
+      return room.lab;
+    case 'lab_prod':
+      return room.prod;
     default:
       return null;
   }
@@ -544,6 +548,23 @@ export function listInteractables(state: GameState): Actionable[] {
         label: HINT_LABELS.kioskFace,
         x: WORLD_POS.kioskFace.x,
         y: WORLD_POS.kioskFace.y,
+      },
+    );
+  }
+
+  if (state.map === 'workshop' && state.kioskQuest.kioskReady) {
+    items.push(
+      {
+        id: 'lab_terminal',
+        label: HINT_LABELS.labTerminal,
+        x: WORLD_POS.labTerminal.x,
+        y: WORLD_POS.labTerminal.y,
+      },
+      {
+        id: 'lab_prod',
+        label: HINT_LABELS.labProd,
+        x: WORLD_POS.labProd.x,
+        y: WORLD_POS.labProd.y,
       },
     );
   }

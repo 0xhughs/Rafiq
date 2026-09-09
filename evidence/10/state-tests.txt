@@ -1,0 +1,24 @@
+T01 state tests — Rafiq slice 10
+cwd: /workspace/app
+date: 2026-09-09T09:52:12Z
+command: npx vitest run
+
+105 tests passed (10 files). Coverage of AC01–AC03 predicates, hydrate, kioskReady gate, WORLD_POS landmarks, and fail paths:
+
+- WORKSHOP row 8 `#..w........l..#` (w col 3 terminal, l col 12 production, col 8 `.`); rows 4–7 unchanged (`e` `u z a m j` `k q t` `d`); spawn north of d stays floor; letters u z a m j k q t e d stay put; no street P E I R F D G Y in workshop legend; WORLD_POS.robot remains {x:12*48+24,y:5*48+24}; street P R I E G Y and library inner F unchanged; w l q a e are solid; JOURNAL_CAP 56
+- lab_terminal / lab_prod interactables listed only after kioskQuest.kioskReady; kiosk success does not award 4.5/4.6/5.4 or set labReady; story objective after kioskReady is labWork, not terminal kioskReady; preview kiosk q still works
+- 4.5 only after reproduced broken production (404 GET /appointments/slot / تعطل الإنتاج — راجع السجلات) + selected logs/production.error + targeted patch of production/kiosk.js (أصلح المسار إلى /appointments/slots); guess-fix without that log fails (اختر السجل ذو الصلة أولاً); decoy preview/kiosk.js or notes/builder.warn fails (هذا الملف ليس مصدر العطل في الإنتاج); decoy log preview.log or builder.warn fails (هذا السجل لا يشرح عطل الإنتاج); inspect-only, manager-talk, robot «تم» do not award
+- 4.6 only after read logs/preview.log (200 GET /appointments/slots) AND logs/production.error (404 GET /appointments/slot) + publish frozen v2 from the repaired working copy + verified production 200 with sun-pm / mon-am / tue-pm; publish without repair keeps v1 404 (النسخة المجمّدة ما زالت على المسار الخاطئ); repair without publish still serves v1 404
+- 5.4 only after authored ls listing the five paths + at least one cat + refuse rm -rf / or format-disk (مرفوض: أمر خارج النطاق وخطر. المختبر وهمي ولا يحذف ملفات حقيقية.) with files unchanged; typed text is allowlisted only, never eval'd
+- all three ids → manager_lab_thanks, labReady; robot still invents «rm -rf يصلح العطل» / «الجيران يرون المعاينة»; hydrate missing labQuest as unstarted frozen v1; saveVersion 1
+
+----- raw vitest -----
+
+
+ RUN  v5.0.0 /workspace/app
+
+
+ Test Files  10 passed (10)
+      Tests  105 passed (105)
+   Start at  09:52:12
+   Duration  771ms (transform 58%, import 22%, tests 18%, worker 2%)

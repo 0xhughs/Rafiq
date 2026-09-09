@@ -30,6 +30,7 @@ import { SubmitOverlay } from './ui/SubmitOverlay';
 import { BriefOverlay } from './ui/BriefOverlay';
 import { BoardOverlay } from './ui/BoardOverlay';
 import { KioskOverlay } from './ui/KioskOverlay';
+import { LabOverlay } from './ui/LabOverlay';
 import { evidenceAttr } from './engine/shop';
 
 function reducer(state: GameState, action: GameAction): GameState {
@@ -131,7 +132,7 @@ export default function App() {
       data-dialogue={state.dialogueNode ?? ''}
       data-save={state.saveStatus}
       data-evidence={evidenceAttr(state.evidence)}
-      data-slice="09"
+      data-slice="10"
       data-shop-quest={state.shopQuest.phase}
       data-parcel-quest={state.parcelQuest.phase}
       data-comms-repaired={state.parcelQuest.commsRepaired ? 'true' : 'false'}
@@ -144,6 +145,8 @@ export default function App() {
       data-service-posted={state.workshopQuest.servicePosted ? 'true' : 'false'}
       data-kiosk-quest={state.kioskQuest.phase}
       data-kiosk-ready={state.kioskQuest.kioskReady ? 'true' : 'false'}
+      data-lab-quest={state.labQuest.phase}
+      data-lab-ready={state.labQuest.labReady ? 'true' : 'false'}
       data-context-window={state.libraryQuest.windowSlots.join(',')}
       data-cassette={state.libraryQuest.contextModule ? 'contextModule' : ''}
       data-workshop-lead={state.newsroomQuest.workshopLead ? 'true' : 'false'}
@@ -166,6 +169,7 @@ export default function App() {
         workshopStarted={state.map === 'workshop' || state.workshopQuest.briefed}
         servicePosted={state.workshopQuest.servicePosted}
         kioskReady={state.kioskQuest.kioskReady}
+        labReady={state.labQuest.labReady}
       />
       {naming ? (
         <NameEntry
@@ -349,6 +353,21 @@ export default function App() {
           onLookup={(slot) => dispatch({ type: 'KIOSK_LOOKUP', slot })}
           onCheck={(item) => dispatch({ type: 'KIOSK_CHECK', item })}
           onRobotDone={() => dispatch({ type: 'KIOSK_ROBOT_DONE' })}
+          onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+        />
+      ) : null}
+      {state.mode === 'lab' ? (
+        <LabOverlay
+          state={state}
+          onLs={() => dispatch({ type: 'LAB_LS' })}
+          onCat={(path) => dispatch({ type: 'LAB_CAT', path })}
+          onSelectLog={(log) => dispatch({ type: 'LAB_SELECT_LOG', log })}
+          onPatch={(file) => dispatch({ type: 'LAB_PATCH', file })}
+          onPublish={() => dispatch({ type: 'LAB_PUBLISH' })}
+          onLookup={() => dispatch({ type: 'LAB_LOOKUP' })}
+          onRefuse={(command) => dispatch({ type: 'LAB_REFUSE', command })}
+          onRobotDone={() => dispatch({ type: 'LAB_ROBOT_DONE' })}
+          onCmd={(text) => dispatch({ type: 'LAB_CMD', text })}
           onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
         />
       ) : null}
