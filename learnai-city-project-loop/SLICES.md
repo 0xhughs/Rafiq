@@ -34,7 +34,7 @@ Authorized target for this run: complete and independently accept slices **01–
 Current authorization: On 8 September 2026 the user asked to read the project files, start the loop, and complete each loop until the full website is fully built. That request adopts slices 01–17. Slice 18 remains outside the target. This checkout (`github.com/0xhughs/Rafiq`) is the implementation repository. The adventure is a separate Vite + React + TypeScript app under `app/`; joufbot/LearnAI is curriculum/reference only and is not modified.
 
 ## Run status
-Human required
+Running
 
 ## Open decisions
 - Product name, robot name and final art treatment: working title and visual baseline are provisional; settle before production-art approval. They do not block the opening prototype.
@@ -59,7 +59,7 @@ Failed release reviews for this target: 1
 Pending release result: none
 Release review events / last consumed dispatch:
 - ev-r001 / d-20260909-069-release / release / HUMAN_REQUIRED / candidate:b680867179a7973832bbe4e06a99a3f77a8cde3ede5a507902af9eee879e07c0 impl-contract:b760de08209f685da8d8418cebe7d8bf6536e8c722ec1b4a583809ae75849a2e current-contract:8eeede8266fadcb2ac14081f4648fe8b6fbdf8a6a6ea0e1a95c109be8574a8f7 / reviewer:bc-e1991baa-e3d7-59d5-851d-f7f92d807cea / RG01 pass-with-limits; RG02 fail (no e2e reload of unfinished later puzzle or issued ending); RG03 fail (Chrome/Linux only; Edge/Firefox/Safari/Windows/macOS not run); RG04 fail (no five-beginner pilot; leftover checkpoint copy); RG05 pass; RG06 pass-with-notes; RG07 pass; RG08 bookkeeping pass / last consumed: d-20260909-069-release
-Target slices 01–17 independently accepted. Now empty. Slice 18 preserved outside target. Shipped is not publication permission.
+Target slices 01–17 independently accepted. User Continue 2026-09-09 after PR #1 merge authorized in-authority repair R1 (RG02 resume e2e + leftover opening copy). RG03 matrix and RG04 beginner pilot still unmet. Now is R1. Slice 18 preserved outside target. Shipped is not publication permission.
 
 ## Curriculum translation
 The 34 IDs and Arabic titles below are taken from the actual [LearnAI curriculum](https://github.com/joufbot/LearnAI/blob/c4125df8c0490024715f21e21c78c9403e9cdf51/src/lib/curriculum.ts). The corresponding 34 Markdown lesson files were retrieved; their topics and teaching/exercise sections informed this map. This is a redesigned learning plan, not endorsement of every claim or product-specific statement in those lessons.
@@ -319,7 +319,14 @@ Approved candidate: `b680867179a7973832bbe4e06a99a3f77a8cde3ede5a507902af9eee879
 Implementation approval dispatch: `d-20260909-068-implrev-17`
 
 ## Now
-None — target complete
+### R1 Resume and leftover opening copy
+Goal: Close in-authority release-review gaps that do not require other browsers or a beginner pilot.
+Provides:
+- Save/reload of an unfinished later-arc puzzle and of the issued ending, with no duplicate credit or premature certificate.
+- Opening checkpoint copy that no longer says remaining puzzles are still in development.
+Depends on: 17
+Target membership: inside
+Out: slice 18 gameplay; claiming untested Windows/macOS/Firefox/Edge/Safari support; five-beginner usability pilot; publish/deploy.
 
 ## Later
 
