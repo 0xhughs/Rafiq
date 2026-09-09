@@ -111,6 +111,52 @@ input {
   display: none;
 }
 
+.banner {
+  width: 100%;
+  margin: 0 0 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-weight: 700;
+  pointer-events: auto;
+  overflow-wrap: anywhere;
+  z-index: 6;
+}
+
+.banner.warning {
+  background: #f6d6c8;
+  color: #7a241c;
+}
+
+.banner.restore {
+  background: #e7efd6;
+  color: #2a3b1c;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.banner-dismiss {
+  pointer-events: auto;
+}
+
+.journal-events {
+  margin: 0 0 16px;
+  padding-inline-start: 1.2rem;
+  overflow-wrap: anywhere;
+}
+
+.save-status {
+  font-weight: 700;
+  color: var(--teal-dark);
+}
+
+.journal-panel {
+  width: min(680px, 92vw);
+}
+
+
 .stage {
   position: absolute;
   inset: 0;

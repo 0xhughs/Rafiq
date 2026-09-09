@@ -70,7 +70,7 @@ export function NameEntry({ state, onDraft, onSubmit, onConfirm, onRevise }: Pro
           </form>
         )}
         <p className="dev-note" data-testid="dev-note">
-          ملاحظة تطوير: تحديث الصفحة يعيد هذه الشريحة من البداية. لا يوجد حفظ بعد.
+          الحفظ يبقى على هذا المتصفح فقط، ولا يُرسل اسمك إلى الشبكة.
         </p>
       </div>
     </div>

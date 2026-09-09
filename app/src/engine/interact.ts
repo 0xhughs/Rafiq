@@ -1,6 +1,15 @@
 import { HINT_LABELS, INTERACT_RANGE } from './constants';
-import { doorHint, FURNITURE, getMap, WORLD_POS } from './maps';
-import type { Actionable, GameState } from './types';
+import {
+  doorHint,
+  FURNITURE,
+  libraryDoorHint,
+  portalLetterPos,
+  portalsOnMap,
+  shopDoorHint,
+  WORLD_POS,
+} from './maps';
+import { neighborVisible, npcPosition, robotVisible, shopkeeperVisible } from './npc';
+import type { Actionable, GameState, InteractableId } from './types';
 
 function dist(ax: number, ay: number, bx: number, by: number): number {
   return Math.hypot(ax - bx, ay - by);
@@ -19,12 +28,7 @@ function distToRect(
   return Math.hypot(px - cx, py - cy);
 }
 
-export function robotPosition(state: GameState): { x: number; y: number } {
-  if (state.encounter === 'help_accepted') {
-    return { x: state.position.x - 32, y: state.position.y + 10 };
-  }
-  return WORLD_POS.robot;
-}
+export { robotPosition, robotVisible, isCompanion } from './npc';
 
 function itemDistance(state: GameState, item: Actionable): number {
   if (item.id === 'dumpster') {
@@ -34,9 +38,14 @@ function itemDistance(state: GameState, item: Actionable): number {
   return dist(state.position.x, state.position.y, item.x, item.y);
 }
 
+function portalHint(id: InteractableId, map: GameState['map']): string {
+  if (id === 'door') return doorHint(map);
+  if (id === 'shop_door') return shopDoorHint(map);
+  return libraryDoorHint(map);
+}
+
 export function listInteractables(state: GameState): Actionable[] {
   const items: Actionable[] = [];
-  const map = getMap(state.map);
 
   if (state.map === 'apartment' && state.trash === 'home') {
     items.push({
@@ -47,12 +56,15 @@ export function listInteractables(state: GameState): Actionable[] {
     });
   }
 
-  items.push({
-    id: 'door',
-    label: doorHint(state.map),
-    x: map.door.x,
-    y: map.door.y,
-  });
+  for (const { portal, end } of portalsOnMap(state.map)) {
+    const pos = portalLetterPos(end.map, end.letter);
+    items.push({
+      id: portal.interactable,
+      label: portalHint(portal.interactable, state.map),
+      x: pos.x,
+      y: pos.y,
+    });
+  }
 
   if (state.map === 'street' && state.trash === 'carried') {
     items.push({
@@ -63,16 +75,42 @@ export function listInteractables(state: GameState): Actionable[] {
     });
   }
 
-  const robotVisible =
-    state.encounter !== 'unseen' &&
-    (state.map === 'street' || state.encounter === 'help_accepted');
-  if (robotVisible) {
-    const robot = robotPosition(state);
+  if (robotVisible(state)) {
+    const robot = npcPosition(state, 'robot');
     items.push({
       id: 'robot',
       label: HINT_LABELS.robot,
       x: robot.x,
       y: robot.y,
+    });
+  }
+
+  if (neighborVisible(state)) {
+    const neighbor = npcPosition(state, 'neighbor');
+    items.push({
+      id: 'neighbor',
+      label: HINT_LABELS.neighbor,
+      x: neighbor.x,
+      y: neighbor.y,
+    });
+  }
+
+  if (shopkeeperVisible(state)) {
+    const keeper = npcPosition(state, 'shopkeeper');
+    items.push({
+      id: 'shopkeeper',
+      label: HINT_LABELS.shopkeeper,
+      x: keeper.x,
+      y: keeper.y,
+    });
+  }
+
+  if (state.map === 'library') {
+    items.push({
+      id: 'library_inner',
+      label: HINT_LABELS.libraryInner,
+      x: WORLD_POS.libraryInner.x,
+      y: WORLD_POS.libraryInner.y,
     });
   }
 
@@ -92,4 +130,3 @@ export function getActionable(state: GameState): Actionable | null {
   }
   return best;
 }
-

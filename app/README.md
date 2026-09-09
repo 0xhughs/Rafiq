@@ -1,4 +1,4 @@
-# Rafiq (slice 01)
+# Rafiq (slice 02)
 
 Vite + React + TypeScript app for **رفيق — جواز إلى مدينة الذكاء الاصطناعي**.
 
@@ -10,4 +10,4 @@ npm install
 npm run dev
 ```
 
-See the root `README.md` for test and build commands.
+See the root `README.md` for test and build commands. Local save key: `rafiq.adventure.v1`.

@@ -7,8 +7,8 @@ export function CheckpointNote({ visible }: Props) {
   return (
     <aside className="checkpoint" data-testid="slice-checkpoint">
       <p>
-        رفيق أصبح رفيقك في الحي. الهدف التالي: المتجر عند الزاوية. بقية أحداث المغامرة ما زالت قيد
-        التطوير.
+        رفيق أصبح رفيقك في الحي. البقالة عند الزاوية مفتوحة الآن، وبعدها واجهة المكتبة. بقية ألغاز
+        المغامرة ما زالت قيد التطوير.
       </p>
     </aside>
   );

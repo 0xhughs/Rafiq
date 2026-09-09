@@ -1,6 +1,6 @@
 import { TILE } from '../engine/constants';
-import { robotPosition } from '../engine/interact';
-import { APARTMENT, FURNITURE, STREET, WORLD_POS, getMap } from '../engine/maps';
+import { robotPosition, robotVisible } from '../engine/npc';
+import { APARTMENT, FURNITURE, LIBRARY, SHOP, STREET, WORLD_POS, getMap } from '../engine/maps';
 import type { Facing, GameState } from '../engine/types';
 
 const PALETTE = {
@@ -29,6 +29,15 @@ const PALETTE = {
   dumpsterLid: '#3d5a30',
   rust: '#b85a2a',
   shop: '#6d4c3d',
+  shopOpen: '#3d6b4f',
+  library: '#4a5d78',
+  libraryDoor: '#2c3a4f',
+  counter: '#7a4a2a',
+  shelf: '#5c4030',
+  plaza: '#cbb896',
+  plazaAlt: '#c3af88',
+  neighborDress: '#8b3a4a',
+  keeperApron: '#3d5c4a',
   shutter: '#3f3a36',
   playerShirt: '#1f4e5f',
   playerPants: '#d8c3a5',
@@ -164,7 +173,7 @@ function drawApartment(ctx: CanvasRenderingContext2D): void {
   ctx.fill();
 }
 
-function drawStreet(ctx: CanvasRenderingContext2D): void {
+function drawStreet(ctx: CanvasRenderingContext2D, storeOpen: boolean): void {
   const map = STREET;
   drawChecker(ctx, map.cols, map.rows, PALETTE.street, PALETTE.streetAlt);
   drawWalls(ctx, FURNITURE.street.walls);
@@ -187,7 +196,19 @@ function drawStreet(ctx: CanvasRenderingContext2D): void {
   ctx.textAlign = 'center';
   ctx.fillText('بقالة الزاوية', shop.x + shop.w / 2, shop.y - 8);
   ctx.font = '10px "Cairo", sans-serif';
-  ctx.fillText('مغلق', shop.x + shop.w / 2, shop.y + 12);
+  ctx.fillStyle = storeOpen ? PALETTE.shopOpen : '#2a2118';
+  ctx.fillText(storeOpen ? 'مفتوح' : 'مغلق', shop.x + shop.w / 2, shop.y + 12);
+
+  const lib = FURNITURE.street.library;
+  fillRound(ctx, lib.x, lib.y, lib.w, lib.h, 4, PALETTE.library);
+  ctx.fillStyle = '#d7c4a3';
+  ctx.fillRect(lib.x + 6, lib.y - 22, lib.w - 12, 20);
+  ctx.fillStyle = '#1e2733';
+  ctx.font = '12px "Noto Naskh Arabic", "Cairo", sans-serif';
+  ctx.fillText('واجهة المكتبة', lib.x + lib.w / 2, lib.y - 8);
+  fillRound(ctx, WORLD_POS.libraryDoor.x - 10, WORLD_POS.libraryDoor.y - 18, 20, 36, 4, PALETTE.libraryDoor);
+
+  fillRound(ctx, WORLD_POS.shopDoor.x - 10, WORLD_POS.shopDoor.y - 18, 20, 36, 4, '#8a4b2a');
 
   const dump = FURNITURE.street.dumpster;
   fillRound(ctx, dump.x + 4, dump.y + 10, dump.w - 8, dump.h - 14, 8, PALETTE.dumpster);
@@ -205,6 +226,78 @@ function drawStreet(ctx: CanvasRenderingContext2D): void {
 
   const door = map.door;
   fillRound(ctx, door.x - 10, door.y - 22, 20, 44, 4, '#8a4b2a');
+}
+
+function drawShopInterior(ctx: CanvasRenderingContext2D): void {
+  const map = SHOP;
+  drawChecker(ctx, map.cols, map.rows, '#f0e0c8', '#e7d4b6');
+  drawWalls(ctx, FURNITURE.shop.walls);
+  for (const shelf of FURNITURE.shop.shelves) {
+    fillRound(ctx, shelf.x + 4, shelf.y + 4, shelf.w - 8, shelf.h - 8, 4, PALETTE.shelf);
+    ctx.fillStyle = '#d9c4a4';
+    ctx.fillRect(shelf.x + 10, shelf.y + 12, shelf.w - 20, 6);
+    ctx.fillRect(shelf.x + 10, shelf.y + 24, shelf.w - 20, 6);
+  }
+  const counter = FURNITURE.shop.counter;
+  fillRound(ctx, counter.x + 2, counter.y + 6, counter.w - 4, counter.h - 10, 6, PALETTE.counter);
+  ctx.fillStyle = '#2a2118';
+  ctx.font = '11px "Noto Naskh Arabic", "Cairo", sans-serif';
+  ctx.direction = 'rtl';
+  ctx.textAlign = 'center';
+  ctx.fillText('البقالة', counter.x + counter.w / 2, counter.y + 20);
+  const door = map.door;
+  fillRound(ctx, door.x - 10, door.y - 22, 20, 44, 4, '#8a4b2a');
+}
+
+function drawLibraryExterior(ctx: CanvasRenderingContext2D): void {
+  const map = LIBRARY;
+  drawChecker(ctx, map.cols, map.rows, PALETTE.plaza, PALETTE.plazaAlt);
+  drawWalls(ctx, FURNITURE.library.walls);
+  const building = FURNITURE.library.building;
+  fillRound(ctx, building.x, building.y, building.w, building.h, 6, PALETTE.library);
+  ctx.fillStyle = '#ead9c0';
+  ctx.fillRect(building.x + 10, building.y - 18, building.w - 20, 18);
+  ctx.fillStyle = '#15202c';
+  ctx.font = '13px "Noto Naskh Arabic", "Cairo", sans-serif';
+  ctx.direction = 'rtl';
+  ctx.textAlign = 'center';
+  ctx.fillText('واجهة المكتبة', building.x + building.w / 2, building.y - 5);
+  ctx.fillStyle = '#8fb4c9';
+  ctx.fillRect(building.x + 16, building.y + 18, 22, 28);
+  ctx.fillRect(building.x + building.w / 2 - 11, building.y + 18, 22, 28);
+  ctx.fillRect(building.x + building.w - 38, building.y + 18, 22, 28);
+  const inner = WORLD_POS.libraryInner;
+  fillRound(ctx, inner.x - 12, inner.y - 20, 24, 40, 4, '#243044');
+  ctx.fillStyle = '#d4b56a';
+  ctx.beginPath();
+  ctx.arc(inner.x + 6, inner.y, 3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#15202c';
+  ctx.font = '10px "Cairo", sans-serif';
+  ctx.fillText('مقفل', inner.x, inner.y + 28);
+  const door = map.door;
+  fillRound(ctx, door.x - 10, door.y - 22, 20, 44, 4, '#8a4b2a');
+}
+
+function drawVillager(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  shirt: string,
+): void {
+  ctx.fillStyle = PALETTE.shadow;
+  ctx.beginPath();
+  ctx.ellipse(x, y + 16, 12, 5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  fillRound(ctx, x - 10, y - 2, 20, 18, 6, shirt);
+  ctx.fillStyle = PALETTE.skin;
+  ctx.beginPath();
+  ctx.arc(x, y - 10, 8, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#3b2418';
+  ctx.beginPath();
+  ctx.ellipse(x, y - 14, 8, 5, 0, Math.PI, 0);
+  ctx.fill();
 }
 
 function drawTrashBag(ctx: CanvasRenderingContext2D, x: number, y: number): void {
@@ -314,10 +407,16 @@ export function drawWorld(ctx: CanvasRenderingContext2D, state: GameState, time:
     if (state.trash === 'home') {
       drawTrashBag(ctx, WORLD_POS.trash.x, WORLD_POS.trash.y);
     }
+  } else if (state.map === 'street') {
+    drawStreet(ctx, state.encounter === 'help_accepted');
+    drawVillager(ctx, WORLD_POS.neighbor.x, WORLD_POS.neighbor.y, PALETTE.neighborDress);
+  } else if (state.map === 'shop') {
+    drawShopInterior(ctx);
+    drawVillager(ctx, WORLD_POS.shopkeeper.x, WORLD_POS.shopkeeper.y, PALETTE.keeperApron);
   } else {
-    drawStreet(ctx);
+    drawLibraryExterior(ctx);
   }
-  if (state.encounter !== 'unseen') {
+  if (robotVisible(state)) {
     const robot = robotPosition(state);
     drawRobot(ctx, robot.x, robot.y, time, state.encounter === 'help_accepted');
   }

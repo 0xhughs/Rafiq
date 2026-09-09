@@ -2,8 +2,9 @@ import { useEffect, useReducer, useRef } from 'react';
 import { PLAYER_SPEED } from './engine/constants';
 import { currentLine } from './engine/dialogue';
 import { InputController } from './engine/input';
-import { createInitialState, reduce, serializeState } from './engine/state';
-import type { GameAction } from './engine/types';
+import { bootState, serializeState, stepGame } from './engine/state';
+import { browserStore } from './engine/save';
+import type { GameAction, GameState } from './engine/types';
 import { WorldCanvas } from './render/WorldCanvas';
 import { CheckpointNote } from './ui/CheckpointNote';
 import { DialogueOverlay } from './ui/DialogueOverlay';
@@ -11,8 +12,12 @@ import { Hud } from './ui/Hud';
 import { NameEntry } from './ui/NameEntry';
 import { PauseHelp } from './ui/PauseHelp';
 
+function reducer(state: GameState, action: GameAction): GameState {
+  return stepGame(browserStore, state, action);
+}
+
 export default function App() {
-  const [state, dispatch] = useReducer(reduce, undefined, createInitialState);
+  const [state, dispatch] = useReducer(reducer, undefined, () => bootState(browserStore));
   const stateRef = useRef(state);
   stateRef.current = state;
   const rootRef = useRef<HTMLDivElement>(null);
@@ -104,8 +109,13 @@ export default function App() {
       data-trash={state.trash}
       data-encounter={state.encounter}
       data-dialogue={state.dialogueNode ?? ''}
+      data-save={state.saveStatus}
     >
-      <Hud state={state} onHelp={() => dispatch({ type: 'OPEN_HELP' })} />
+      <Hud
+        state={state}
+        onHelp={() => dispatch({ type: 'OPEN_HELP' })}
+        onDismissRestore={() => dispatch({ type: 'DISMISS_RESTORE_NOTICE' })}
+      />
       <WorldCanvas state={state} />
       <CheckpointNote visible={state.checkpointReached} />
       {naming ? (
@@ -121,12 +131,16 @@ export default function App() {
         <DialogueOverlay
           state={state}
           onAdvance={() => dispatch({ type: 'ADVANCE_DIALOGUE' })}
-          onAgree={() => dispatch({ type: 'CHOOSE', choice: 'agree' })}
-          onPostpone={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+          onChoose={(choice) => dispatch({ type: 'CHOOSE', choice })}
+          onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
         />
       ) : null}
       {state.mode === 'paused' ? (
-        <PauseHelp state={state} onResume={() => dispatch({ type: 'CLOSE_OVERLAY' })} />
+        <PauseHelp
+          state={state}
+          onResume={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+          onNewAdventure={() => dispatch({ type: 'CONFIRM_NEW_ADVENTURE' })}
+        />
       ) : null}
     </div>
   );

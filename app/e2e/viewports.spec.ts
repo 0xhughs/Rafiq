@@ -21,6 +21,9 @@ for (const viewport of viewports) {
       const overlay = page.getByTestId('pause-overlay');
       await expect(overlay).toBeVisible();
       await expect(page.getByTestId('help-objective')).toBeVisible();
+      await expect(page.getByTestId('journal-lead')).toBeVisible();
+      await expect(page.getByTestId('journal-events')).toBeVisible();
+      await expect(overlay).toHaveCSS('direction', 'rtl');
       const box = await overlay.locator('.panel').boundingBox();
       expect(box).not.toBeNull();
       if (box) {
@@ -30,6 +33,8 @@ for (const viewport of viewports) {
         expect(box.y + box.height).toBeLessThanOrEqual(viewport.height + 1);
       }
       await expect(page.getByTestId('help-objective')).toContainText('كيس القمامة');
+      await expect(page.getByTestId('journal-lead')).toContainText('كيس القمامة');
+      await expect(page.getByTestId('help-controls')).toContainText('WASD');
       await page.getByTestId('resume-button').click();
       await expect(page.getByTestId('pause-overlay')).toHaveCount(0);
       expect(errors, errors.join('\n')).toEqual([]);

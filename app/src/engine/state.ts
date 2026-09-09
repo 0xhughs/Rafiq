@@ -1,9 +1,25 @@
 import { facingFrom, tryMove } from './collision';
-import { DIALOGUE, OBJECTIVES } from './dialogue';
+import {
+  DIALOGUE,
+  isLockedNode,
+  OBJECTIVES,
+  recordEvent,
+  visitMap,
+} from './dialogue';
+import { grantItem, removeItem } from './inventory';
 import { getActionable, listInteractables } from './interact';
-import { APARTMENT, STREET } from './maps';
+import { APARTMENT, destinationOf, PORTALS } from './maps';
 import { validateName } from './names';
-import type { GameAction, GameState, SerializedTestState } from './types';
+import { openNpc } from './npc';
+import { clearRafiqKeys, loadAdventure, persistAdventure, shouldPersist } from './save';
+import type {
+  DialogueChoiceId,
+  GameAction,
+  GameState,
+  KeyValueStore,
+  PortalId,
+  SerializedTestState,
+} from './types';
 
 export function createInitialState(): GameState {
   return {
@@ -20,7 +36,28 @@ export function createInitialState(): GameState {
     conversationSeen: false,
     storyObjective: OBJECTIVES.takeTrash,
     checkpointReached: false,
+    inventory: [],
+    neighbor: 'unmet',
+    shopkeeper: 'unmet',
+    journalEvents: [],
+    evidence: {},
+    endingState: 'in_progress',
+    mapsVisited: [],
+    saveStatus: 'absent',
+    restoreNotice: false,
   };
+}
+
+export function bootState(store: KeyValueStore): GameState {
+  const loaded = loadAdventure(store);
+  if (loaded.status === 'ok' || loaded.status === 'recovered') {
+    return loaded.state;
+  }
+  const initial = createInitialState();
+  if (loaded.status === 'unavailable') {
+    return { ...initial, saveStatus: 'unavailable' };
+  }
+  return initial;
 }
 
 function pickup(state: GameState): GameState {
@@ -28,26 +65,32 @@ function pickup(state: GameState): GameState {
   return {
     ...state,
     trash: 'carried',
+    inventory: grantItem(state.inventory, 'trash_bag'),
     mode: 'dialogue',
     dialogueNode: 'pickup_leaving',
     storyObjective: OBJECTIVES.carryOut,
+    journalEvents: recordEvent(state.journalEvents, 'pickup'),
   };
 }
 
-function goThroughDoor(state: GameState): GameState {
-  if (state.map === 'apartment') {
-    return {
-      ...state,
-      map: 'street',
-      position: { x: STREET.entryFromOther.x, y: STREET.entryFromOther.y },
-      facing: 'right',
-    };
+function goThroughPortal(state: GameState, portalId: PortalId): GameState {
+  const portal = PORTALS.find((item) => item.id === portalId);
+  if (!portal) return state;
+  if (portal.requiresHelp && state.encounter !== 'help_accepted') {
+    if (!portal.lockedNode) return state;
+    return { ...state, mode: 'dialogue', dialogueNode: portal.lockedNode };
   }
+  const dest = destinationOf(portal, state.map);
+  let events = state.journalEvents;
+  if (dest.map === 'shop') events = recordEvent(events, 'shop_visit');
+  if (dest.map === 'library') events = recordEvent(events, 'library_visit');
   return {
     ...state,
-    map: 'apartment',
-    position: { x: APARTMENT.entryFromOther.x, y: APARTMENT.entryFromOther.y },
-    facing: 'left',
+    map: dest.map,
+    position: { x: dest.position.x, y: dest.position.y },
+    facing: dest.facing,
+    mapsVisited: visitMap(state.mapsVisited, dest.map),
+    journalEvents: events,
   };
 }
 
@@ -57,32 +100,50 @@ function dispose(state: GameState): GameState {
   return {
     ...state,
     trash: 'disposed',
+    inventory: removeItem(state.inventory, 'trash_bag'),
     encounter,
     storyObjective:
       encounter === 'help_accepted' ? state.storyObjective : OBJECTIVES.inspectRobot,
+    journalEvents: recordEvent(state.journalEvents, 'disposal'),
   };
 }
 
-function talkRobot(state: GameState): GameState {
-  if (state.encounter === 'unseen') return state;
-  if (state.encounter === 'help_accepted') {
-    return {
-      ...state,
-      mode: 'dialogue',
-      dialogueNode: 'companion_revisit',
-    };
-  }
+function postponeNpc(state: GameState): GameState {
   return {
     ...state,
-    encounter: 'talking',
-    mode: 'dialogue',
-    dialogueNode: state.conversationSeen ? 'ask_help' : 'discover',
+    mode: 'playing',
+    dialogueNode: null,
+    neighbor: state.neighbor === 'greeted' ? 'greeted' : 'unmet',
+    shopkeeper: state.shopkeeper === 'greeted' ? 'greeted' : 'unmet',
   };
 }
 
 function closeDialogue(state: GameState): GameState {
-  if (state.dialogueNode === 'pickup_leaving') {
+  if (state.dialogueNode === 'pickup_leaving' || isLockedNode(state.dialogueNode)) {
     return { ...state, mode: 'playing', dialogueNode: null };
+  }
+  if (state.dialogueNode === 'neighbor_thanks') {
+    return {
+      ...state,
+      mode: 'playing',
+      dialogueNode: null,
+      neighbor: 'greeted',
+      journalEvents: recordEvent(state.journalEvents, 'neighbor_greeting'),
+    };
+  }
+  if (
+    state.dialogueNode === 'shopkeeper_hello' ||
+    state.dialogueNode === 'shopkeeper_revisit'
+  ) {
+    return {
+      ...state,
+      mode: 'playing',
+      dialogueNode: null,
+      shopkeeper: 'greeted',
+    };
+  }
+  if (state.dialogueNode?.startsWith('neighbor')) {
+    return postponeNpc(state);
   }
   if (state.encounter === 'help_accepted') {
     return {
@@ -91,6 +152,7 @@ function closeDialogue(state: GameState): GameState {
       dialogueNode: null,
       checkpointReached: true,
       storyObjective: OBJECTIVES.cornerStore,
+      journalEvents: recordEvent(state.journalEvents, 'help_accepted'),
     };
   }
   if (state.encounter === 'talking') {
@@ -125,34 +187,52 @@ function advanceDialogue(state: GameState): GameState {
       encounter: 'help_accepted',
       checkpointReached: true,
       storyObjective: OBJECTIVES.cornerStore,
+      journalEvents: recordEvent(state.journalEvents, 'help_accepted'),
     };
   }
-  return { ...state, mode: 'playing', dialogueNode: null };
+  return closeDialogue(state);
 }
 
-function choose(state: GameState, choice: 'agree' | 'postpone'): GameState {
-  if (state.mode !== 'dialogue' || state.dialogueNode !== 'ask_help') {
+function choose(state: GameState, choice: DialogueChoiceId): GameState {
+  if (state.mode !== 'dialogue') return state;
+  if (state.dialogueNode === 'ask_help') {
+    if (choice === 'postpone' || choice === 'npc_postpone') {
+      return {
+        ...state,
+        mode: 'playing',
+        dialogueNode: null,
+        encounter: 'available',
+        conversationSeen: true,
+        storyObjective: OBJECTIVES.talkRobot,
+      };
+    }
+    if (choice === 'agree' && state.encounter === 'talking') {
+      return {
+        ...state,
+        dialogueNode: 'agree',
+        encounter: 'help_accepted',
+        conversationSeen: true,
+        checkpointReached: true,
+        storyObjective: OBJECTIVES.cornerStore,
+        journalEvents: recordEvent(state.journalEvents, 'help_accepted'),
+      };
+    }
     return state;
   }
-  if (choice === 'postpone') {
-    return {
-      ...state,
-      mode: 'playing',
-      dialogueNode: null,
-      encounter: 'available',
-      conversationSeen: true,
-      storyObjective: OBJECTIVES.talkRobot,
-    };
+  if (state.dialogueNode === 'neighbor_pointer') {
+    if (choice === 'postpone' || choice === 'npc_postpone') {
+      return postponeNpc(state);
+    }
+    if (choice === 'npc_thanks' || choice === 'agree') {
+      return {
+        ...state,
+        dialogueNode: 'neighbor_thanks',
+        neighbor: 'greeted',
+        journalEvents: recordEvent(state.journalEvents, 'neighbor_greeting'),
+      };
+    }
   }
-  if (state.encounter !== 'talking') return state;
-  return {
-    ...state,
-    dialogueNode: 'agree',
-    encounter: 'help_accepted',
-    conversationSeen: true,
-    checkpointReached: true,
-    storyObjective: OBJECTIVES.cornerStore,
-  };
+  return state;
 }
 
 export function reduce(state: GameState, action: GameAction): GameState {
@@ -192,6 +272,14 @@ export function reduce(state: GameState, action: GameAction): GameState {
         conversationSeen: false,
         checkpointReached: false,
         storyObjective: OBJECTIVES.takeTrash,
+        inventory: [],
+        neighbor: 'unmet',
+        shopkeeper: 'unmet',
+        journalEvents: [],
+        evidence: {},
+        endingState: 'in_progress',
+        mapsVisited: ['apartment'],
+        restoreNotice: false,
       };
     case 'MOVE': {
       if (state.mode !== 'playing') return state;
@@ -217,11 +305,21 @@ export function reduce(state: GameState, action: GameAction): GameState {
         case 'trash':
           return pickup(state);
         case 'door':
-          return goThroughDoor(state);
+          return goThroughPortal(state, 'home');
+        case 'shop_door':
+          return goThroughPortal(state, 'shop');
+        case 'library_door':
+          return goThroughPortal(state, 'library');
         case 'dumpster':
           return dispose(state);
         case 'robot':
-          return talkRobot(state);
+          return openNpc(state, 'robot');
+        case 'neighbor':
+          return openNpc(state, 'neighbor');
+        case 'shopkeeper':
+          return openNpc(state, 'shopkeeper');
+        case 'library_inner':
+          return { ...state, mode: 'dialogue', dialogueNode: 'library_inner_locked' };
         default:
           return state;
       }
@@ -244,6 +342,10 @@ export function reduce(state: GameState, action: GameAction): GameState {
       if (state.mode === 'paused') return { ...state, mode: 'playing' };
       if (state.mode === 'playing') return { ...state, mode: 'paused' };
       return state;
+    case 'CONFIRM_NEW_ADVENTURE':
+      return createInitialState();
+    case 'DISMISS_RESTORE_NOTICE':
+      return { ...state, restoreNotice: false };
     case 'DEBUG_TELEPORT':
       return {
         ...state,
@@ -253,6 +355,18 @@ export function reduce(state: GameState, action: GameAction): GameState {
     default:
       return state;
   }
+}
+
+export function stepGame(store: KeyValueStore, state: GameState, action: GameAction): GameState {
+  if (action.type === 'CONFIRM_NEW_ADVENTURE') {
+    clearRafiqKeys(store);
+    return createInitialState();
+  }
+  const next = reduce(state, action);
+  if (shouldPersist(state, next, action)) {
+    return persistAdventure(store, next);
+  }
+  return next;
 }
 
 export function serializeState(state: GameState): SerializedTestState {
@@ -270,6 +384,15 @@ export function serializeState(state: GameState): SerializedTestState {
     checkpointReached: state.checkpointReached,
     nearby: getActionable(state),
     interactables: listInteractables(state),
+    inventory: [...state.inventory],
+    neighbor: state.neighbor,
+    shopkeeper: state.shopkeeper,
+    journalEvents: [...state.journalEvents],
+    mapsVisited: [...state.mapsVisited],
+    saveStatus: state.saveStatus,
+    restoreNotice: state.restoreNotice,
+    endingState: state.endingState,
+    companion: state.encounter === 'help_accepted',
   };
 }
 

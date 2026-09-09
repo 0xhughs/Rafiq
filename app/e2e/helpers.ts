@@ -1,4 +1,5 @@
 import { expect, type Page } from '@playwright/test';
+import { WORLD_POS } from '../src/engine/maps';
 import type { MapId, SerializedTestState } from '../src/engine/types';
 
 export async function waitForGame(page: Page): Promise<void> {
@@ -70,6 +71,24 @@ export async function advanceUntilChoices(page: Page): Promise<void> {
   }
 }
 
+export async function playToHelpAccepted(page: Page, name = 'علي حسن'): Promise<void> {
+  await startAdventure(page, name);
+  await interactAt(page, 'apartment', WORLD_POS.trash.x, WORLD_POS.trash.y);
+  const leaving = page.getByTestId('dialogue-advance');
+  if (await leaving.isVisible()) {
+    await leaving.click();
+  }
+  await interactAt(page, 'apartment', WORLD_POS.apartmentDoor.x, WORLD_POS.apartmentDoor.y);
+  await interactAt(page, 'street', WORLD_POS.dumpsterApproach.x, WORLD_POS.dumpsterApproach.y);
+  await interactAt(page, 'street', WORLD_POS.robot.x, WORLD_POS.robot.y);
+  await advanceUntilChoices(page);
+  await page.getByTestId('dialogue-agree').click();
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-encounter', 'help_accepted');
+  await page.getByTestId('dialogue-advance').click();
+  await page.getByTestId('dialogue-advance').click();
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-mode', 'playing');
+}
+
 export async function assertNoLessonUi(page: Page): Promise<void> {
   await expect(page.getByTestId('lesson')).toHaveCount(0);
   await expect(page.getByTestId('exam')).toHaveCount(0);
@@ -90,4 +109,12 @@ export function collectPageErrors(page: Page): string[] {
     }
   });
   return errors;
+}
+
+export function collectConsoleText(page: Page): string[] {
+  const lines: string[] = [];
+  page.on('console', (message) => {
+    lines.push(message.text());
+  });
+  return lines;
 }

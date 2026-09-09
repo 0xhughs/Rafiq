@@ -1,18 +1,54 @@
+import { RESTORE_NOTICE, STORAGE_WARNING } from '../engine/constants';
+import { hasItem } from '../engine/inventory';
 import { getActionable } from '../engine/interact';
 import type { GameState } from '../engine/types';
 
 interface Props {
   state: GameState;
   onHelp: () => void;
+  onDismissRestore: () => void;
 }
 
-export function Hud({ state, onHelp }: Props) {
+function Banners({
+  state,
+  onDismissRestore,
+}: {
+  state: GameState;
+  onDismissRestore: () => void;
+}) {
+  return (
+    <>
+      {state.saveStatus === 'unavailable' ? (
+        <p className="banner warning" data-testid="storage-warning" role="status">
+          {STORAGE_WARNING}
+        </p>
+      ) : null}
+      {state.restoreNotice ? (
+        <p className="banner restore" data-testid="save-recovered" role="status">
+          {RESTORE_NOTICE}
+          <button type="button" className="ghost banner-dismiss" onClick={onDismissRestore}>
+            حسناً
+          </button>
+        </p>
+      ) : null}
+    </>
+  );
+}
+
+export function Hud({ state, onHelp, onDismissRestore }: Props) {
   if (state.mode === 'name_entry' || state.mode === 'confirm_name') {
-    return null;
+    if (state.saveStatus !== 'unavailable' && !state.restoreNotice) return null;
+    return (
+      <header className="hud" data-testid="hud-banners">
+        <Banners state={state} onDismissRestore={onDismissRestore} />
+      </header>
+    );
   }
   const nearby = getActionable(state);
+  const carrying = hasItem(state.inventory, 'trash_bag') || state.trash === 'carried';
   return (
     <header className="hud" data-testid="hud">
+      <Banners state={state} onDismissRestore={onDismissRestore} />
       <div className="hud-main">
         <p className="hud-kicker">رفيق</p>
         <p className="hud-objective" data-testid="hud-objective">
@@ -22,9 +58,9 @@ export function Hud({ state, onHelp }: Props) {
       <div
         className="inventory"
         data-testid="inventory"
-        data-carried={state.trash === 'carried' ? 'true' : 'false'}
+        data-carried={carrying ? 'true' : 'false'}
       >
-        {state.trash === 'carried' ? 'كيس القمامة' : 'لا يوجد شيء محمول'}
+        {carrying ? 'كيس القمامة' : 'لا يوجد شيء محمول'}
       </div>
       <button type="button" className="ghost hud-help" data-testid="help-button" onClick={onHelp}>
         دفتر / مساعدة
