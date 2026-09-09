@@ -231,7 +231,6 @@ Approved contract: `0e6d7f4d7cc607b401b35ab541646c8ae3ca5cf9bf271461fcc1b604d3ad
 Approved candidate: `4849c5ae734e5476a7d86cfc2bd98cf8b013c9b5c3a53883eb867e4921cf1fdc`
 Implementation approval dispatch: `d-20260909-040-implrev-10`
 
-## Now
 ### 11 Give the robot a bounded job
 Goal: Turn the robot's plan into supervised action with visible limits.
 Provides:
@@ -239,9 +238,12 @@ Provides:
 - Visible planning-core restoration without implying perfect judgment. Covers 5.1, 5.2 and harness.
 Depends on: 10
 Target membership: inside
+Archive: `slices/11-give-the-robot-a-bounded-job.md`
+Approved contract: `d3177010296a62ed75ad2e9d5a3d03a0524bc7ee0bf315d7f134242c5cc6e6d9`
+Approved candidate: `4f375e9d461727666a465d2f9de132e3fbed7ab4a422f526fb4b3851a15e57ea`
+Implementation approval dispatch: `d-20260909-044-implrev-11`
 
-## Later
-
+## Now
 ### 12 The bridge between systems
 Goal: Connect the robot to a narrowly permitted civic information service.
 Provides:
@@ -249,6 +251,8 @@ Provides:
 - A contrasting browser interaction and explicit denied/missing-capability recovery. Covers 5.3 and MCP.
 Depends on: 11
 Target membership: inside
+
+## Later
 
 ### 13 A skill worth repeating
 Goal: Make a corrected procedure reusable and run it only when intended.
