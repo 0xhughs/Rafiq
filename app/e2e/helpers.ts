@@ -4,7 +4,7 @@ import type { GameAction, MapId, SerializedTestState } from '../src/engine/types
 
 export async function waitForGame(page: Page): Promise<void> {
   await page.waitForFunction(() => Boolean(window.__RAFIQ_TEST__));
-  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '13');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '14');
 }
 
 export async function getState(page: Page): Promise<SerializedTestState> {
@@ -574,4 +574,36 @@ export async function playToBridgeDone(page: Page, name = 'علي حسن'): Prom
   expect(done.evidence['5.5']).toBeUndefined();
   expect(done.evidence['5.6']).toBeUndefined();
   expect(done.skillQuest.skillReady).toBe(false);
+}
+
+export async function playToSkillDone(page: Page, name = 'علي حسن'): Promise<void> {
+  await playToBridgeDone(page, name);
+  await interactAt(page, 'workshop', WORLD_POS.skillBench.x, WORLD_POS.skillBench.y);
+  await page.getByTestId('skill-oneshot').click();
+  await page.getByTestId('skill-correct').click();
+  await page.getByTestId('skill-standing').click();
+  await page.getByTestId('skill-trigger-hours').click();
+  await page.getByTestId('skill-input-record').click();
+  await page.getByTestId('skill-steps-lookup-format').click();
+  await page.getByTestId('skill-output-draft').click();
+  await page.getByTestId('skill-stop-unknown').click();
+  await page.getByTestId('skill-save').click();
+  await page.getByTestId('skill-trial-second').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'workshop', WORLD_POS.skillClock.x, WORLD_POS.skillClock.y);
+  await page.getByTestId('skill-schedule-sun8').click();
+  await page.getByTestId('skill-arm').click();
+  await page.getByTestId('skill-tick-sun8').click();
+  await page.getByTestId('skill-pause').click();
+  await page.getByTestId('skill-tick-sun8').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  const done = await getState(page);
+  expect(done.evidence['5.5']).toBe('demonstrated');
+  expect(done.evidence['5.6']).toBe('demonstrated');
+  expect(done.skillQuest.skillReady).toBe(true);
+  expect(done.evidence['5.7']).toBeUndefined();
+  expect(done.evidence['6.3']).toBeUndefined();
+  expect(done.approvalQuest.approvalReady).toBe(false);
 }

@@ -53,7 +53,7 @@ test('agent-success through civic connector with physical actions', async ({ pag
   expect(afterAgent.bridgeQuest.bridgeReady).toBe(false);
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-agent-ready', 'true');
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-bridge-ready', 'false');
-  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '13');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '14');
   await expect(page.getByTestId('hud-objective')).toHaveText(OBJECTIVES.bridgeWork);
   await expect(page.getByTestId('planning-core')).toHaveText('نواة التخطيط');
 

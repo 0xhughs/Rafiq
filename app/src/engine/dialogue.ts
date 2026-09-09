@@ -52,6 +52,10 @@ export const OBJECTIVES = {
   skillWork:
     'منصة المهارة مفتوحة: صحّح الإجراء، احفظه بخطوات، جرّبه على سجل ثانٍ، ثم جدول الروتين وألبثه.',
   skillReady: 'حُفظت مهارة ساعات القاعة ورُتّب روتين يمكن إيقافه. مدير الورشة شكرك.',
+  approvalWork:
+    'منصة الموافقة مفتوحة: راجع إرسال النشرة، ارفض الخاطئ ووافق على المصحح، ثم أبقِ قرار العيادة عندك.',
+  approvalReady:
+    'وُوفق على إرسال النشرة المصحح، وبقي قرار العيادة عند إنسان. مدير الورشة شكرك.',
 } as const;
 
 export const SPEAKER = {
@@ -132,6 +136,12 @@ export const JOURNAL_TEXT: Record<JournalEventId, string> = {
   routine_fired: 'شُغّلت مهارة تلخيص ساعات القاعة ووُضعت المسودة في الدرج.',
   routine_paused: 'أُلبث الروتين فلم تُكتب مسودة جديدة.',
   skill_ready: 'حُفظت مهارة ساعات القاعة ورُتّب روتين يمكن إيقافه.',
+  approve_opened: 'فتحتَ منصة الموافقة ومكتب القرار في الورشة.',
+  send_rejected: 'رُفض إرسال خاطئ قبل الموافقة على النشرة المصححة.',
+  send_approved: 'وُوفق على إرسال نشرة القاعة إلى أمينة القاعة.',
+  case_context: 'عُرض سياق قرار عيادة ليان وبقي القرار عند الإنسان.',
+  human_decided: 'بقي قرار ملاحظة العيادة عند نورة. الروبوت لم يقرر.',
+  approval_ready: 'وُوفق على إرسال النشرة المصحح، وبقي قرار العيادة عند إنسان.',
 };
 
 export const LOCKED_COPY = {
@@ -822,7 +832,15 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     speaker: 'manager',
     speakerLabel: () => SPEAKER.manager(),
     text: () =>
-      'حُفظت مهارة تلخيص ساعات القاعة وجُرّبت على NH-2208، والروتين المجدول توقف بعد الإلبات',
+      'حُفظت مهارة تلخيص ساعات القاعة وجُرّبت على NH-2208، والروتين المجدول توقف بعد الإلبات. منصة الموافقة ومكتب القرار في الورشة ينتظران مراجعة بشرية.',
+    next: null,
+  },
+  manager_approval_thanks: {
+    id: 'manager_approval_thanks',
+    speaker: 'manager',
+    speakerLabel: () => SPEAKER.manager(),
+    text: () =>
+      'رُفض إرسال خاطئ ثم وُوفق على نشرة القاعة إلى أمينة القاعة، وقرار عيادة ليان بقي عند إنسان',
     next: null,
   },
   companion_after_workshop: {
@@ -869,6 +887,13 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     text: () => 'الدستور الدائم مهارة. الروتين المتوقف ما زال يعمل.',
     next: null,
   },
+  companion_after_approval: {
+    id: 'companion_after_approval',
+    speaker: 'robot',
+    speakerLabel: () => SPEAKER.robot(),
+    text: () => 'الموافقة الآلية تكفي. أغلبية الجيران تقرر عيادة الطفل.',
+    next: null,
+  },
 };
 
 export function currentLine(node: DialogueNodeId | null): DialogueLine | null {
@@ -906,6 +931,7 @@ export function isNpcNode(node: DialogueNodeId | null): boolean {
     node === 'companion_after_agent' ||
     node === 'companion_after_bridge' ||
     node === 'companion_after_skill' ||
+    node === 'companion_after_approval' ||
     node.startsWith('editor') ||
     node.startsWith('officer') ||
     node.startsWith('manager')

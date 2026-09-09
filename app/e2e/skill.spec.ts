@@ -57,7 +57,7 @@ test('bridge-success through reusable skill and routine clock', async ({ page })
   expect(afterBridge.skillQuest.skillReady).toBe(false);
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-bridge-ready', 'true');
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-skill-ready', 'false');
-  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '13');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '14');
   await expect(page.getByTestId('hud-objective')).toHaveText(OBJECTIVES.skillWork);
   await expect(page.getByTestId('planning-core')).toHaveText('نواة التخطيط');
   await expect(page.getByTestId('civic-connector')).toHaveText('موصل السجل');
@@ -159,7 +159,10 @@ test('bridge-success through reusable skill and routine clock', async ({ page })
   await expect(page.getByTestId('planning-core')).toHaveText('نواة التخطيط');
   await expect(page.getByTestId('civic-connector')).toHaveText('موصل السجل');
   await expect(page.getByTestId('skill-shelf')).toHaveText('رف المهارات');
-  await expect(page.getByTestId('hud-objective')).toHaveText(OBJECTIVES.skillReady);
+  await expect(page.getByTestId('hud-objective')).toHaveText(OBJECTIVES.approvalWork);
+  expect(done.evidence['5.7']).toBeUndefined();
+  expect(done.evidence['6.3']).toBeUndefined();
+  expect(done.approvalQuest.approvalReady).toBe(false);
 
   await interactAt(page, 'workshop', WORLD_POS.manager.x, WORLD_POS.manager.y);
   await expect(page.getByTestId('dialogue-text')).toContainText(

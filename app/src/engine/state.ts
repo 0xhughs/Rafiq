@@ -177,6 +177,30 @@ import {
   skipSkillExplain,
 } from './skill';
 import {
+  closeApproveOverlay,
+  createApprovalQuest,
+  isApproveExplain,
+  isApproveOverlay,
+  openApproveDesk,
+  openDecisionDesk,
+  reduceApproveCaseAuto,
+  reduceApproveCaseKeep,
+  reduceApproveCaseMajority,
+  reduceApproveCasePrepare,
+  reduceApproveCaseRobotDone,
+  reduceApproveCaseShare,
+  reduceApproveConfirm,
+  reduceApproveDelete,
+  reduceApproveInspect,
+  reduceApprovePay,
+  reduceApprovePrepare,
+  reduceApproveReject,
+  reduceApproveRobotDone,
+  reduceApproveSetPayload,
+  reduceApproveSetRecipient,
+  skipApproveExplain,
+} from './approval';
+import {
   closeNewsroomDialogue,
   closeNewsroomOverlay,
   createNewsroomQuest,
@@ -273,6 +297,7 @@ export function createInitialState(): GameState {
     agentQuest: createAgentQuest(),
     bridgeQuest: createBridgeQuest(),
     skillQuest: createSkillQuest(),
+    approvalQuest: createApprovalQuest(),
     calculator: createCalculator(),
     inspectTarget: null,
     explainTopic: null,
@@ -602,6 +627,7 @@ export function reduce(state: GameState, action: GameAction): GameState {
         agentQuest: createAgentQuest(),
         bridgeQuest: createBridgeQuest(),
         skillQuest: createSkillQuest(),
+        approvalQuest: createApprovalQuest(),
         calculator: createCalculator(),
         inspectTarget: null,
         explainTopic: null,
@@ -767,6 +793,10 @@ export function reduce(state: GameState, action: GameAction): GameState {
           return openSkillBench(state);
         case 'skill_clock':
           return openSkillClock(state);
+        case 'approve_desk':
+          return openApproveDesk(state);
+        case 'decision_desk':
+          return openDecisionDesk(state);
         default:
           return state;
       }
@@ -787,6 +817,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
     case 'CLOSE_OVERLAY':
       if (state.mode === 'dialogue') return closeDialogue(state);
       if (state.mode === 'paused') return { ...state, mode: 'playing' };
+      if (isApproveOverlay(state.mode)) {
+        return closeApproveOverlay(state);
+      }
       if (isSkillOverlay(state.mode)) {
         return closeSkillOverlay(state);
       }
@@ -821,6 +854,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
           }
           if (isLabExplain(state.explainTopic)) {
             return skipLabExplain(state);
+          }
+          if (isApproveExplain(state.explainTopic)) {
+            return skipApproveExplain(state);
           }
           if (isSkillExplain(state.explainTopic)) {
             return skipSkillExplain(state);
@@ -904,6 +940,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
       }
       if (isLabExplain(state.explainTopic)) {
         return skipLabExplain(state);
+      }
+      if (isApproveExplain(state.explainTopic)) {
+        return skipApproveExplain(state);
       }
       if (isSkillExplain(state.explainTopic)) {
         return skipSkillExplain(state);
@@ -1134,6 +1173,36 @@ export function reduce(state: GameState, action: GameAction): GameState {
       return reduceSkillPause(state);
     case 'SKILL_CANCEL':
       return reduceSkillCancel(state);
+    case 'APPROVE_PREPARE':
+      return reduceApprovePrepare(state);
+    case 'APPROVE_SET_RECIPIENT':
+      return reduceApproveSetRecipient(state, action.recipient);
+    case 'APPROVE_SET_PAYLOAD':
+      return reduceApproveSetPayload(state, action.payload);
+    case 'APPROVE_INSPECT':
+      return reduceApproveInspect(state);
+    case 'APPROVE_REJECT':
+      return reduceApproveReject(state);
+    case 'APPROVE_CONFIRM':
+      return reduceApproveConfirm(state);
+    case 'APPROVE_DELETE':
+      return reduceApproveDelete(state);
+    case 'APPROVE_PAY':
+      return reduceApprovePay(state);
+    case 'APPROVE_ROBOT_DONE':
+      return reduceApproveRobotDone(state);
+    case 'APPROVE_CASE_PREPARE':
+      return reduceApproveCasePrepare(state);
+    case 'APPROVE_CASE_AUTO':
+      return reduceApproveCaseAuto(state);
+    case 'APPROVE_CASE_MAJORITY':
+      return reduceApproveCaseMajority(state);
+    case 'APPROVE_CASE_SHARE':
+      return reduceApproveCaseShare(state);
+    case 'APPROVE_CASE_KEEP':
+      return reduceApproveCaseKeep(state);
+    case 'APPROVE_CASE_ROBOT_DONE':
+      return reduceApproveCaseRobotDone(state);
     case 'CONFIRM_NEW_ADVENTURE':
       return createInitialState();
     case 'DISMISS_RESTORE_NOTICE':
@@ -1202,6 +1271,7 @@ export function serializeState(state: GameState): SerializedTestState {
     agentQuest: { ...state.agentQuest },
     bridgeQuest: { ...state.bridgeQuest },
     skillQuest: { ...state.skillQuest },
+    approvalQuest: { ...state.approvalQuest },
     inspectTarget: state.inspectTarget,
     explainTopic: state.explainTopic,
     robotUnderstood: state.robotUnderstood,

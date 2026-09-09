@@ -34,6 +34,7 @@ import { LabOverlay } from './ui/LabOverlay';
 import { AgentOverlay } from './ui/AgentOverlay';
 import { BridgeOverlay } from './ui/BridgeOverlay';
 import { SkillOverlay } from './ui/SkillOverlay';
+import { ApproveOverlay } from './ui/ApproveOverlay';
 import { evidenceAttr } from './engine/shop';
 
 function reducer(state: GameState, action: GameAction): GameState {
@@ -135,7 +136,7 @@ export default function App() {
       data-dialogue={state.dialogueNode ?? ''}
       data-save={state.saveStatus}
       data-evidence={evidenceAttr(state.evidence)}
-      data-slice="13"
+      data-slice="14"
       data-shop-quest={state.shopQuest.phase}
       data-parcel-quest={state.parcelQuest.phase}
       data-comms-repaired={state.parcelQuest.commsRepaired ? 'true' : 'false'}
@@ -156,6 +157,8 @@ export default function App() {
       data-bridge-ready={state.bridgeQuest.bridgeReady ? 'true' : 'false'}
       data-skill-quest={state.skillQuest.phase}
       data-skill-ready={state.skillQuest.skillReady ? 'true' : 'false'}
+      data-approval-quest={state.approvalQuest.phase}
+      data-approval-ready={state.approvalQuest.approvalReady ? 'true' : 'false'}
       data-context-window={state.libraryQuest.windowSlots.join(',')}
       data-cassette={state.libraryQuest.contextModule ? 'contextModule' : ''}
       data-workshop-lead={state.newsroomQuest.workshopLead ? 'true' : 'false'}
@@ -182,6 +185,7 @@ export default function App() {
         agentReady={state.agentQuest.agentReady}
         bridgeReady={state.bridgeQuest.bridgeReady}
         skillReady={state.skillQuest.skillReady}
+        approvalReady={state.approvalQuest.approvalReady}
       />
       {naming ? (
         <NameEntry
@@ -380,6 +384,27 @@ export default function App() {
           onRefuse={(command) => dispatch({ type: 'LAB_REFUSE', command })}
           onRobotDone={() => dispatch({ type: 'LAB_ROBOT_DONE' })}
           onCmd={(text) => dispatch({ type: 'LAB_CMD', text })}
+          onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+        />
+      ) : null}
+      {state.mode === 'approve' ? (
+        <ApproveOverlay
+          state={state}
+          onPrepare={() => dispatch({ type: 'APPROVE_PREPARE' })}
+          onRecipient={(recipient) => dispatch({ type: 'APPROVE_SET_RECIPIENT', recipient })}
+          onPayload={(payload) => dispatch({ type: 'APPROVE_SET_PAYLOAD', payload })}
+          onInspect={() => dispatch({ type: 'APPROVE_INSPECT' })}
+          onReject={() => dispatch({ type: 'APPROVE_REJECT' })}
+          onConfirm={() => dispatch({ type: 'APPROVE_CONFIRM' })}
+          onDelete={() => dispatch({ type: 'APPROVE_DELETE' })}
+          onPay={() => dispatch({ type: 'APPROVE_PAY' })}
+          onRobotDone={() => dispatch({ type: 'APPROVE_ROBOT_DONE' })}
+          onCasePrepare={() => dispatch({ type: 'APPROVE_CASE_PREPARE' })}
+          onCaseAuto={() => dispatch({ type: 'APPROVE_CASE_AUTO' })}
+          onCaseMajority={() => dispatch({ type: 'APPROVE_CASE_MAJORITY' })}
+          onCaseShare={() => dispatch({ type: 'APPROVE_CASE_SHARE' })}
+          onCaseKeep={() => dispatch({ type: 'APPROVE_CASE_KEEP' })}
+          onCaseRobotDone={() => dispatch({ type: 'APPROVE_CASE_ROBOT_DONE' })}
           onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
         />
       ) : null}

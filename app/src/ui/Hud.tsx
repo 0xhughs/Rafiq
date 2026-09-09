@@ -124,6 +124,11 @@ export function Hud({ state, onHelp, onDismissRestore }: Props) {
           رف المهارات
         </p>
       ) : null}
+      {state.approvalQuest.approvalReady ? (
+        <p className="inventory cassette-chip" data-testid="human-gate">
+          موافقة بشرية
+        </p>
+      ) : null}
     </header>
   );
 }

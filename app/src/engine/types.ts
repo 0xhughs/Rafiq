@@ -49,7 +49,8 @@ export type Mode =
   | 'lab'
   | 'agent'
   | 'bridge'
-  | 'skill';
+  | 'skill'
+  | 'approve';
 
 export type TrashState = 'home' | 'carried' | 'disposed';
 
@@ -99,6 +100,8 @@ export const EVIDENCE_IDS = [
   '5.4',
   '5.5',
   '5.6',
+  '5.7',
+  '6.3',
 ] as const;
 export type EvidenceId = (typeof EVIDENCE_IDS)[number];
 export type EvidenceStatus = 'demonstrated';
@@ -171,7 +174,9 @@ export type ExplainTopic =
   | 'browser_vs_connector'
   | 'oneshot_vs_skill'
   | 'standing_vs_skill'
-  | 'routine_clock';
+  | 'routine_clock'
+  | 'human_before_send'
+  | 'what_not_to_automate';
 export type ContextNoteId = 'constraint' | 'hold' | 'festival' | 'mango';
 export type PackFileId = 'spec' | 'delivery' | 'festival' | 'news_draft';
 export type PackStampId = 'rafiq_repair' | 'festival' | 'unnamed';
@@ -525,6 +530,39 @@ export interface SkillQuest {
   view: SkillView;
 }
 
+export const APPROVAL_PHASES = ['unstarted', 'working', 'ready'] as const;
+export type ApprovalPhase = (typeof APPROVAL_PHASES)[number];
+export type ApprovalView = 'send' | 'personal';
+export type ApprovalRecipient = 'librarian' | 'neighbors' | 'payroll';
+export type ApprovalPayload = 'exact' | 'extra_hour' | 'comment';
+export type ApprovalDecision = 'keep_private' | 'share';
+
+export interface ApprovalQuest {
+  phase: ApprovalPhase;
+  openedDesk: boolean;
+  openedCase: boolean;
+  prepared: boolean;
+  recipient: ApprovalRecipient | null;
+  payload: ApprovalPayload | null;
+  inspectedSend: boolean;
+  rejectedWrong: boolean;
+  needsRereview: boolean;
+  approved: boolean;
+  bulletinSent: boolean;
+  receiptText: string;
+  contextPrepared: boolean;
+  inspectedCase: boolean;
+  robotWaited: boolean;
+  autoRefused: boolean;
+  majorityRefused: boolean;
+  shareRefused: boolean;
+  humanDecided: boolean;
+  decision: ApprovalDecision | null;
+  approvalReady: boolean;
+  pendingExplain: ExplainTopic | null;
+  view: ApprovalView;
+}
+
 export type ParcelId = 'r17' | 'r19' | 'r71';
 export type ParcelPick = ParcelId | 'gray' | null;
 export type LocationPick = 'west' | 'east' | 'any' | null;
@@ -688,7 +726,13 @@ export type JournalEventId =
   | 'clock_armed'
   | 'routine_fired'
   | 'routine_paused'
-  | 'skill_ready';
+  | 'skill_ready'
+  | 'approve_opened'
+  | 'send_rejected'
+  | 'send_approved'
+  | 'case_context'
+  | 'human_decided'
+  | 'approval_ready';
 
 export interface JournalEvent {
   id: JournalEventId;
@@ -781,12 +825,14 @@ export type DialogueNodeId =
   | 'manager_agent_thanks'
   | 'manager_bridge_thanks'
   | 'manager_skill_thanks'
+  | 'manager_approval_thanks'
   | 'companion_after_workshop'
   | 'companion_after_kiosk'
   | 'companion_after_lab'
   | 'companion_after_agent'
   | 'companion_after_bridge'
-  | 'companion_after_skill';
+  | 'companion_after_skill'
+  | 'companion_after_approval';
 
 export type DialogueChoiceId =
   | 'agree'
@@ -870,7 +916,9 @@ export type InteractableId =
   | 'bridge_host'
   | 'bridge_browser'
   | 'skill_bench'
-  | 'skill_clock';
+  | 'skill_clock'
+  | 'approve_desk'
+  | 'decision_desk';
 
 export type PortalId =
   | 'home'
@@ -939,6 +987,7 @@ export interface GameState {
   agentQuest: AgentQuest;
   bridgeQuest: BridgeQuest;
   skillQuest: SkillQuest;
+  approvalQuest: ApprovalQuest;
   calculator: CalculatorState;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
@@ -1072,7 +1121,22 @@ export type GameAction =
   | { type: 'SKILL_TICK_SUN8' }
   | { type: 'SKILL_TICK_EMPTY' }
   | { type: 'SKILL_PAUSE' }
-  | { type: 'SKILL_CANCEL' };
+  | { type: 'SKILL_CANCEL' }
+  | { type: 'APPROVE_PREPARE' }
+  | { type: 'APPROVE_SET_RECIPIENT'; recipient: ApprovalRecipient }
+  | { type: 'APPROVE_SET_PAYLOAD'; payload: ApprovalPayload }
+  | { type: 'APPROVE_INSPECT' }
+  | { type: 'APPROVE_REJECT' }
+  | { type: 'APPROVE_CONFIRM' }
+  | { type: 'APPROVE_DELETE' }
+  | { type: 'APPROVE_PAY' }
+  | { type: 'APPROVE_ROBOT_DONE' }
+  | { type: 'APPROVE_CASE_PREPARE' }
+  | { type: 'APPROVE_CASE_AUTO' }
+  | { type: 'APPROVE_CASE_MAJORITY' }
+  | { type: 'APPROVE_CASE_SHARE' }
+  | { type: 'APPROVE_CASE_KEEP' }
+  | { type: 'APPROVE_CASE_ROBOT_DONE' };
 
 export interface DialogueChoice {
   id: DialogueChoiceId;
@@ -1140,6 +1204,7 @@ export interface SerializedTestState {
   agentQuest: AgentQuest;
   bridgeQuest: BridgeQuest;
   skillQuest: SkillQuest;
+  approvalQuest: ApprovalQuest;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
   robotUnderstood: string | null;
@@ -1178,6 +1243,7 @@ export interface SaveEnvelope {
   agentQuest: AgentQuest;
   bridgeQuest: BridgeQuest;
   skillQuest: SkillQuest;
+  approvalQuest: ApprovalQuest;
   robot: { companion: boolean };
   endingState: EndingState;
   mapsVisited: MapId[];

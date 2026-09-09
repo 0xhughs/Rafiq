@@ -699,7 +699,7 @@ describe('skill stations after bridgeReady', () => {
     expect(WORKSHOP.legend[5]).toBe('#u.z...a..m.j..#');
     expect(WORKSHOP.legend[6]).toBe('#k.q......t....#');
     expect(WORKSHOP.legend[7]).toBe('#.......d......#');
-    expect(WORKSHOP.legend[8]).toBe('#..wJfhZ.vx.l..#');
+    expect(WORKSHOP.legend[8]).toBe('#O.wJfhZ.vx.l.V#');
     expect(WORKSHOP.legend[8][3]).toBe('w');
     expect(WORKSHOP.legend[8][4]).toBe('J');
     expect(WORKSHOP.legend[8][5]).toBe('f');
@@ -727,13 +727,14 @@ describe('skill stations after bridgeReady', () => {
     expect(playerHitsSolid('workshop', WORLD_POS.agentConsole.x, WORLD_POS.agentConsole.y)).toBe(true);
     expect(playerHitsSolid('workshop', WORLD_POS.labTerminal.x, WORLD_POS.labTerminal.y)).toBe(true);
     expect(playerHitsSolid('workshop', WORKSHOP.spawn.x, WORKSHOP.spawn.y)).toBe(false);
-    expect(JOURNAL_CAP).toBe(80);
+    expect(JOURNAL_CAP).toBe(88);
     expect(`${BRIDGE_EXPLAIN.connector_roles} ${MCP_NOTE}`).toMatch(/MCP/);
     expect(`${SKILL_EXPLAIN.oneshot_vs_skill} ${SKILL_EXPLAIN.standing_vs_skill} ${SKILL_EXPLAIN.routine_clock}`).not.toMatch(
       /MCP|harness/,
     );
     expect(OBJECTIVES.skillWork).not.toMatch(/MCP|harness/);
     expect(OBJECTIVES.skillReady).not.toMatch(/MCP|harness/);
+    expect(OBJECTIVES.approvalWork).not.toMatch(/MCP|harness/);
     expect(JOURNAL_TEXT.skill_ready).not.toMatch(/MCP|harness/);
     expect(JSON.stringify(createSkillQuest())).not.toMatch(/MCP|harness/);
 
@@ -934,7 +935,10 @@ describe('5.6 routine clock', () => {
     expect(canAward56(state.skillQuest, true)).toBe(true);
     expect(state.evidence['5.6']).toBe('demonstrated');
     expect(state.skillQuest.skillReady).toBe(true);
-    expect(state.storyObjective).toBe(OBJECTIVES.skillReady);
+    expect(state.storyObjective).toBe(OBJECTIVES.approvalWork);
+    expect(state.evidence['5.7']).toBeUndefined();
+    expect(state.evidence['6.3']).toBeUndefined();
+    expect(state.approvalQuest.approvalReady).toBe(false);
     expect(state.journalEvents.some((event) => event.id === 'bridge_ready')).toBe(true);
     expect(state.journalEvents.some((event) => event.id === 'skill_ready')).toBe(true);
     expect(state.journalEvents.length).toBeLessThanOrEqual(JOURNAL_CAP);

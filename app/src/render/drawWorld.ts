@@ -752,6 +752,14 @@ function drawWorkshop(ctx: CanvasRenderingContext2D): void {
   fillRound(ctx, hallClock.x + 4, hallClock.y + 6, hallClock.w - 8, hallClock.h - 10, 4, '#efe6d0');
   ctx.fillStyle = '#2a2118';
   ctx.fillText('ساعة', hallClock.x + hallClock.w / 2, hallClock.y + 28);
+  const approvalDesk = FURNITURE.workshop.approvalDesk;
+  fillRound(ctx, approvalDesk.x + 4, approvalDesk.y + 6, approvalDesk.w - 8, approvalDesk.h - 10, 4, '#dce8f4');
+  ctx.fillStyle = '#163238';
+  ctx.fillText('موافقة', approvalDesk.x + approvalDesk.w / 2, approvalDesk.y + 28);
+  const personalCase = FURNITURE.workshop.personalCase;
+  fillRound(ctx, personalCase.x + 4, personalCase.y + 6, personalCase.w - 8, personalCase.h - 10, 4, '#efe6d0');
+  ctx.fillStyle = '#2a2118';
+  ctx.fillText('قرار', personalCase.x + personalCase.w / 2, personalCase.y + 28);
   const counter = FURNITURE.workshop.counter;
   fillRound(ctx, counter.x + 2, counter.y + 6, counter.w - 4, counter.h - 10, 6, PALETTE.workshop);
   ctx.fillStyle = '#ead9c0';

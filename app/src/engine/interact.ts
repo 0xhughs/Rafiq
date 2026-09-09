@@ -106,6 +106,10 @@ function workshopRect(id: InteractableId): { x: number; y: number; w: number; h:
       return room.skillDesk;
     case 'skill_clock':
       return room.hallClock;
+    case 'approve_desk':
+      return room.approvalDesk;
+    case 'decision_desk':
+      return room.personalCase;
     default:
       return null;
   }
@@ -628,6 +632,23 @@ export function listInteractables(state: GameState): Actionable[] {
         label: HINT_LABELS.skillClock,
         x: WORLD_POS.skillClock.x,
         y: WORLD_POS.skillClock.y,
+      },
+    );
+  }
+
+  if (state.map === 'workshop' && state.skillQuest.skillReady) {
+    items.push(
+      {
+        id: 'approve_desk',
+        label: HINT_LABELS.approveDesk,
+        x: WORLD_POS.approveDesk.x,
+        y: WORLD_POS.approveDesk.y,
+      },
+      {
+        id: 'decision_desk',
+        label: HINT_LABELS.decisionDesk,
+        x: WORLD_POS.decisionDesk.x,
+        y: WORLD_POS.decisionDesk.y,
       },
     );
   }
