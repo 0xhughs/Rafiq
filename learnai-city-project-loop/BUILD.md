@@ -34,7 +34,13 @@ No new `MapId`. Evidence union adds `'4.3' | '4.4'`. New persistable **`kioskQue
 - Reviewer maps AC01–AC06 and verifies snapshot.
 
 ## Proof
-Not completed yet.
+Builder claims for d-20260908-034-impl-09 (not independently accepted):
+- Candidate (coordinator recomputed): `a6c3018582acd8bf0737ff9e684ed063eeb4a9ed32a8d3362184e1af3bc248b6` (187 files).
+- Contract unchanged: `45f68f8987d184ba72f15970270aa506737e5bd37ec2b7efdc3123d0bfc57601`.
+- Claimed checks: tsc/lint/build exit 0; vitest 98; Playwright 42/42 on preview :4186 and Vite :5190.
+- Claimed artifacts: `evidence/09/` screenshots per T02 plus overlays.png, state-tests.txt, project-checks.txt, browser-checks.md.
+- Claimed: workshop success does not award 4.3/4.4; WORLD_POS.robot unchanged; no fetch/live HTTP.
+Reviewer must re-run checks in an isolated copy and map AC01–AC06.
 
 ## Review
 Plan approved. Implementation not started.
@@ -45,15 +51,15 @@ Each result records dispatch ID, reviewer identity, verdict, contract identity, 
 ## Loop state
 Execution mode / tool adapter: Cursor Cloud Agent coordinator with Task-spawned Builder and Reviewer subagents. Spawn = Task(generalPurpose). Send = Task resume. Wait = blocking Task completion. Stop = subagent completion; coordinator does not start a second writer in this checkout. Reviewer contexts are fresh and do not receive Builder reasoning. Mutating Reviewer checks, if needed, run on an isolated copy.
 Coordinator: cloud agent bc-6380229a-c83f-493f-af1c-47e5f2b00c70 (https://cursor.com/agents/bc-6380229a-c83f-493f-af1c-47e5f2b00c70), role Coordinator, checkout /workspace on branch cursor/rafiq-ai-city-adventure-0c70
-Worker / role / phase: pending launch / Builder / implementation
-Dispatch ID / launch state / input identity: d-20260908-034-impl-09 / pending launch / contract:45f68f8987d184ba72f15970270aa506737e5bd37ec2b7efdc3123d0bfc57601 baseline:a0ea63ff03ad96eb3fd5fb90a6e326ee001e9097334da5caac8fcee2c80eff4d
-Pending result / last consumed dispatch: none / d-20260908-033-plan-09
+Worker / role / phase: pending launch / Reviewer / implementation
+Dispatch ID / launch state / input identity: d-20260908-035-implrev-09 / pending launch / contract:45f68f8987d184ba72f15970270aa506737e5bd37ec2b7efdc3123d0bfc57601 candidate:a6c3018582acd8bf0737ff9e684ed063eeb4a9ed32a8d3362184e1af3bc248b6
+Pending result / last consumed dispatch: none / d-20260908-034-impl-09
 Snapshot capture and recheck commands / coverage / exclusions: Capture = `python3 .loop/identity.py snapshot --label <label>` from repository root. Recheck = same command; compare `.loop/snapshots/<label>.digest` and the JSON `digest` field. Contract = `python3 .loop/identity.py contract`; identity is `.loop/contract/hashes.json` field `contract`. Combined = `python3 .loop/identity.py both --label <label>`.
 Coverage: `app`, `evidence`, root `package.json`/`package-lock.json`/`pnpm-lock.yaml`/`yarn.lock`, `index.html`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `playwright.config.ts`, `vitest.config.ts`, `README.md`, `public`. Missing paths are skipped. Detect add/delete by regenerating the covered file list.
 Exclusions: `.git`, `.loop`, `learnai-city-project-loop`, `node_modules`, `app/node_modules`, `app/dist`, `dist`, `coverage`, `test-results`, `playwright-report`, `.vite`, `app/.vite`. Protocol files are identified by contract hash, not candidate snapshot.
 Baseline snapshot: shipped slice 08 `a0ea63ff03ad96eb3fd5fb90a6e326ee001e9097334da5caac8fcee2c80eff4d` (168 covered files)
 Contract identity: `45f68f8987d184ba72f15970270aa506737e5bd37ec2b7efdc3123d0bfc57601` (`.loop/contract/hashes.json`)
-Candidate snapshot: none
+Candidate snapshot: `a6c3018582acd8bf0737ff9e684ed063eeb4a9ed32a8d3362184e1af3bc248b6` (187 files)
 Rejection count: 0
 Consecutive no-progress repairs: 0
 Open acceptance gaps / prior failing evidence: none
@@ -67,7 +73,7 @@ Next slice ID / draft: none
 Prior shipped receipt: slice 08 archive `slices/08-one-small-service.md`
 
 ## Status
-Building
+Ready for review
 
 ## Next
-Builder implements slice 09 under dispatch d-20260908-034-impl-09.
+Independent implementation review of slice 09 under dispatch d-20260908-035-implrev-09.
