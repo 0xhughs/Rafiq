@@ -135,7 +135,6 @@ Approved contract: `b7f85a536ef8ae535e3892b6636b0a0a7cad70f3bdd2d27ae67590c14fa4
 Approved candidate: `f1feab0147e6f41f01c86f58a8d05e136cce7c84a706e1508b3d8bfcb424eb4f`
 Implementation approval dispatch: `d-20260908-007-implrev-02`
 
-## Now
 ### 03 The price that was never checked
 Goal: Help the shopkeeper using supported information instead of the robot's confidence.
 Provides:
@@ -143,9 +142,12 @@ Provides:
 - A repair lead and verification habit; the robot can still make unsupported claims later. Covers 1.1, 1.2, 1.3, 1.6.
 Depends on: 02
 Target membership: inside
+Archive: `slices/03-the-price-that-was-never-checked.md`
+Approved contract: `a609b8b90a350d89b672c4a997de338b496688cb8440d5428e23518b304ee8ca`
+Approved candidate: `92f284d762df78170e148633ff3eb9e82626225306a9b4807463de7380c89257`
+Implementation approval dispatch: `d-20260908-011-implrev-03`
 
-## Later
-
+## Now
 ### 04 The wrong parcel
 Goal: Guide the robot to retrieve the intended repair component through clear, revisable instructions.
 Provides:
@@ -153,6 +155,8 @@ Provides:
 - Player-retained purchase approval and a visible communication repair. Covers 2.1, 2.2, 2.4.
 Depends on: 03
 Target membership: inside
+
+## Later
 
 ### 05 A place for the right memories
 Goal: Carry the relevant information forward without sharing private data.
