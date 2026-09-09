@@ -94,6 +94,11 @@ export function Hud({ state, onHelp, onDismissRestore }: Props) {
           مواد المعاينة
         </p>
       ) : null}
+      {state.workshopQuest.servicePosted ? (
+        <p className="inventory cassette-chip" data-testid="service-posted">
+          لوحة المواعيد
+        </p>
+      ) : null}
     </header>
   );
 }

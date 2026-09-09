@@ -4,7 +4,7 @@ export const PLAYER_HALF_H = 14;
 export const PLAYER_SPEED = 150;
 export const INTERACT_RANGE = 58;
 export const MAX_STEP = 8;
-export const JOURNAL_CAP = 32;
+export const JOURNAL_CAP = 40;
 export const COMPANION_OFFSET = { x: -32, y: 10 } as const;
 
 export const SAVE_KEY = 'rafiq.adventure.v1';
@@ -61,7 +61,16 @@ export const HINT_LABELS = {
   festivalEnter: 'E / مسافة — دخول مكتب المهرجان',
   festivalExit: 'E / مسافة — الخروج إلى الشارع',
   workshopDoor: 'E / مسافة — باب الورشة',
+  workshopEnter: 'E / مسافة — دخول ورشة الإصلاح',
+  workshopExit: 'E / مسافة — الخروج إلى الشارع',
   officer: 'E / مسافة — التحدث مع موظفة المهرجان',
+  manager: 'E / مسافة — التحدث مع مدير الورشة',
+  needSlip: 'E / مسافة — ورقة الحاجة',
+  extrasSlip: 'E / مسافة — طلبات إضافية',
+  briefDesk: 'E / مسافة — وصف المنتج',
+  builderBench: 'E / مسافة — منضدة البنّاء',
+  resultCheck: 'E / مسافة — فحص اللوحة',
+  appointmentBoard: 'E / مسافة — لوحة المواعيد',
   stockTable: 'E / مسافة — جدول المخزون',
   receiptsDesk: 'E / مسافة — إيصالات التوريد',
   reconcileDesk: 'E / مسافة — ورقة المطابقة',

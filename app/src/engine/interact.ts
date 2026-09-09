@@ -10,9 +10,10 @@ import {
   portalLetterPos,
   portalsOnMap,
   shopDoorHint,
+  workshopDoorHint,
   WORLD_POS,
 } from './maps';
-import { clerkVisible, editorVisible, officerVisible, isCompanion, librarianVisible, neighborVisible, npcPosition, robotVisible, shopkeeperVisible } from './npc';
+import { clerkVisible, editorVisible, officerVisible, isCompanion, librarianVisible, managerVisible, neighborVisible, npcPosition, robotVisible, shopkeeperVisible } from './npc';
 import type { Actionable, GameState, InteractableId } from './types';
 
 function dist(ax: number, ay: number, bx: number, by: number): number {
@@ -63,6 +64,26 @@ function shopRect(id: InteractableId): { x: number; y: number; w: number; h: num
       return shop.calculator;
     case 'crate':
       return shop.crate;
+    default:
+      return null;
+  }
+}
+
+function workshopRect(id: InteractableId): { x: number; y: number; w: number; h: number } | null {
+  const room = FURNITURE.workshop;
+  switch (id) {
+    case 'need_slip':
+      return room.need;
+    case 'extras_slip':
+      return room.extras;
+    case 'brief_desk':
+      return room.brief;
+    case 'builder_bench':
+      return room.builder;
+    case 'result_check':
+      return room.result;
+    case 'appointment_board':
+      return room.board;
     default:
       return null;
   }
@@ -172,7 +193,8 @@ function itemDistance(state: GameState, item: Actionable): number {
     parcelRect(item.id) ??
     archiveRect(item.id) ??
     newsroomRect(item.id) ??
-    festivalRect(item.id);
+    festivalRect(item.id) ??
+    workshopRect(item.id);
   if (rect) {
     return distToRect(state.position.x, state.position.y, rect.x, rect.y, rect.w, rect.h);
   }
@@ -186,6 +208,7 @@ function portalHint(id: InteractableId, map: GameState['map']): string {
   if (id === 'library_inner') return archiveDoorHint(map);
   if (id === 'newsroom_door') return newsroomDoorHint(map);
   if (id === 'festival_door') return festivalDoorHint(map);
+  if (id === 'workshop_door') return workshopDoorHint(map);
   return libraryDoorHint(map);
 }
 
@@ -287,6 +310,16 @@ export function listInteractables(state: GameState): Actionable[] {
       label: HINT_LABELS.officer,
       x: officer.x,
       y: officer.y,
+    });
+  }
+
+  if (managerVisible(state)) {
+    const manager = npcPosition(state, 'manager');
+    items.push({
+      id: 'manager',
+      label: HINT_LABELS.manager,
+      x: manager.x,
+      y: manager.y,
     });
   }
 
@@ -404,15 +437,6 @@ export function listInteractables(state: GameState): Actionable[] {
     );
   }
 
-  if (state.map === 'street') {
-    items.push({
-      id: 'workshop_door',
-      label: HINT_LABELS.workshopDoor,
-      x: WORLD_POS.workshopDoor.x,
-      y: WORLD_POS.workshopDoor.y,
-    });
-  }
-
   if (state.map === 'festival') {
     items.push(
       {
@@ -450,6 +474,47 @@ export function listInteractables(state: GameState): Actionable[] {
         label: HINT_LABELS.submitDesk,
         x: WORLD_POS.submitDesk.x,
         y: WORLD_POS.submitDesk.y,
+      },
+    );
+  }
+
+  if (state.map === 'workshop') {
+    items.push(
+      {
+        id: 'need_slip',
+        label: HINT_LABELS.needSlip,
+        x: WORLD_POS.needSlip.x,
+        y: WORLD_POS.needSlip.y,
+      },
+      {
+        id: 'extras_slip',
+        label: HINT_LABELS.extrasSlip,
+        x: WORLD_POS.extrasSlip.x,
+        y: WORLD_POS.extrasSlip.y,
+      },
+      {
+        id: 'brief_desk',
+        label: HINT_LABELS.briefDesk,
+        x: WORLD_POS.briefDesk.x,
+        y: WORLD_POS.briefDesk.y,
+      },
+      {
+        id: 'builder_bench',
+        label: HINT_LABELS.builderBench,
+        x: WORLD_POS.builderBench.x,
+        y: WORLD_POS.builderBench.y,
+      },
+      {
+        id: 'result_check',
+        label: HINT_LABELS.resultCheck,
+        x: WORLD_POS.resultCheck.x,
+        y: WORLD_POS.resultCheck.y,
+      },
+      {
+        id: 'appointment_board',
+        label: HINT_LABELS.appointmentBoard,
+        x: WORLD_POS.appointmentBoard.x,
+        y: WORLD_POS.appointmentBoard.y,
       },
     );
   }

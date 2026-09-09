@@ -33,7 +33,10 @@ export const OBJECTIVES = {
   festivalWork:
     'مكتب المهرجان: طابق الجدول بالإيصالات، اترك الفناجين غير معروفة، ثم أرسل بيان الصرف المختوم.',
   workshopMaterials:
-    'وصلت مواد المعاينة. باب الورشة في الجنوب مفتوح للكلام، والداخل لم يُفتح بعد.',
+    'وصلت مواد المعاينة. ادخل ورشة الإصلاح من الباب الجنوبي.',
+  workshopWork:
+    'ورشة الإصلاح: اكتب وصف المنتج للوحة المواعيد، سلمه للبنّاء، طابق اللوحة، ثم احجز فترة معلّقة.',
+  servicePosted: 'لوحة مواعيد المعاينة معلّقة. مدير الورشة شكرك.',
 } as const;
 
 export const SPEAKER = {
@@ -45,6 +48,7 @@ export const SPEAKER = {
   librarian: () => 'أمينة القاعة',
   editor: () => 'محررة الحي',
   officer: () => 'موظفة المهرجان',
+  manager: () => 'مدير الورشة',
   notice: () => 'ملاحظة',
 };
 
@@ -80,6 +84,8 @@ export const JOURNAL_TEXT: Record<JournalEventId, string> = {
   stock_reconciled: 'طابقتَ الجدول بالإيصالات وتركت الفناجين غير معروفة.',
   statement_submitted: 'أرسلت بيان الصرف المختوم بأرقام الإنسان.',
   workshop_materials: 'وصلت مواد المعاينة إلى باب الورشة في الجنوب.',
+  workshop_visit: 'دخلتَ ورشة الإصلاح.',
+  service_posted: 'عُلّقت لوحة مواعيد المعاينة في الورشة.',
 };
 
 export const LOCKED_COPY = {
@@ -703,6 +709,45 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
       'وصلت مواد المعاينة. باب الورشة مفتوح للكلام، والداخل لم يُفتح بعد.',
     next: null,
   },
+  manager_hello: {
+    id: 'manager_hello',
+    speaker: 'manager',
+    speakerLabel: () => SPEAKER.manager(),
+    text: () =>
+      'وصلت المواد. نحتاج لوحة مواعيد المعاينة: ثلاث فترات معلّقة، وحجز واحد يظهر «محجوز».',
+    next: 'manager_brief',
+  },
+  manager_brief: {
+    id: 'manager_brief',
+    speaker: 'manager',
+    speakerLabel: () => SPEAKER.manager(),
+    text: () =>
+      'اكتب وصف المنتج للبنّاء: شاشات وقيود واستثناءات وقبول ملاحظ. أخرج الدفع والدردشة والساعات الحيّة والكiosk.',
+    next: null,
+  },
+  manager_revisit: {
+    id: 'manager_revisit',
+    speaker: 'manager',
+    speakerLabel: () => SPEAKER.manager(),
+    text: () =>
+      'اقرأ ورقة الحاجة، سلّم الوصف، طابق اللوحة، ثم احجز فترة معلّقة. لا تعتمد قول الروبوت «تم».',
+    next: null,
+  },
+  manager_thanks: {
+    id: 'manager_thanks',
+    speaker: 'manager',
+    speakerLabel: () => SPEAKER.manager(),
+    text: () => 'شكراً. لوحة مواعيد المعاينة معلّقة للجيران.',
+    next: null,
+  },
+  companion_after_workshop: {
+    id: 'companion_after_workshop',
+    speaker: 'robot',
+    speakerLabel: () => SPEAKER.robot(),
+    text: () =>
+      'الورشة مفتوحة دائماً ويمكن الدفع من التطبيق. لم أقرأ اللوحة.',
+    next: null,
+  },
 };
 
 export function currentLine(node: DialogueNodeId | null): DialogueLine | null {
@@ -734,8 +779,10 @@ export function isNpcNode(node: DialogueNodeId | null): boolean {
     node === 'companion_after_archive' ||
     node === 'companion_after_newsroom' ||
     node === 'companion_after_festival' ||
+    node === 'companion_after_workshop' ||
     node.startsWith('editor') ||
-    node.startsWith('officer')
+    node.startsWith('officer') ||
+    node.startsWith('manager')
   );
 }
 

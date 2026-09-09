@@ -27,6 +27,8 @@ import { VoiceOverlay } from './ui/VoiceOverlay';
 import { LetterOverlay } from './ui/LetterOverlay';
 import { ReconcileOverlay } from './ui/ReconcileOverlay';
 import { SubmitOverlay } from './ui/SubmitOverlay';
+import { BriefOverlay } from './ui/BriefOverlay';
+import { BoardOverlay } from './ui/BoardOverlay';
 import { evidenceAttr } from './engine/shop';
 
 function reducer(state: GameState, action: GameAction): GameState {
@@ -128,7 +130,7 @@ export default function App() {
       data-dialogue={state.dialogueNode ?? ''}
       data-save={state.saveStatus}
       data-evidence={evidenceAttr(state.evidence)}
-      data-slice="07"
+      data-slice="08"
       data-shop-quest={state.shopQuest.phase}
       data-parcel-quest={state.parcelQuest.phase}
       data-comms-repaired={state.parcelQuest.commsRepaired ? 'true' : 'false'}
@@ -137,6 +139,8 @@ export default function App() {
       data-festival-quest={state.festivalQuest.phase}
       data-workshop-materials={state.festivalQuest.workshopMaterials ? 'true' : 'false'}
       data-workshop-door={state.festivalQuest.workshopDoorOpen ? 'open' : 'locked'}
+      data-workshop-quest={state.workshopQuest.phase}
+      data-service-posted={state.workshopQuest.servicePosted ? 'true' : 'false'}
       data-context-window={state.libraryQuest.windowSlots.join(',')}
       data-cassette={state.libraryQuest.contextModule ? 'contextModule' : ''}
       data-workshop-lead={state.newsroomQuest.workshopLead ? 'true' : 'false'}
@@ -156,6 +160,8 @@ export default function App() {
         newsroomStarted={state.map === 'newsroom' || state.newsroomQuest.briefed}
         festivalStarted={state.map === 'festival' || state.festivalQuest.briefed}
         workshopMaterials={state.festivalQuest.workshopMaterials}
+        workshopStarted={state.map === 'workshop' || state.workshopQuest.briefed}
+        servicePosted={state.workshopQuest.servicePosted}
       />
       {naming ? (
         <NameEntry
@@ -181,6 +187,10 @@ export default function App() {
           onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
           onCite={() => dispatch({ type: 'CITE_CLIPPING' })}
           onVerify={() => dispatch({ type: 'VERIFY_ORIGINAL' })}
+          onBuilderHand={() => dispatch({ type: 'BUILDER_HAND' })}
+          onBuilderBuild={() => dispatch({ type: 'BUILDER_BUILD' })}
+          onBuilderDone={() => dispatch({ type: 'BUILDER_DONE' })}
+          onResultMatch={(part) => dispatch({ type: 'RESULT_MATCH', part })}
         />
       ) : null}
       {state.mode === 'calculator' ? (
@@ -303,6 +313,21 @@ export default function App() {
           state={state}
           onSet={(field, value) => dispatch({ type: 'SUBMIT_SET', field, value })}
           onSend={(sender) => dispatch({ type: 'SUBMIT_SEND', sender })}
+          onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+        />
+      ) : null}
+      {state.mode === 'brief' ? (
+        <BriefOverlay
+          state={state}
+          onSet={(field, value) => dispatch({ type: 'BRIEF_SET', field, value })}
+          onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+        />
+      ) : null}
+      {state.mode === 'board' ? (
+        <BoardOverlay
+          state={state}
+          onBook={(slot) => dispatch({ type: 'BOARD_BOOK', slot })}
+          onExtra={(control) => dispatch({ type: 'BOARD_EXTRA', control })}
           onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
         />
       ) : null}

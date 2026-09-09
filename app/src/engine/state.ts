@@ -46,8 +46,27 @@ import {
   reduceSubmitSend,
   reduceSubmitSet,
   skipFestivalExplain,
-  workshopDoorNode,
 } from './festival';
+import {
+  closeWorkshopDialogue,
+  closeWorkshopOverlay,
+  createWorkshopQuest,
+  inspectWorkshop,
+  isWorkshopExplain,
+  isWorkshopInspect,
+  isWorkshopOverlay,
+  openBoard,
+  openBrief,
+  reduceBoardBook,
+  reduceBoardExtra,
+  reduceBriefSet,
+  reduceBuilderBuild,
+  reduceBuilderDone,
+  reduceBuilderHand,
+  reduceResultMatch,
+  skipWorkshopExplain,
+  workshopObjective,
+} from './workshop';
 import {
   closeNewsroomDialogue,
   closeNewsroomOverlay,
@@ -131,6 +150,7 @@ export function createInitialState(): GameState {
     librarian: 'unmet',
     editor: 'unmet',
     officer: 'unmet',
+    manager: 'unmet',
     journalEvents: [],
     evidence: emptyEvidence(),
     shopQuest: createShopQuest(),
@@ -138,6 +158,7 @@ export function createInitialState(): GameState {
     libraryQuest: createLibraryQuest(),
     newsroomQuest: createNewsroomQuest(),
     festivalQuest: createFestivalQuest(),
+    workshopQuest: createWorkshopQuest(),
     calculator: createCalculator(),
     inspectTarget: null,
     explainTopic: null,
@@ -190,6 +211,10 @@ function goThroughPortal(state: GameState, portalId: PortalId): GameState {
     if (!portal.lockedNode) return state;
     return { ...state, mode: 'dialogue', dialogueNode: portal.lockedNode };
   }
+  if (portal.requiresWorkshopMaterials && !state.festivalQuest.workshopMaterials) {
+    if (!portal.lockedNode) return state;
+    return { ...state, mode: 'dialogue', dialogueNode: portal.lockedNode };
+  }
   if (portal.requiresArchiveSuccess && !(state.libraryQuest.contextModule && state.libraryQuest.specReleased)) {
     if (!portal.lockedNode) return state;
     return { ...state, mode: 'dialogue', dialogueNode: portal.lockedNode };
@@ -206,6 +231,7 @@ function goThroughPortal(state: GameState, portalId: PortalId): GameState {
   if (dest.map === 'archive') events = recordEvent(events, 'archive_visit');
   if (dest.map === 'newsroom') events = recordEvent(events, 'newsroom_visit');
   if (dest.map === 'festival') events = recordEvent(events, 'festival_visit');
+  if (dest.map === 'workshop') events = recordEvent(events, 'workshop_visit');
   const next = {
     ...state,
     map: dest.map,
@@ -224,8 +250,16 @@ function goThroughPortal(state: GameState, portalId: PortalId): GameState {
   if (dest.map === 'festival') {
     storyObjective = festivalObjective(next);
   }
+  if (dest.map === 'workshop') {
+    storyObjective = workshopObjective(next);
+  }
   if (dest.map === 'street') {
-    if (next.festivalQuest.workshopMaterials || next.festivalQuest.briefed) {
+    if (
+      next.workshopQuest.servicePosted ||
+      next.workshopQuest.briefed ||
+      next.festivalQuest.workshopMaterials ||
+      next.festivalQuest.briefed
+    ) {
       storyObjective = festivalObjective(next);
     } else if (next.newsroomQuest.workshopLead || (next.libraryQuest.contextModule && next.libraryQuest.specReleased)) {
       storyObjective = newsroomObjective(next);
@@ -261,6 +295,7 @@ function postponeNpc(state: GameState): GameState {
     librarian: state.librarian === 'greeted' ? 'greeted' : 'unmet',
     editor: state.editor === 'greeted' ? 'greeted' : 'unmet',
     officer: state.officer === 'greeted' ? 'greeted' : 'unmet',
+    manager: state.manager === 'greeted' ? 'greeted' : 'unmet',
   };
 }
 
@@ -278,6 +313,8 @@ function closeDialogue(state: GameState): GameState {
   if (newsroomClosed) return newsroomClosed;
   const festivalClosed = closeFestivalDialogue(state);
   if (festivalClosed) return festivalClosed;
+  const workshopClosed = closeWorkshopDialogue(state);
+  if (workshopClosed) return workshopClosed;
   if (state.dialogueNode === 'neighbor_thanks') {
     return {
       ...state,
@@ -298,6 +335,7 @@ function closeDialogue(state: GameState): GameState {
       checkpointReached: true,
       storyObjective:
         state.festivalQuest.workshopMaterials ||
+        state.workshopQuest.servicePosted ||
         state.newsroomQuest.workshopLead ||
         state.parcelQuest.commsRepaired
           ? libraryObjective(state)
@@ -436,6 +474,7 @@ export function reduce(state: GameState, action: GameAction): GameState {
         librarian: 'unmet',
         editor: 'unmet',
         officer: 'unmet',
+        manager: 'unmet',
         journalEvents: [],
         evidence: emptyEvidence(),
         shopQuest: createShopQuest(),
@@ -443,6 +482,7 @@ export function reduce(state: GameState, action: GameAction): GameState {
         libraryQuest: createLibraryQuest(),
         newsroomQuest: createNewsroomQuest(),
         festivalQuest: createFestivalQuest(),
+        workshopQuest: createWorkshopQuest(),
         calculator: createCalculator(),
         inspectTarget: null,
         explainTopic: null,
@@ -490,7 +530,7 @@ export function reduce(state: GameState, action: GameAction): GameState {
         case 'festival_door':
           return goThroughPortal(state, 'festival');
         case 'workshop_door':
-          return { ...state, mode: 'dialogue', dialogueNode: workshopDoorNode(state) };
+          return goThroughPortal(state, 'workshop');
         case 'dumpster':
           return dispose(state);
         case 'robot':
@@ -572,6 +612,20 @@ export function reduce(state: GameState, action: GameAction): GameState {
           return openReconcile(state);
         case 'submit_desk':
           return openSubmit(state);
+        case 'manager':
+          return openNpc(state, 'manager');
+        case 'need_slip':
+          return inspectWorkshop(state, 'workshop_need');
+        case 'extras_slip':
+          return inspectWorkshop(state, 'workshop_extras');
+        case 'brief_desk':
+          return openBrief(state);
+        case 'builder_bench':
+          return inspectWorkshop(state, 'workshop_builder');
+        case 'result_check':
+          return inspectWorkshop(state, 'workshop_result');
+        case 'appointment_board':
+          return openBoard(state);
         default:
           return state;
       }
@@ -592,6 +646,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
     case 'CLOSE_OVERLAY':
       if (state.mode === 'dialogue') return closeDialogue(state);
       if (state.mode === 'paused') return { ...state, mode: 'playing' };
+      if (isWorkshopOverlay(state.mode) || (state.mode === 'inspect' && isWorkshopInspect(state.inspectTarget))) {
+        return closeWorkshopOverlay(state);
+      }
       if (isShopOverlay(state.mode)) {
         if (state.mode === 'explain') {
           if (isLibraryExplain(state.explainTopic)) {
@@ -602,6 +659,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
           }
           if (isFestivalExplain(state.explainTopic)) {
             return skipFestivalExplain(state);
+          }
+          if (isWorkshopExplain(state.explainTopic)) {
+            return skipWorkshopExplain(state);
           }
           if (
             state.explainTopic === 'delegate' ||
@@ -667,6 +727,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
       }
       if (isFestivalExplain(state.explainTopic)) {
         return skipFestivalExplain(state);
+      }
+      if (isWorkshopExplain(state.explainTopic)) {
+        return skipWorkshopExplain(state);
       }
       if (
         state.explainTopic === 'delegate' ||
@@ -747,6 +810,20 @@ export function reduce(state: GameState, action: GameAction): GameState {
       return reduceSubmitSet(state, action.field, action.value);
     case 'SUBMIT_SEND':
       return reduceSubmitSend(state, action.sender);
+    case 'BRIEF_SET':
+      return reduceBriefSet(state, action.field, action.value);
+    case 'BUILDER_HAND':
+      return reduceBuilderHand(state);
+    case 'BUILDER_BUILD':
+      return reduceBuilderBuild(state);
+    case 'BUILDER_DONE':
+      return reduceBuilderDone(state);
+    case 'RESULT_MATCH':
+      return reduceResultMatch(state, action.part);
+    case 'BOARD_BOOK':
+      return reduceBoardBook(state, action.slot);
+    case 'BOARD_EXTRA':
+      return reduceBoardExtra(state, action.control);
     case 'CONFIRM_NEW_ADVENTURE':
       return createInitialState();
     case 'DISMISS_RESTORE_NOTICE':
@@ -796,6 +873,7 @@ export function serializeState(state: GameState): SerializedTestState {
     librarian: state.librarian,
     editor: state.editor,
     officer: state.officer,
+    manager: state.manager,
     journalEvents: [...state.journalEvents],
     mapsVisited: [...state.mapsVisited],
     saveStatus: state.saveStatus,
@@ -808,6 +886,7 @@ export function serializeState(state: GameState): SerializedTestState {
     libraryQuest: { ...state.libraryQuest },
     newsroomQuest: { ...state.newsroomQuest },
     festivalQuest: { ...state.festivalQuest },
+    workshopQuest: { ...state.workshopQuest },
     inspectTarget: state.inspectTarget,
     explainTopic: state.explainTopic,
     robotUnderstood: state.robotUnderstood,

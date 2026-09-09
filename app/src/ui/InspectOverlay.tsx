@@ -12,15 +12,36 @@ import {
   ROBOT_COVER_TEXT,
   TABLE_TEXT,
 } from '../engine/festival';
+import {
+  ACCEPTANCE_OK,
+  CONSTRAINTS_OK,
+  EXCLUSIONS_OK,
+  EXTRAS_TEXT,
+  NEED_TEXT,
+  SCREENS_OK,
+} from '../engine/workshop';
 
 interface Props {
   state: GameState;
   onClose: () => void;
   onCite?: () => void;
   onVerify?: () => void;
+  onBuilderHand?: () => void;
+  onBuilderBuild?: () => void;
+  onBuilderDone?: () => void;
+  onResultMatch?: (part: 'screens' | 'constraints' | 'exclusions' | 'acceptance') => void;
 }
 
-export function InspectOverlay({ state, onClose, onCite, onVerify }: Props) {
+export function InspectOverlay({
+  state,
+  onClose,
+  onCite,
+  onVerify,
+  onBuilderHand,
+  onBuilderBuild,
+  onBuilderDone,
+  onResultMatch,
+}: Props) {
   const target = state.inspectTarget;
   if (!target) return null;
   return (
@@ -218,6 +239,91 @@ export function InspectOverlay({ state, onClose, onCite, onVerify }: Props) {
           <pre className="notice-body" data-testid="robot-cover-text">
             {ROBOT_COVER_TEXT}
           </pre>
+        </article>
+      ) : null}
+      {target === 'workshop_need' ? (
+        <article className="paper-card" data-testid="need-card">
+          <p className="card-stamp">ورقة الحاجة</p>
+          <pre className="notice-body" data-testid="need-text">
+            {NEED_TEXT}
+          </pre>
+        </article>
+      ) : null}
+      {target === 'workshop_extras' ? (
+        <article className="paper-card" data-testid="extras-card">
+          <p className="card-stamp">طلبات إضافية</p>
+          <pre className="notice-body" data-testid="extras-text">
+            {EXTRAS_TEXT}
+          </pre>
+        </article>
+      ) : null}
+      {target === 'workshop_builder' ? (
+        <article className="paper-card instruction-card" data-testid="builder-card">
+          <p className="card-stamp">منضدة البنّاء</p>
+          <h2>الروبوت البنّاء</h2>
+          <p className="card-note">سلّم وصف المنتج ثم ابنِ اللوحة. قول «تم» لا يكفي.</p>
+          {state.shopFeedback ? (
+            <p className="parcel-fail" data-testid="builder-feedback">
+              {state.shopFeedback}
+            </p>
+          ) : null}
+          <div className="button-row wrap-choices">
+            <button type="button" className="primary" data-testid="builder-hand" onClick={() => onBuilderHand?.()}>
+              سلّم الوصف
+            </button>
+            <button type="button" className="ghost" data-testid="builder-build" onClick={() => onBuilderBuild?.()}>
+              ابنِ اللوحة
+            </button>
+            <button type="button" className="ghost" data-testid="builder-done" onClick={() => onBuilderDone?.()}>
+              تم
+            </button>
+          </div>
+        </article>
+      ) : null}
+      {target === 'workshop_result' ? (
+        <article className="paper-card instruction-card" data-testid="result-card">
+          <p className="card-stamp">فحص اللوحة</p>
+          <h2>طابق العقد</h2>
+          <p className="card-note">علّم كل جزء إن طابقت اللوحة المبنية الوصف.</p>
+          {state.shopFeedback ? (
+            <p className="parcel-fail" data-testid="result-feedback">
+              {state.shopFeedback}
+            </p>
+          ) : null}
+          <div className="button-row wrap-choices">
+            <button
+              type="button"
+              className={state.workshopQuest.resultScreensOk ? 'primary' : 'ghost'}
+              data-testid="result-screens"
+              onClick={() => onResultMatch?.('screens')}
+            >
+              {SCREENS_OK}
+            </button>
+            <button
+              type="button"
+              className={state.workshopQuest.resultConstraintsOk ? 'primary' : 'ghost'}
+              data-testid="result-constraints"
+              onClick={() => onResultMatch?.('constraints')}
+            >
+              {CONSTRAINTS_OK}
+            </button>
+            <button
+              type="button"
+              className={state.workshopQuest.resultExclusionsOk ? 'primary' : 'ghost'}
+              data-testid="result-exclusions"
+              onClick={() => onResultMatch?.('exclusions')}
+            >
+              {EXCLUSIONS_OK}
+            </button>
+            <button
+              type="button"
+              className={state.workshopQuest.resultAcceptanceOk ? 'primary' : 'ghost'}
+              data-testid="result-acceptance"
+              onClick={() => onResultMatch?.('acceptance')}
+            >
+              {ACCEPTANCE_OK}
+            </button>
+          </div>
         </article>
       ) : null}
       <div className="button-row card-actions">

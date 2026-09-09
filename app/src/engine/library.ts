@@ -360,7 +360,10 @@ function syncPhase(quest: LibraryQuest): LibraryQuest {
 
 export function libraryObjective(state: GameState): string {
   const quest = state.libraryQuest;
-  if (state.festivalQuest?.workshopMaterials) return OBJECTIVES.workshopMaterials;
+  if (state.workshopQuest?.servicePosted) return OBJECTIVES.servicePosted;
+  if (state.map === 'workshop' || state.workshopQuest?.briefed || state.festivalQuest?.workshopMaterials) {
+    return OBJECTIVES.workshopWork;
+  }
   if (state.map === 'festival' || state.festivalQuest?.briefed) return OBJECTIVES.festivalWork;
   if (state.newsroomQuest?.workshopLead) return OBJECTIVES.workshopLead;
   if (quest.contextModule && quest.specReleased) return OBJECTIVES.newsroomLead;

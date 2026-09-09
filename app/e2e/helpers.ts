@@ -4,7 +4,7 @@ import type { GameAction, MapId, SerializedTestState } from '../src/engine/types
 
 export async function waitForGame(page: Page): Promise<void> {
   await page.waitForFunction(() => Boolean(window.__RAFIQ_TEST__));
-  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '07');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '08');
 }
 
 export async function getState(page: Page): Promise<SerializedTestState> {
@@ -299,6 +299,51 @@ export async function enterFestival(page: Page): Promise<void> {
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-mode', 'playing');
   await interactAt(page, 'street', WORLD_POS.festivalDoor.x, WORLD_POS.festivalDoor.y);
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-map', 'festival');
+}
+
+export async function playToFestivalDone(page: Page, name = 'علي حسن'): Promise<void> {
+  await playToNewsroomDone(page, name);
+  await enterFestival(page);
+  await interactAt(page, 'festival', WORLD_POS.officer.x, WORLD_POS.officer.y);
+  await page.getByTestId('dialogue-advance').click();
+  await page.getByTestId('dialogue-advance').click();
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-mode', 'playing');
+  await interactAt(page, 'festival', WORLD_POS.stockTable.x, WORLD_POS.stockTable.y);
+  await page.getByTestId('inspect-close').click();
+  await interactAt(page, 'festival', WORLD_POS.receiptsDesk.x, WORLD_POS.receiptsDesk.y);
+  await page.getByTestId('inspect-close').click();
+  await interactAt(page, 'festival', WORLD_POS.reconcileDesk.x, WORLD_POS.reconcileDesk.y);
+  await page.getByTestId('reconcile-flags-match').click();
+  await page.getByTestId('reconcile-cloth-match').click();
+  await page.getByTestId('reconcile-water-receipt').click();
+  await page.getByTestId('reconcile-cups-unknown').click();
+  await page.getByTestId('reconcile-sum').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'festival', WORLD_POS.policyBoard.x, WORLD_POS.policyBoard.y);
+  await page.getByTestId('inspect-close').click();
+  await interactAt(page, 'festival', WORLD_POS.submitDesk.x, WORLD_POS.submitDesk.y);
+  await page.getByTestId('submit-figures-human').click();
+  await page.getByTestId('submit-stamp').click();
+  await page.getByTestId('submit-send-player').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-workshop-materials', 'true');
+  const done = await getState(page);
+  expect(done.evidence['3.4']).toBe('demonstrated');
+  expect(done.evidence['3.5']).toBe('demonstrated');
+  expect(done.festivalQuest.workshopMaterials).toBe(true);
+  expect(done.evidence['4.1']).toBeUndefined();
+  expect(done.evidence['4.2']).toBeUndefined();
+  expect(done.workshopQuest.servicePosted).toBe(false);
+}
+
+export async function enterWorkshop(page: Page): Promise<void> {
+  const before = await getState(page);
+  expect(before.festivalQuest.workshopMaterials).toBe(true);
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-mode', 'playing');
+  await interactAt(page, 'street', WORLD_POS.workshopDoor.x, WORLD_POS.workshopDoor.y);
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-map', 'workshop');
 }
 
 export async function enterArchive(page: Page): Promise<void> {

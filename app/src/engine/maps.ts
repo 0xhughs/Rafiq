@@ -64,13 +64,14 @@ export interface PortalEnd {
 
 export interface PortalDef {
   id: PortalId;
-  interactable: 'door' | 'shop_door' | 'library_door' | 'parcel_door' | 'library_inner' | 'newsroom_door' | 'festival_door';
+  interactable: 'door' | 'shop_door' | 'library_door' | 'parcel_door' | 'library_inner' | 'newsroom_door' | 'festival_door' | 'workshop_door';
   requiresHelp: boolean;
   requiresShopHelped?: boolean;
   requiresCommsRepaired?: boolean;
   requiresArchiveSuccess?: boolean;
   requiresWorkshopLead?: boolean;
-  lockedNode: 'locked_shop' | 'locked_library' | 'locked_parcel' | 'library_inner_locked' | 'locked_newsroom' | 'locked_festival' | null;
+  requiresWorkshopMaterials?: boolean;
+  lockedNode: 'locked_shop' | 'locked_library' | 'locked_parcel' | 'library_inner_locked' | 'locked_newsroom' | 'locked_festival' | 'locked_workshop' | null;
   ends: [PortalEnd, PortalEnd];
 }
 
@@ -198,6 +199,19 @@ const FESTIVAL_LEGEND = [
   '################',
 ];
 
+const WORKSHOP_LEGEND = [
+  '################',
+  '#WW..........WW#',
+  '#WW..........WW#',
+  '#..HHHHHHHH....#',
+  '#..............#',
+  '#u.z......m.j..#',
+  '#k........t....#',
+  '#.......d......#',
+  '#..............#',
+  '################',
+];
+
 function assertLegend(name: string, rows: string[]): void {
   if (rows.length === 0) {
     throw new Error(`${name} legend is empty`);
@@ -320,6 +334,11 @@ export const FESTIVAL = parseMap('festival', FESTIVAL_LEGEND, {
   entryDir: 'north',
 });
 
+export const WORKSHOP = parseMap('workshop', WORKSHOP_LEGEND, {
+  doorLetter: 'd',
+  entryDir: 'north',
+});
+
 export const MAPS: Record<MapId, MapDef> = {
   apartment: APARTMENT,
   street: STREET,
@@ -329,6 +348,7 @@ export const MAPS: Record<MapId, MapDef> = {
   archive: ARCHIVE,
   newsroom: NEWSROOM,
   festival: FESTIVAL,
+  workshop: WORKSHOP,
 };
 
 export function getMap(id: MapId): MapDef {
@@ -520,6 +540,17 @@ export const FURNITURE = {
     submit: mergeRects(collectKind(FESTIVAL, ['t']))[0],
     walls: collectKind(FESTIVAL, ['#']),
   },
+  workshop: {
+    shelves: collectKind(WORKSHOP, ['W']),
+    counter: mergeRects(collectKind(WORKSHOP, ['H']))[0],
+    need: mergeRects(collectKind(WORKSHOP, ['u']))[0],
+    extras: mergeRects(collectKind(WORKSHOP, ['z']))[0],
+    brief: mergeRects(collectKind(WORKSHOP, ['m']))[0],
+    builder: mergeRects(collectKind(WORKSHOP, ['j']))[0],
+    result: mergeRects(collectKind(WORKSHOP, ['t']))[0],
+    board: mergeRects(collectKind(WORKSHOP, ['k']))[0],
+    walls: collectKind(WORKSHOP, ['#']),
+  },
 };
 
 function letterCenter(map: MapDef, letter: string): Vec2 {
@@ -606,6 +637,17 @@ export const PORTALS: PortalDef[] = [
     ends: [
       { map: 'street', letter: 'G', spawnDir: 'north', arriveFacing: 'up' },
       { map: 'festival', letter: 'd', spawnDir: 'north', arriveFacing: 'up' },
+    ],
+  },
+  {
+    id: 'workshop',
+    interactable: 'workshop_door',
+    requiresHelp: true,
+    requiresWorkshopMaterials: true,
+    lockedNode: 'locked_workshop',
+    ends: [
+      { map: 'street', letter: 'Y', spawnDir: 'north', arriveFacing: 'up' },
+      { map: 'workshop', letter: 'd', spawnDir: 'north', arriveFacing: 'up' },
     ],
   },
 ];
@@ -722,6 +764,17 @@ export const WORLD_POS = {
   submitDesk: letterCenter(FESTIVAL, 't'),
   festivalTalk: cellCenter(4, 6),
   festivalWestWallInside: cellCenter(1, 4),
+  workshopExit: letterCenter(WORKSHOP, 'd'),
+  workshopSpawn: WORKSHOP.spawn,
+  manager: cellCenter(6, 4),
+  needSlip: letterCenter(WORKSHOP, 'u'),
+  extrasSlip: letterCenter(WORKSHOP, 'z'),
+  briefDesk: letterCenter(WORKSHOP, 'm'),
+  builderBench: letterCenter(WORKSHOP, 'j'),
+  resultCheck: letterCenter(WORKSHOP, 't'),
+  appointmentBoard: letterCenter(WORKSHOP, 'k'),
+  workshopTalk: cellCenter(4, 6),
+  workshopWestWallInside: cellCenter(1, 4),
 };
 
 export function doorHint(map: MapId): string {
@@ -750,4 +803,8 @@ export function newsroomDoorHint(map: MapId): string {
 
 export function festivalDoorHint(map: MapId): string {
   return map === 'festival' ? HINT_LABELS.festivalExit : HINT_LABELS.festivalEnter;
+}
+
+export function workshopDoorHint(map: MapId): string {
+  return map === 'workshop' ? HINT_LABELS.workshopExit : HINT_LABELS.workshopEnter;
 }

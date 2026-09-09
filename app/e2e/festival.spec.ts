@@ -122,8 +122,11 @@ test('newsroom-success through festival success with physical actions', async ({
   await page.getByTestId('resume-button').click();
 
   await interactAt(page, 'street', WORLD_POS.workshopDoor.x, WORLD_POS.workshopDoor.y);
-  await expect(page.getByTestId('dialogue-text')).toContainText(/مواد المعاينة|الداخل لم يُفتح/);
-  await page.getByTestId('dialogue-advance').click();
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-map', 'workshop');
+  const afterDoor = await getState(page);
+  expect(afterDoor.evidence['4.1']).toBeUndefined();
+  expect(afterDoor.evidence['4.2']).toBeUndefined();
+  expect(afterDoor.workshopQuest.servicePosted).toBe(false);
 
   await interactAt(page, 'street', WORLD_POS.robot.x, WORLD_POS.robot.y);
   await expect(page.getByTestId('dialogue-text')).toContainText(/عشرة|ستة وأربعون/);

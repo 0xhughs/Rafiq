@@ -293,6 +293,9 @@ describe('city maps and portals', () => {
     expect(playerHitsSolid('festival', WORLD_POS.festivalSpawn.x, WORLD_POS.festivalSpawn.y)).toBe(
       false,
     );
+    expect(playerHitsSolid('workshop', WORLD_POS.workshopSpawn.x, WORLD_POS.workshopSpawn.y)).toBe(
+      false,
+    );
     expect(playerHitsSolid('street', WORLD_POS.robot.x, WORLD_POS.robot.y)).toBe(false);
     expect(PORTALS.map((portal) => portal.id).sort()).toEqual([
       'archive',
@@ -302,6 +305,7 @@ describe('city maps and portals', () => {
       'newsroom',
       'parcel',
       'shop',
+      'workshop',
     ]);
     const streetPortals = PORTALS.filter((portal) =>
       portal.ends.some((end) => end.map === 'street'),

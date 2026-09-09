@@ -29,4 +29,4 @@ npm run lint
 
 ## Current slice
 
-Apartment, street, corner-store visit, parcel office, library exterior, the inner reading room, قاعة أخبار الحي, and مكتب المهرجان are playable after agreeing to help the robot. After the newsroom workshop lead, the south-street festival office opens: reconcile the stock table with receipts, leave cups unknown, and send a permitted statement with the disclosure stamp. Success supplies workshop materials and opens the street workshop door; the workshop interior is not open yet.
+Apartment, street, corner-store visit, parcel office, library exterior, the inner reading room, قاعة أخبار الحي, مكتب المهرجان, and ورشة الإصلاح are playable after agreeing to help the robot. After festival materials, the south-street workshop door portals into the workshop: write a product brief for a tiny appointment board, hand it to the builder, inspect the result, and book one posted slot. Festival success does not award 4.1/4.2.

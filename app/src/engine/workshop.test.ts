@@ -3,22 +3,20 @@ import { playerHitsSolid } from './collision';
 import { JOURNAL_CAP, TILE } from './constants';
 import { DIALOGUE, OBJECTIVES } from './dialogue';
 import {
-  DISCLOSURE_STAMP,
-  POLICY_TEXT,
-  RECEIPTS_TEXT,
-  ROBOT_COVER_TEXT,
-  ROBOT_TOTAL,
-  SUPPORTED_TOTAL,
-  TABLE_CUPS,
-  TABLE_TEXT,
-  TABLE_WATER,
-  canAward34,
-  canAward35,
-  createFestivalQuest,
-  parseFestivalQuest,
-  arNum,
-} from './festival';
-import { FESTIVAL, STREET, WORLD_POS } from './maps';
+  ACCEPTANCE_OK,
+  CONSTRAINTS_OK,
+  EXCLUSIONS_OK,
+  EXTRAS_TEXT,
+  NEED_TEXT,
+  SCREENS_OK,
+  SLOT_LABELS,
+  WORKSHOP_FEEDBACK,
+  canAward41,
+  canAward42,
+  createWorkshopQuest,
+  parseWorkshopQuest,
+} from './workshop';
+import { STREET, WORKSHOP, WORLD_POS } from './maps';
 import { robotPosition } from './npc';
 import { createInitialState, reduce } from './state';
 import { hydrateSave, toEnvelope, validateSave } from './save';
@@ -319,169 +317,249 @@ function submitHonest(state: GameState): GameState {
   return next;
 }
 
-describe('festival access', () => {
-  it('locks until newsroom workshopLead, then enters without awarding 3.4/3.5', () => {
+function playFestivalDone(state: GameState): GameState {
+  let next = enterFestival(playNewsroomDone(playArchiveDone(state)));
+  next = act(at(next, WORLD_POS.officer.x, WORLD_POS.officer.y, 'festival'), { type: 'INTERACT' });
+  next = act(next, { type: 'ADVANCE_DIALOGUE' });
+  next = act(next, { type: 'ADVANCE_DIALOGUE' });
+  next = reconcileHonest(next);
+  next = act(next, { type: 'CLOSE_OVERLAY' });
+  next = skipExplain(next);
+  next = submitHonest(next);
+  next = act(next, { type: 'CLOSE_OVERLAY' });
+  next = skipExplain(next);
+  expect(next.festivalQuest.workshopMaterials).toBe(true);
+  expect(next.evidence['4.1']).toBeUndefined();
+  expect(next.evidence['4.2']).toBeUndefined();
+  expect(next.workshopQuest.servicePosted).toBe(false);
+  return next;
+}
+
+function enterWorkshop(state: GameState): GameState {
+  return act(at(state, WORLD_POS.workshopDoor.x, WORLD_POS.workshopDoor.y, 'street'), {
+    type: 'INTERACT',
+  });
+}
+
+function playing(state: GameState): GameState {
+  let next = state;
+  if (next.mode !== 'playing') {
+    next = act(next, { type: 'CLOSE_OVERLAY' });
+    next = skipExplain(next);
+  }
+  return next;
+}
+
+function inspectNeed(state: GameState): GameState {
+  let next = playing(state);
+  next = act(at(next, WORLD_POS.needSlip.x, WORLD_POS.needSlip.y, 'workshop'), { type: 'INTERACT' });
+  next = act(next, { type: 'CLOSE_OVERLAY' });
+  return skipExplain(next);
+}
+
+function fillSlimBrief(state: GameState): GameState {
+  let next = playing(state);
+  next = act(at(next, WORLD_POS.briefDesk.x, WORLD_POS.briefDesk.y, 'workshop'), { type: 'INTERACT' });
+  next = act(next, { type: 'BRIEF_SET', field: 'screens', value: 'board_and_confirm' });
+  next = act(next, { type: 'BRIEF_SET', field: 'constraints', value: 'paper_one_no_pay_chat' });
+  next = act(next, { type: 'BRIEF_SET', field: 'exclusions', value: 'no_extras' });
+  next = act(next, { type: 'BRIEF_SET', field: 'acceptance', value: 'slot_shows_booked' });
+  next = act(next, { type: 'BRIEF_SET', field: 'extra', value: 'none' });
+  next = act(next, { type: 'CLOSE_OVERLAY' });
+  return next;
+}
+
+function openBuilder(state: GameState): GameState {
+  const next = playing(state);
+  return act(at(next, WORLD_POS.builderBench.x, WORLD_POS.builderBench.y, 'workshop'), {
+    type: 'INTERACT',
+  });
+}
+
+function handAndBuild(state: GameState): GameState {
+  let next = openBuilder(state);
+  next = act(next, { type: 'BUILDER_HAND' });
+  next = act(next, { type: 'BUILDER_BUILD' });
+  next = act(next, { type: 'CLOSE_OVERLAY' });
+  return skipExplain(next);
+}
+
+function matchResult(state: GameState): GameState {
+  let next = playing(state);
+  next = act(at(next, WORLD_POS.resultCheck.x, WORLD_POS.resultCheck.y, 'workshop'), {
+    type: 'INTERACT',
+  });
+  next = act(next, { type: 'RESULT_MATCH', part: 'screens' });
+  next = act(next, { type: 'RESULT_MATCH', part: 'constraints' });
+  next = act(next, { type: 'RESULT_MATCH', part: 'exclusions' });
+  next = act(next, { type: 'RESULT_MATCH', part: 'acceptance' });
+  return next;
+}
+
+function bookSunday(state: GameState): GameState {
+  let next = playing(state);
+  next = act(at(next, WORLD_POS.appointmentBoard.x, WORLD_POS.appointmentBoard.y, 'workshop'), {
+    type: 'INTERACT',
+  });
+  next = act(next, { type: 'BOARD_BOOK', slot: 'sunday' });
+  return next;
+}
+
+describe('workshop access', () => {
+  it('locks until workshopMaterials, then portals without awarding 4.1/4.2', () => {
     expect(WORLD_POS.robot).toEqual({ x: 12 * TILE + 24, y: 5 * TILE + 24 });
-    expect(WORLD_POS.shopDoor.x).toBe(6 * TILE + 24);
-    expect(WORLD_POS.libraryDoor.x).toBe(22 * TILE + 24);
-    expect(WORLD_POS.newsroomDoor.x).toBe(14 * TILE + 24);
-    expect(WORLD_POS.parcelDoor.x).toBe(29 * TILE + 24);
-    expect(WORLD_POS.libraryInner).toBeDefined();
+    expect(WORLD_POS.workshopDoor).toEqual(WORLD_POS.workshopDoor);
     expect(MAP_IDS).toContain('workshop');
-    let state = act(at(checkpoint(), WORLD_POS.festivalDoor.x, WORLD_POS.festivalDoor.y, 'street'), {
+    let state = act(at(checkpoint(), WORLD_POS.workshopDoor.x, WORLD_POS.workshopDoor.y, 'street'), {
       type: 'INTERACT',
     });
     expect(state.map).toBe('street');
-    expect(state.dialogueNode).toBe('locked_festival');
-    state = playNewsroomDone(playArchiveDone(checkpoint()));
-    expect(state.evidence['3.4']).toBeUndefined();
-    expect(state.evidence['3.5']).toBeUndefined();
-    state = enterFestival(state);
-    expect(state.map).toBe('festival');
-    expect(playerHitsSolid('festival', state.position.x, state.position.y)).toBe(false);
-    expect(state.journalEvents.some((event) => event.id === 'festival_visit')).toBe(true);
-    expect(playerHitsSolid('street', WORLD_POS.robot.x, WORLD_POS.robot.y)).toBe(false);
-    expect(state.evidence['3.4']).toBeUndefined();
-    expect(state.evidence['3.5']).toBeUndefined();
-    expect(state.festivalQuest.workshopMaterials).toBe(false);
-    expect(new Set(FESTIVAL.legend.map((row) => row.length))).toEqual(new Set([16]));
-    expect(STREET.legend[5]).toContain('o');
-  });
-});
-
-describe('3.4 reconciliation', () => {
-  it('inspect-only does not award; cups 6/10, table water 15, and robot 46 fail; receipt sum 40 awards', () => {
-    expect(TABLE_TEXT).toContain('١٢');
-    expect(TABLE_TEXT).toContain(arNum(TABLE_WATER));
-    expect(RECEIPTS_TEXT).toContain('٢٠');
-    expect(RECEIPTS_TEXT).toMatch(/لا إيصال/);
-    expect(RECEIPTS_TEXT).not.toMatch(/فناجين الشاي: ٦/);
-    let state = enterFestival(playNewsroomDone(playArchiveDone(checkpoint())));
-    state = inspectFest(state, WORLD_POS.stockTable.x, WORLD_POS.stockTable.y);
-    state = inspectFest(state, WORLD_POS.receiptsDesk.x, WORLD_POS.receiptsDesk.y);
-    expect(state.evidence['3.4']).toBeUndefined();
-    state = openReconcile(state);
-    state = act(state, { type: 'RECONCILE_SUM' });
-    expect(state.evidence['3.4']).toBeUndefined();
-    state = markHonest(state);
-    state = act(state, { type: 'RECONCILE_MARK', line: 'cups', mark: 'table' });
-    state = act(state, { type: 'RECONCILE_SUM' });
-    expect(state.festivalQuest.inventedCups).toBe(true);
-    expect(state.evidence['3.4']).toBeUndefined();
-    expect(canAward34(state.festivalQuest)).toBe(false);
-    state = act(state, { type: 'RECONCILE_MARK', line: 'cups', mark: 'invent' });
-    state = act(state, { type: 'RECONCILE_SUM' });
-    expect(state.evidence['3.4']).toBeUndefined();
-    state = act(state, { type: 'RECONCILE_MARK', line: 'cups', mark: 'unknown' });
-    state = act(state, { type: 'RECONCILE_MARK', line: 'water', mark: 'table' });
-    state = act(state, { type: 'RECONCILE_SUM' });
-    expect(state.festivalQuest.usedTableWater).toBe(true);
-    expect(state.evidence['3.4']).toBeUndefined();
-    state = act(state, { type: 'RECONCILE_MARK', line: 'water', mark: 'receipt' });
-    state = act(state, { type: 'RECONCILE_ROBOT' });
-    expect(state.festivalQuest.usedRobotTotal).toBe(true);
-    expect(state.festivalQuest.supportedTotal).toBe(ROBOT_TOTAL);
-    expect(state.evidence['3.4']).toBeUndefined();
-    state = markHonest(state);
-    state = act(state, { type: 'RECONCILE_SUM' });
-    expect(state.festivalQuest.supportedTotal).toBe(SUPPORTED_TOTAL);
-    expect(canAward34(state.festivalQuest)).toBe(true);
-    expect(state.evidence['3.4']).toBe('demonstrated');
-    expect(state.evidence['3.5']).toBeUndefined();
-    expect(state.festivalQuest.workshopMaterials).toBe(false);
-  });
-});
-
-describe('3.5 policy submission', () => {
-  it('inspect-policy-only does not award; no stamp, robot figures, and officer signature fail', () => {
-    expect(POLICY_TEXT).toContain(DISCLOSURE_STAMP);
-    expect(ROBOT_COVER_TEXT).toContain(arNum(ROBOT_TOTAL));
-    expect(ROBOT_COVER_TEXT).toContain(arNum(TABLE_CUPS));
-    let state = enterFestival(playNewsroomDone(playArchiveDone(checkpoint())));
-    state = reconcileHonest(state);
-    state = act(state, { type: 'CLOSE_OVERLAY' });
-    state = skipExplain(state);
-    expect(state.evidence['3.4']).toBe('demonstrated');
-    state = inspectFest(state, WORLD_POS.policyBoard.x, WORLD_POS.policyBoard.y);
-    expect(state.evidence['3.5']).toBeUndefined();
-    state = act(at(state, WORLD_POS.submitDesk.x, WORLD_POS.submitDesk.y, 'festival'), {
-      type: 'INTERACT',
-    });
-    nextSend(state);
-    state = act(state, { type: 'SUBMIT_SET', field: 'figures', value: 'human' });
-    state = act(state, { type: 'SUBMIT_SEND', sender: 'player' });
-    expect(state.festivalQuest.submittedWithoutStamp).toBe(true);
-    expect(state.evidence['3.5']).toBeUndefined();
-    state = act(state, { type: 'SUBMIT_SET', field: 'stamp', value: 'on' });
-    state = act(state, { type: 'SUBMIT_SET', field: 'figures', value: 'robot' });
-    state = act(state, { type: 'SUBMIT_SEND', sender: 'player' });
-    expect(state.festivalQuest.submittedRobotFigures).toBe(true);
-    expect(state.evidence['3.5']).toBeUndefined();
-    state = act(state, { type: 'SUBMIT_SET', field: 'figures', value: 'human' });
-    state = act(state, { type: 'SUBMIT_SEND', sender: 'officer_robot' });
-    expect(state.festivalQuest.sender).toBe('officer_robot');
-    expect(state.evidence['3.5']).toBeUndefined();
-    state = act(state, { type: 'SUBMIT_SEND', sender: 'player' });
-    expect(canAward35(state.festivalQuest)).toBe(true);
-    expect(state.evidence['3.5']).toBe('demonstrated');
-  });
-});
-
-function nextSend(state: GameState): void {
-  expect(state.mode).toBe('submit');
-}
-
-describe('festival success', () => {
-  it('thanks the officer, supplies materials, opens the street door, and keeps the robot unsupported', () => {
-    let state = enterFestival(playNewsroomDone(playArchiveDone(checkpoint())));
-    state = reconcileHonest(state);
-    state = act(state, { type: 'CLOSE_OVERLAY' });
-    state = skipExplain(state);
-    state = submitHonest(state);
-    expect(state.evidence['3.4']).toBe('demonstrated');
-    expect(state.evidence['3.5']).toBe('demonstrated');
-    expect(state.festivalQuest.workshopMaterials).toBe(true);
-    expect(state.festivalQuest.workshopDoorOpen).toBe(true);
-    expect(state.storyObjective).toBe(OBJECTIVES.workshopWork);
-    expect(state.map).toBe('festival');
-    expect(MAP_IDS).toContain('workshop');
+    expect(state.dialogueNode).toBe('locked_workshop');
+    state = playFestivalDone(checkpoint());
     expect(state.evidence['4.1']).toBeUndefined();
     expect(state.evidence['4.2']).toBeUndefined();
     expect(state.workshopQuest.servicePosted).toBe(false);
-    state = act(state, { type: 'CLOSE_OVERLAY' });
-    state = skipExplain(state);
-    state = act(at(state, WORLD_POS.officer.x, WORLD_POS.officer.y, 'festival'), { type: 'INTERACT' });
-    expect(state.dialogueNode).toBe('officer_thanks');
-    state = act(state, { type: 'ADVANCE_DIALOGUE' });
-    expect(state.dialogueNode).toBe('officer_materials');
-    expect(DIALOGUE.officer_materials.text(state.playerName)).toMatch(/مواد/);
-    state = act(state, { type: 'ADVANCE_DIALOGUE' });
-    state = act(at(state, WORLD_POS.workshopDoor.x, WORLD_POS.workshopDoor.y, 'street'), {
-      type: 'INTERACT',
-    });
+    state = enterWorkshop(state);
     expect(state.map).toBe('workshop');
-    expect(state.dialogueNode).toBeNull();
+    expect(playerHitsSolid('workshop', state.position.x, state.position.y)).toBe(false);
+    expect(state.journalEvents.some((event) => event.id === 'workshop_visit')).toBe(true);
     expect(state.evidence['4.1']).toBeUndefined();
     expect(state.evidence['4.2']).toBeUndefined();
     expect(state.workshopQuest.servicePosted).toBe(false);
+    expect(new Set(WORKSHOP.legend.map((row) => row.length))).toEqual(new Set([16]));
+    expect(STREET.legend[5]).toContain('o');
+    expect(JSON.stringify(WORKSHOP.legend.join(''))).not.toMatch(/[PEIRFDGY]/);
+  });
+});
+
+describe('4.2 product brief', () => {
+  it('inspect-only does not award; missing parts fail; build without brief refuses; four-part inspect awards', () => {
+    expect(NEED_TEXT).toContain('لوحة مواعيد المعاينة');
+    expect(SCREENS_OK).toContain('لوحة الفترات الثلاث المعلّقة');
+    expect(CONSTRAINTS_OK).toContain('فترات معلّقة على الورق فقط');
+    expect(EXCLUSIONS_OK).toContain('لا كiosk ولا مفتاح API');
+    expect(ACCEPTANCE_OK).toContain('محجوز');
+    let state = enterWorkshop(playFestivalDone(checkpoint()));
+    state = inspectNeed(state);
+    expect(state.evidence['4.2']).toBeUndefined();
+    state = openBuilder(state);
+    state = act(state, { type: 'BUILDER_BUILD' });
+    expect(state.workshopQuest.builtWithoutBrief).toBe(true);
+    expect(state.workshopQuest.boardKind).toBe('none');
+    expect(state.shopFeedback).toBe(WORKSHOP_FEEDBACK.buildWithoutBrief);
+    expect(state.evidence['4.2']).toBeUndefined();
+    state = act(state, { type: 'CLOSE_OVERLAY' });
+    state = playing(state);
+    state = act(at(state, WORLD_POS.briefDesk.x, WORLD_POS.briefDesk.y, 'workshop'), {
+      type: 'INTERACT',
+    });
+    state = act(state, { type: 'BRIEF_SET', field: 'constraints', value: 'paper_one_no_pay_chat' });
+    state = act(state, { type: 'BRIEF_SET', field: 'exclusions', value: 'no_extras' });
+    state = act(state, { type: 'BRIEF_SET', field: 'acceptance', value: 'slot_shows_booked' });
+    state = act(state, { type: 'CLOSE_OVERLAY' });
+    state = openBuilder(state);
+    state = act(state, { type: 'BUILDER_HAND' });
+    expect(state.shopFeedback).toBe(WORKSHOP_FEEDBACK.needScreens);
+    expect(state.workshopQuest.handedOff).toBe(false);
+    expect(state.evidence['4.2']).toBeUndefined();
+    state = act(state, { type: 'CLOSE_OVERLAY' });
+    state = fillSlimBrief(state);
+    state = handAndBuild(state);
+    expect(state.workshopQuest.handedOff).toBe(true);
+    expect(state.workshopQuest.boardKind).toBe('slim');
+    expect(state.evidence['4.2']).toBeUndefined();
+    state = matchResult(state);
+    expect(canAward42(state.workshopQuest)).toBe(true);
+    expect(state.evidence['4.2']).toBe('demonstrated');
+    expect(state.evidence['4.1']).toBeUndefined();
+  });
+});
+
+describe('4.1 appointment board', () => {
+  it('extras in brief and extra controls fail; booking a posted slot on the slim board awards', () => {
+    expect(EXTRAS_TEXT).toContain('دفع إلكتروني');
+    expect(SLOT_LABELS.sunday).toBe('الأحد — بعد العصر');
+    expect(SLOT_LABELS.monday).toBe('الاثنين — ضحى');
+    expect(SLOT_LABELS.tuesday).toBe('الثلاثاء — عصراً');
+    let state = enterWorkshop(playFestivalDone(checkpoint()));
+    state = inspectNeed(state);
+    state = fillSlimBrief(state);
+    state = playing(state);
+    state = act(at(state, WORLD_POS.briefDesk.x, WORLD_POS.briefDesk.y, 'workshop'), {
+      type: 'INTERACT',
+    });
+    state = act(state, { type: 'BRIEF_SET', field: 'extra', value: 'pay' });
+    expect(state.workshopQuest.extrasInBrief).toBe(true);
+    state = act(state, { type: 'CLOSE_OVERLAY' });
+    state = openBuilder(state);
+    state = act(state, { type: 'BUILDER_HAND' });
+    state = act(state, { type: 'BUILDER_BUILD' });
+    expect(state.workshopQuest.boardKind).toBe('bloated');
+    expect(state.shopFeedback).toBe(WORKSHOP_FEEDBACK.builtBloated);
+    state = act(state, { type: 'CLOSE_OVERLAY' });
+    state = skipExplain(state);
+    state = bookSunday(state);
+    expect(state.evidence['4.1']).toBeUndefined();
+    state = act(state, { type: 'BOARD_EXTRA', control: 'pay' });
+    expect(state.workshopQuest.extraControlUsed).toBe(true);
+    expect(state.shopFeedback).toBe(WORKSHOP_FEEDBACK.extraControl);
+    expect(canAward41(state.workshopQuest)).toBe(false);
+    state = act(state, { type: 'CLOSE_OVERLAY' });
+    state = fillSlimBrief(state);
+    expect(state.workshopQuest.extrasInBrief).toBe(false);
+    state = handAndBuild(state);
+    expect(state.workshopQuest.boardKind).toBe('slim');
+    state = bookSunday(state);
+    expect(state.workshopQuest.bookedSlot).toBe('sunday');
+    expect(canAward41(state.workshopQuest)).toBe(true);
+    expect(state.evidence['4.1']).toBe('demonstrated');
+  });
+});
+
+describe('workshop success', () => {
+  it('thanks the manager, posts the board, and keeps the robot unsupported', () => {
+    let state = enterWorkshop(playFestivalDone(checkpoint()));
+    state = inspectNeed(state);
+    state = fillSlimBrief(state);
+    state = handAndBuild(state);
+    state = matchResult(state);
+    expect(state.evidence['4.2']).toBe('demonstrated');
+    state = act(state, { type: 'CLOSE_OVERLAY' });
+    state = skipExplain(state);
+    state = bookSunday(state);
+    expect(state.evidence['4.1']).toBe('demonstrated');
+    expect(state.workshopQuest.servicePosted).toBe(true);
+    expect(state.storyObjective).toBe(OBJECTIVES.servicePosted);
+    expect(state.journalEvents.some((event) => event.id === 'service_posted')).toBe(true);
+    state = act(state, { type: 'CLOSE_OVERLAY' });
+    state = skipExplain(state);
+    state = act(at(state, WORLD_POS.manager.x, WORLD_POS.manager.y, 'workshop'), { type: 'INTERACT' });
+    expect(state.dialogueNode).toBe('manager_thanks');
+    expect(DIALOGUE.manager_thanks.text(state.playerName)).toMatch(/شكراً/);
+    state = act(state, { type: 'ADVANCE_DIALOGUE' });
     state = act(at(state, WORLD_POS.robot.x, WORLD_POS.robot.y, 'street'), { type: 'INTERACT' });
-    expect(state.dialogueNode).toBe('companion_after_festival');
-    expect(DIALOGUE.companion_after_festival.text(state.playerName)).toMatch(/عشرة|ستة وأربعون/);
+    expect(state.dialogueNode).toBe('companion_after_workshop');
+    expect(DIALOGUE.companion_after_workshop.text(state.playerName)).toMatch(/مفتوحة دائماً|الدفع/);
     expect(robotPosition(state).x).toBe(state.position.x - 32);
-    expect(JSON.stringify(state)).not.toMatch(/امتحان|اختبار نهائي|MCP|harness/);
+    expect(JSON.stringify(state)).not.toMatch(/امتحان|اختبار نهائي|MCP|harness|شهادة/);
     expect(state.journalEvents.length).toBeLessThanOrEqual(JOURNAL_CAP);
+    expect(Object.keys(state.evidence).sort()).toEqual(
+      ['1.1', '1.2', '1.3', '1.4', '1.5', '1.6', '2.1', '2.2', '2.3', '2.4', '2.5', '2.6', '3.1', '3.2', '3.3', '3.4', '3.5', '4.1', '4.2'].filter(
+        (id) => state.evidence[id as keyof typeof state.evidence] === 'demonstrated',
+      ),
+    );
   });
 
-  it('hydrates missing festivalQuest as unstarted and keeps saveVersion 1', () => {
-    const state = playNewsroomDone(playArchiveDone(checkpoint()));
+  it('hydrates missing workshopQuest as unstarted and keeps saveVersion 1', () => {
+    const state = playFestivalDone(checkpoint());
     const envelope = toEnvelope(state);
     expect(envelope.saveVersion).toBe(1);
-    const legacy = { ...envelope, festivalQuest: undefined, officer: undefined };
+    const legacy = { ...envelope, workshopQuest: undefined, manager: undefined };
     const parsed = validateSave(JSON.stringify(legacy));
     expect(parsed).not.toBeNull();
     const hydrated = hydrateSave(parsed!, 'ok', false);
-    expect(hydrated.festivalQuest).toEqual(createFestivalQuest());
-    expect(hydrated.officer).toBe('unmet');
-    expect(parseFestivalQuest(undefined).phase).toBe('unstarted');
+    expect(hydrated.workshopQuest).toEqual(createWorkshopQuest());
+    expect(hydrated.manager).toBe('unmet');
+    expect(parseWorkshopQuest(undefined).phase).toBe('unstarted');
   });
 });

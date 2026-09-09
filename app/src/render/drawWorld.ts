@@ -1,6 +1,6 @@
 import { TILE } from '../engine/constants';
 import { robotPosition, robotVisible } from '../engine/npc';
-import { APARTMENT, ARCHIVE, FESTIVAL, FURNITURE, LIBRARY, NEWSROOM, PARCEL, SHOP, STREET, WORLD_POS, getMap } from '../engine/maps';
+import { APARTMENT, ARCHIVE, FESTIVAL, FURNITURE, LIBRARY, NEWSROOM, PARCEL, SHOP, STREET, WORKSHOP, WORLD_POS, getMap } from '../engine/maps';
 import type { Facing, GameState } from '../engine/types';
 
 const PALETTE = {
@@ -672,6 +672,50 @@ function drawFestival(ctx: CanvasRenderingContext2D): void {
   fillRound(ctx, door.x - 10, door.y - 22, 20, 44, 4, PALETTE.festivalDoor);
 }
 
+function drawWorkshop(ctx: CanvasRenderingContext2D): void {
+  const map = WORKSHOP;
+  drawChecker(ctx, map.cols, map.rows, '#efe4d4', '#e6d7c4');
+  drawWalls(ctx, FURNITURE.workshop.walls);
+  ctx.font = '11px "Noto Naskh Arabic", "Cairo", sans-serif';
+  ctx.direction = 'rtl';
+  ctx.textAlign = 'center';
+  for (const shelf of FURNITURE.workshop.shelves) {
+    fillRound(ctx, shelf.x + 4, shelf.y + 4, shelf.w - 8, shelf.h - 8, 4, PALETTE.workshop);
+    ctx.fillStyle = '#ead9c0';
+    ctx.fillRect(shelf.x + 10, shelf.y + 12, shelf.w - 20, 6);
+  }
+  const need = FURNITURE.workshop.need;
+  fillRound(ctx, need.x + 4, need.y + 6, need.w - 8, need.h - 10, 4, '#f4e4c4');
+  ctx.fillStyle = '#5a3218';
+  ctx.fillText('حاجة', need.x + need.w / 2, need.y + 28);
+  const extras = FURNITURE.workshop.extras;
+  fillRound(ctx, extras.x + 4, extras.y + 6, extras.w - 8, extras.h - 10, 4, '#f3d9a4');
+  ctx.fillStyle = '#3a2414';
+  ctx.fillText('إضافات', extras.x + extras.w / 2, extras.y + 28);
+  const brief = FURNITURE.workshop.brief;
+  fillRound(ctx, brief.x + 4, brief.y + 6, brief.w - 8, brief.h - 10, 4, '#efe6d0');
+  ctx.fillStyle = '#2a2118';
+  ctx.fillText('وصف', brief.x + brief.w / 2, brief.y + 28);
+  const builder = FURNITURE.workshop.builder;
+  fillRound(ctx, builder.x + 4, builder.y + 6, builder.w - 8, builder.h - 10, 4, '#f6d6c8');
+  ctx.fillStyle = '#7a241c';
+  ctx.fillText('بنّاء', builder.x + builder.w / 2, builder.y + 28);
+  const result = FURNITURE.workshop.result;
+  fillRound(ctx, result.x + 4, result.y + 6, result.w - 8, result.h - 10, 4, '#d7efe4');
+  ctx.fillStyle = '#163238';
+  ctx.fillText('فحص', result.x + result.w / 2, result.y + 28);
+  const board = FURNITURE.workshop.board;
+  fillRound(ctx, board.x + 4, board.y + 6, board.w - 8, board.h - 10, 4, '#ead9c0');
+  ctx.fillStyle = '#163238';
+  ctx.fillText('مواعيد', board.x + board.w / 2, board.y + 28);
+  const counter = FURNITURE.workshop.counter;
+  fillRound(ctx, counter.x + 2, counter.y + 6, counter.w - 4, counter.h - 10, 6, PALETTE.workshop);
+  ctx.fillStyle = '#ead9c0';
+  ctx.fillText('المنضدة', counter.x + counter.w / 2, counter.y + 22);
+  const door = map.door;
+  fillRound(ctx, door.x - 10, door.y - 22, 20, 44, 4, PALETTE.workshopDoor);
+}
+
 function drawRobot(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -763,6 +807,9 @@ export function drawWorld(ctx: CanvasRenderingContext2D, state: GameState, time:
   } else if (state.map === 'festival') {
     drawFestival(ctx);
     drawVillager(ctx, WORLD_POS.officer.x, WORLD_POS.officer.y, '#3d5a4a');
+  } else if (state.map === 'workshop') {
+    drawWorkshop(ctx);
+    drawVillager(ctx, WORLD_POS.manager.x, WORLD_POS.manager.y, '#5a4a3d');
   } else {
     drawLibraryExterior(ctx, state.parcelQuest.commsRepaired);
   }
