@@ -36,6 +36,7 @@ import { BridgeOverlay } from './ui/BridgeOverlay';
 import { SkillOverlay } from './ui/SkillOverlay';
 import { ApproveOverlay } from './ui/ApproveOverlay';
 import { CrewOverlay } from './ui/CrewOverlay';
+import { PathOverlay } from './ui/PathOverlay';
 import { evidenceAttr } from './engine/shop';
 
 function reducer(state: GameState, action: GameAction): GameState {
@@ -137,7 +138,7 @@ export default function App() {
       data-dialogue={state.dialogueNode ?? ''}
       data-save={state.saveStatus}
       data-evidence={evidenceAttr(state.evidence)}
-      data-slice="15"
+      data-slice="16"
       data-shop-quest={state.shopQuest.phase}
       data-parcel-quest={state.parcelQuest.phase}
       data-comms-repaired={state.parcelQuest.commsRepaired ? 'true' : 'false'}
@@ -162,6 +163,8 @@ export default function App() {
       data-approval-ready={state.approvalQuest.approvalReady ? 'true' : 'false'}
       data-crew-quest={state.crewQuest.phase}
       data-crew-ready={state.crewQuest.crewReady ? 'true' : 'false'}
+      data-path-quest={state.pathQuest.phase}
+      data-restored={state.pathQuest.restored ? 'true' : 'false'}
       data-context-window={state.libraryQuest.windowSlots.join(',')}
       data-cassette={state.libraryQuest.contextModule ? 'contextModule' : ''}
       data-workshop-lead={state.newsroomQuest.workshopLead ? 'true' : 'false'}
@@ -190,6 +193,7 @@ export default function App() {
         skillReady={state.skillQuest.skillReady}
         approvalReady={state.approvalQuest.approvalReady}
         crewReady={state.crewQuest.crewReady}
+        restored={state.pathQuest.restored}
       />
       {naming ? (
         <NameEntry
@@ -434,6 +438,35 @@ export default function App() {
           onQualityMajority={() => dispatch({ type: 'CREW_QUALITY_MAJORITY' })}
           onQualityRobotDone={() => dispatch({ type: 'CREW_QUALITY_ROBOT_DONE' })}
           onQualityResend={() => dispatch({ type: 'CREW_QUALITY_RESEND' })}
+          onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+        />
+      ) : null}
+      {state.mode === 'path' ? (
+        <PathOverlay
+          state={state}
+          onInspectSource={() => dispatch({ type: 'PATH_INSPECT_SOURCE' })}
+          onTrustRumor={() => dispatch({ type: 'PATH_TRUST_RUMOR' })}
+          onRefuseRumor={() => dispatch({ type: 'PATH_REFUSE_RUMOR' })}
+          onGoal={(goal) => dispatch({ type: 'PATH_SET_GOAL', goal })}
+          onTools={(tools) => dispatch({ type: 'PATH_SET_TOOLS', tools })}
+          onStop={(stop) => dispatch({ type: 'PATH_SET_STOP', stop })}
+          onLoadReading={() => dispatch({ type: 'PATH_LOAD_READING' })}
+          onLoadMango={() => dispatch({ type: 'PATH_LOAD_MANGO' })}
+          onLoadClinic={() => dispatch({ type: 'PATH_LOAD_CLINIC' })}
+          onRunSkill={() => dispatch({ type: 'PATH_RUN_SKILL' })}
+          onRunOld={() => dispatch({ type: 'PATH_RUN_OLD' })}
+          onRunChat={() => dispatch({ type: 'PATH_RUN_CHAT' })}
+          onExtraStep={() => dispatch({ type: 'PATH_EXTRA_STEP' })}
+          onExam={() => dispatch({ type: 'PATH_EXAM' })}
+          onQuiz={() => dispatch({ type: 'PATH_QUIZ' })}
+          onRobotDone={() => dispatch({ type: 'PATH_ROBOT_DONE' })}
+          onPrepare={() => dispatch({ type: 'PATH_PREPARE' })}
+          onRecipient={(recipient) => dispatch({ type: 'PATH_SET_RECIPIENT', recipient })}
+          onPayload={(payload) => dispatch({ type: 'PATH_SET_PAYLOAD', payload })}
+          onInspectSend={() => dispatch({ type: 'PATH_INSPECT_SEND' })}
+          onReject={() => dispatch({ type: 'PATH_REJECT' })}
+          onConfirm={() => dispatch({ type: 'PATH_CONFIRM' })}
+          onResendOld={() => dispatch({ type: 'PATH_RESEND_OLD' })}
           onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
         />
       ) : null}

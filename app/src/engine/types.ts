@@ -51,7 +51,8 @@ export type Mode =
   | 'bridge'
   | 'skill'
   | 'approve'
-  | 'crew';
+  | 'crew'
+  | 'path';
 
 export type TrashState = 'home' | 'carried' | 'disposed';
 
@@ -105,6 +106,7 @@ export const EVIDENCE_IDS = [
   '6.1',
   '6.2',
   '6.3',
+  '6.4',
 ] as const;
 export type EvidenceId = (typeof EVIDENCE_IDS)[number];
 export type EvidenceStatus = 'demonstrated';
@@ -181,7 +183,8 @@ export type ExplainTopic =
   | 'human_before_send'
   | 'what_not_to_automate'
   | 'roles_and_owner'
-  | 'quality_before_accept';
+  | 'quality_before_accept'
+  | 'integrated_path';
 export type ContextNoteId = 'constraint' | 'hold' | 'festival' | 'mango';
 export type PackFileId = 'spec' | 'delivery' | 'festival' | 'news_draft';
 export type PackStampId = 'rafiq_repair' | 'festival' | 'unnamed';
@@ -603,6 +606,40 @@ export interface CrewQuest {
   view: CrewView;
 }
 
+export const PATH_PHASES = ['unstarted', 'working', 'ready'] as const;
+export type PathPhase = (typeof PATH_PHASES)[number];
+export type PathView = 'prep' | 'seal';
+export type PathGoal = 'reading' | 'live';
+export type PathTools = 'safe' | 'pay';
+export type PathStop = 'budget' | 'unlimited';
+export type PathRecipient = 'librarian' | 'neighbors' | 'payroll';
+export type PathPayload = 'exact' | 'stream';
+
+export interface PathQuest {
+  phase: PathPhase;
+  openedPrep: boolean;
+  openedSeal: boolean;
+  sourceInspected: boolean;
+  rumorRefused: boolean;
+  goal: PathGoal | null;
+  tools: PathTools | null;
+  stop: PathStop | null;
+  packReady: boolean;
+  skillRan: boolean;
+  extraStopped: boolean;
+  prepared: boolean;
+  recipient: PathRecipient | null;
+  payload: PathPayload | null;
+  inspectedSend: boolean;
+  rejectedWrong: boolean;
+  needsRereview: boolean;
+  nightSent: boolean;
+  receiptText: string;
+  restored: boolean;
+  pendingExplain: ExplainTopic | null;
+  view: PathView;
+}
+
 export type ParcelId = 'r17' | 'r19' | 'r71';
 export type ParcelPick = ParcelId | 'gray' | null;
 export type LocationPick = 'west' | 'east' | 'any' | null;
@@ -778,7 +815,15 @@ export type JournalEventId =
   | 'conflict_resolved'
   | 'quality_repaired'
   | 'quality_accepted'
-  | 'crew_ready';
+  | 'crew_ready'
+  | 'path_opened'
+  | 'source_verified'
+  | 'plan_bounded'
+  | 'pack_ready'
+  | 'skill_ran'
+  | 'night_rejected'
+  | 'night_sent'
+  | 'restored';
 
 export interface JournalEvent {
   id: JournalEventId;
@@ -873,6 +918,7 @@ export type DialogueNodeId =
   | 'manager_skill_thanks'
   | 'manager_approval_thanks'
   | 'manager_crew_thanks'
+  | 'manager_restore_thanks'
   | 'companion_after_workshop'
   | 'companion_after_kiosk'
   | 'companion_after_lab'
@@ -880,7 +926,8 @@ export type DialogueNodeId =
   | 'companion_after_bridge'
   | 'companion_after_skill'
   | 'companion_after_approval'
-  | 'companion_after_crew';
+  | 'companion_after_crew'
+  | 'companion_after_restore';
 
 export type DialogueChoiceId =
   | 'agree'
@@ -968,7 +1015,9 @@ export type InteractableId =
   | 'approve_desk'
   | 'decision_desk'
   | 'crew_desk'
-  | 'quality_desk';
+  | 'quality_desk'
+  | 'path_desk'
+  | 'seal_desk';
 
 export type PortalId =
   | 'home'
@@ -1039,6 +1088,7 @@ export interface GameState {
   skillQuest: SkillQuest;
   approvalQuest: ApprovalQuest;
   crewQuest: CrewQuest;
+  pathQuest: PathQuest;
   calculator: CalculatorState;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
@@ -1206,7 +1256,30 @@ export type GameAction =
   | { type: 'CREW_ACCEPT' }
   | { type: 'CREW_QUALITY_MAJORITY' }
   | { type: 'CREW_QUALITY_ROBOT_DONE' }
-  | { type: 'CREW_QUALITY_RESEND' };
+  | { type: 'CREW_QUALITY_RESEND' }
+  | { type: 'PATH_INSPECT_SOURCE' }
+  | { type: 'PATH_TRUST_RUMOR' }
+  | { type: 'PATH_REFUSE_RUMOR' }
+  | { type: 'PATH_SET_GOAL'; goal: PathGoal }
+  | { type: 'PATH_SET_TOOLS'; tools: PathTools }
+  | { type: 'PATH_SET_STOP'; stop: PathStop }
+  | { type: 'PATH_LOAD_READING' }
+  | { type: 'PATH_LOAD_MANGO' }
+  | { type: 'PATH_LOAD_CLINIC' }
+  | { type: 'PATH_RUN_SKILL' }
+  | { type: 'PATH_RUN_OLD' }
+  | { type: 'PATH_RUN_CHAT' }
+  | { type: 'PATH_EXTRA_STEP' }
+  | { type: 'PATH_EXAM' }
+  | { type: 'PATH_QUIZ' }
+  | { type: 'PATH_ROBOT_DONE' }
+  | { type: 'PATH_PREPARE' }
+  | { type: 'PATH_SET_RECIPIENT'; recipient: PathRecipient }
+  | { type: 'PATH_SET_PAYLOAD'; payload: PathPayload }
+  | { type: 'PATH_INSPECT_SEND' }
+  | { type: 'PATH_REJECT' }
+  | { type: 'PATH_CONFIRM' }
+  | { type: 'PATH_RESEND_OLD' };
 
 export interface DialogueChoice {
   id: DialogueChoiceId;
@@ -1276,6 +1349,7 @@ export interface SerializedTestState {
   skillQuest: SkillQuest;
   approvalQuest: ApprovalQuest;
   crewQuest: CrewQuest;
+  pathQuest: PathQuest;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
   robotUnderstood: string | null;
@@ -1316,6 +1390,7 @@ export interface SaveEnvelope {
   skillQuest: SkillQuest;
   approvalQuest: ApprovalQuest;
   crewQuest: CrewQuest;
+  pathQuest: PathQuest;
   robot: { companion: boolean };
   endingState: EndingState;
   mapsVisited: MapId[];

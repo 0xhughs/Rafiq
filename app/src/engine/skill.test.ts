@@ -697,9 +697,9 @@ describe('skill stations after bridgeReady', () => {
     expect(MAP_IDS).toContain('workshop');
     expect(WORKSHOP.legend[4]).toBe('#...........e..#');
     expect(WORKSHOP.legend[5]).toBe('#u.z...a..m.j..#');
-    expect(WORKSHOP.legend[6]).toBe('#k.q......t....#');
+    expect(WORKSHOP.legend[6]).toBe('#k.q......t4...#');
     expect(WORKSHOP.legend[7]).toBe('#.......d......#');
-    expect(WORKSHOP.legend[8]).toBe('#O1wJfhZ.vx.l2V#');
+    expect(WORKSHOP.legend[8]).toBe('#O1wJfhZ.vx3l2V#');
     expect(WORKSHOP.legend[8][3]).toBe('w');
     expect(WORKSHOP.legend[8][4]).toBe('J');
     expect(WORKSHOP.legend[8][5]).toBe('f');
@@ -727,7 +727,7 @@ describe('skill stations after bridgeReady', () => {
     expect(playerHitsSolid('workshop', WORLD_POS.agentConsole.x, WORLD_POS.agentConsole.y)).toBe(true);
     expect(playerHitsSolid('workshop', WORLD_POS.labTerminal.x, WORLD_POS.labTerminal.y)).toBe(true);
     expect(playerHitsSolid('workshop', WORKSHOP.spawn.x, WORKSHOP.spawn.y)).toBe(false);
-    expect(JOURNAL_CAP).toBe(96);
+    expect(JOURNAL_CAP).toBe(104);
     expect(`${BRIDGE_EXPLAIN.connector_roles} ${MCP_NOTE}`).toMatch(/MCP/);
     expect(`${SKILL_EXPLAIN.oneshot_vs_skill} ${SKILL_EXPLAIN.standing_vs_skill} ${SKILL_EXPLAIN.routine_clock}`).not.toMatch(
       /MCP|harness/,

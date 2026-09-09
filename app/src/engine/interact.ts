@@ -110,6 +110,14 @@ function workshopRect(id: InteractableId): { x: number; y: number; w: number; h:
       return room.approvalDesk;
     case 'decision_desk':
       return room.personalCase;
+    case 'crew_desk':
+      return room.crewTable;
+    case 'quality_desk':
+      return room.qualityBench;
+    case 'path_desk':
+      return room.pathTable;
+    case 'seal_desk':
+      return room.sealBench;
     default:
       return null;
   }
@@ -666,6 +674,23 @@ export function listInteractables(state: GameState): Actionable[] {
         label: HINT_LABELS.qualityDesk,
         x: WORLD_POS.qualityDesk.x,
         y: WORLD_POS.qualityDesk.y,
+      },
+    );
+  }
+
+  if (state.map === 'workshop' && state.crewQuest.crewReady) {
+    items.push(
+      {
+        id: 'path_desk',
+        label: HINT_LABELS.pathDesk,
+        x: WORLD_POS.pathDesk.x,
+        y: WORLD_POS.pathDesk.y,
+      },
+      {
+        id: 'seal_desk',
+        label: HINT_LABELS.sealDesk,
+        x: WORLD_POS.sealDesk.x,
+        y: WORLD_POS.sealDesk.y,
       },
     );
   }

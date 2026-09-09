@@ -58,7 +58,7 @@ test('approval-success through crew roles and quality review', async ({ page }) 
   expect(afterApproval.approvalQuest.receiptText).toBe(SEND_RECEIPT);
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-approval-ready', 'true');
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-crew-ready', 'false');
-  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '15');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '16');
   await expect(page.getByTestId('hud-objective')).toHaveText(OBJECTIVES.crewWork);
   await expect(page.getByTestId('planning-core')).toHaveText('نواة التخطيط');
   await expect(page.getByTestId('civic-connector')).toHaveText('موصل السجل');
@@ -172,7 +172,7 @@ test('approval-success through crew roles and quality review', async ({ page }) 
   await expect(page.getByTestId('skill-shelf')).toHaveText('رف المهارات');
   await expect(page.getByTestId('human-gate')).toHaveText('موافقة بشرية');
   await expect(page.getByTestId('crew-output')).toHaveText('ناتج مُراجع');
-  await expect(page.getByTestId('hud-objective')).toHaveText(OBJECTIVES.crewReady);
+  await expect(page.getByTestId('hud-objective')).toHaveText(OBJECTIVES.pathWork);
 
   await interactAt(page, 'workshop', WORLD_POS.manager.x, WORLD_POS.manager.y);
   await expect(page.getByTestId('dialogue-text')).toContainText(

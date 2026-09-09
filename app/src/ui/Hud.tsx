@@ -52,7 +52,7 @@ export function Hud({ state, onHelp, onDismissRestore }: Props) {
   else if (carryingBag) inventoryLabel = 'كيس القمامة';
   else if (carryingParcel) inventoryLabel = 'طرد الإصلاح';
   return (
-    <header className="hud" data-testid="hud">
+    <header className="hud" data-testid="hud" data-restored={state.pathQuest.restored ? 'true' : 'false'}>
       <Banners state={state} onDismissRestore={onDismissRestore} />
       <div className="hud-main">
         <p className="hud-kicker">رفيق</p>
@@ -132,6 +132,11 @@ export function Hud({ state, onHelp, onDismissRestore }: Props) {
       {state.crewQuest.crewReady ? (
         <p className="inventory cassette-chip" data-testid="crew-output">
           ناتج مُراجع
+        </p>
+      ) : null}
+      {state.pathQuest.restored ? (
+        <p className="inventory cassette-chip" data-testid="restored-agent">
+          وكيل مُشرف
         </p>
       ) : null}
     </header>

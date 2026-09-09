@@ -57,7 +57,7 @@ test('bridge-success through reusable skill and routine clock', async ({ page })
   expect(afterBridge.skillQuest.skillReady).toBe(false);
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-bridge-ready', 'true');
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-skill-ready', 'false');
-  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '15');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '16');
   await expect(page.getByTestId('hud-objective')).toHaveText(OBJECTIVES.skillWork);
   await expect(page.getByTestId('planning-core')).toHaveText('نواة التخطيط');
   await expect(page.getByTestId('civic-connector')).toHaveText('موصل السجل');

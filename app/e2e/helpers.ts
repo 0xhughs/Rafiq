@@ -4,7 +4,7 @@ import type { GameAction, MapId, SerializedTestState } from '../src/engine/types
 
 export async function waitForGame(page: Page): Promise<void> {
   await page.waitForFunction(() => Boolean(window.__RAFIQ_TEST__));
-  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '15');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '16');
 }
 
 export async function getState(page: Page): Promise<SerializedTestState> {
@@ -639,4 +639,31 @@ export async function playToApprovalDone(page: Page, name = 'علي حسن'): Pr
   expect(done.evidence['6.1']).toBeUndefined();
   expect(done.evidence['6.2']).toBeUndefined();
   expect(done.crewQuest.crewReady).toBe(false);
+}
+
+export async function playToCrewDone(page: Page, name = 'علي حسن'): Promise<void> {
+  await playToApprovalDone(page, name);
+  await interactAt(page, 'workshop', WORLD_POS.crewDesk.x, WORLD_POS.crewDesk.y);
+  await page.getByTestId('crew-assign-researcher').click();
+  await page.getByTestId('crew-assign-builder').click();
+  await page.getByTestId('crew-assign-reviewer').click();
+  await page.getByTestId('crew-owner-librarian').click();
+  await page.getByTestId('crew-handoff-btn').click();
+  await page.getByTestId('crew-inspect-source').click();
+  await page.getByTestId('crew-majority').click();
+  await page.getByTestId('crew-pick-evidence').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'workshop', WORLD_POS.qualityDesk.x, WORLD_POS.qualityDesk.y);
+  await page.getByTestId('crew-open-criteria').click();
+  await page.getByTestId('crew-repair-accuracy').click();
+  await page.getByTestId('crew-accept').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  const done = await getState(page);
+  expect(done.evidence['6.1']).toBe('demonstrated');
+  expect(done.evidence['6.2']).toBe('demonstrated');
+  expect(done.crewQuest.crewReady).toBe(true);
+  expect(done.evidence['6.4']).toBeUndefined();
+  expect(done.pathQuest.restored).toBe(false);
 }

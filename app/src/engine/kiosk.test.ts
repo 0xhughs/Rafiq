@@ -447,7 +447,7 @@ describe('kiosk stations after servicePosted', () => {
     expect(MAP_IDS).toContain('workshop');
     expect(WORKSHOP.legend[4]).toBe('#...........e..#');
     expect(WORKSHOP.legend[5]).toBe('#u.z...a..m.j..#');
-    expect(WORKSHOP.legend[6]).toBe('#k.q......t....#');
+    expect(WORKSHOP.legend[6]).toBe('#k.q......t4...#');
     expect(JSON.stringify(WORKSHOP.legend.join(''))).not.toMatch(/[PEIRFDGY]/);
     expect(STREET.legend[5]).toContain('o');
     const street = STREET.legend.join('');
@@ -476,7 +476,7 @@ describe('kiosk stations after servicePosted', () => {
     expect(after).toContain('kiosk_docs');
     expect(after).toContain('kiosk_vault');
     expect(after).toContain('kiosk_face');
-    expect(JOURNAL_CAP).toBe(96);
+    expect(JOURNAL_CAP).toBe(104);
   });
 });
 

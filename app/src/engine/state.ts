@@ -229,6 +229,38 @@ import {
   skipCrewExplain,
 } from './crew';
 import {
+  closePathOverlay,
+  createPathQuest,
+  isPathExplain,
+  isPathOverlay,
+  openPathDesk,
+  openSealDesk,
+  reducePathConfirm,
+  reducePathExam,
+  reducePathExtraStep,
+  reducePathInspectSend,
+  reducePathInspectSource,
+  reducePathLoadClinic,
+  reducePathLoadMango,
+  reducePathLoadReading,
+  reducePathPrepare,
+  reducePathQuiz,
+  reducePathRefuseRumor,
+  reducePathReject,
+  reducePathResendOld,
+  reducePathRobotDone,
+  reducePathRunChat,
+  reducePathRunOld,
+  reducePathRunSkill,
+  reducePathSetGoal,
+  reducePathSetPayload,
+  reducePathSetRecipient,
+  reducePathSetStop,
+  reducePathSetTools,
+  reducePathTrustRumor,
+  skipPathExplain,
+} from './path';
+import {
   closeNewsroomDialogue,
   closeNewsroomOverlay,
   createNewsroomQuest,
@@ -327,6 +359,7 @@ export function createInitialState(): GameState {
     skillQuest: createSkillQuest(),
     approvalQuest: createApprovalQuest(),
     crewQuest: createCrewQuest(),
+    pathQuest: createPathQuest(),
     calculator: createCalculator(),
     inspectTarget: null,
     explainTopic: null,
@@ -658,6 +691,7 @@ export function reduce(state: GameState, action: GameAction): GameState {
         skillQuest: createSkillQuest(),
         approvalQuest: createApprovalQuest(),
         crewQuest: createCrewQuest(),
+        pathQuest: createPathQuest(),
         calculator: createCalculator(),
         inspectTarget: null,
         explainTopic: null,
@@ -831,6 +865,10 @@ export function reduce(state: GameState, action: GameAction): GameState {
           return openCrewDesk(state);
         case 'quality_desk':
           return openQualityDesk(state);
+        case 'path_desk':
+          return openPathDesk(state);
+        case 'seal_desk':
+          return openSealDesk(state);
         default:
           return state;
       }
@@ -851,6 +889,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
     case 'CLOSE_OVERLAY':
       if (state.mode === 'dialogue') return closeDialogue(state);
       if (state.mode === 'paused') return { ...state, mode: 'playing' };
+      if (isPathOverlay(state.mode)) {
+        return closePathOverlay(state);
+      }
       if (isCrewOverlay(state.mode)) {
         return closeCrewOverlay(state);
       }
@@ -891,6 +932,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
           }
           if (isLabExplain(state.explainTopic)) {
             return skipLabExplain(state);
+          }
+          if (isPathExplain(state.explainTopic)) {
+            return skipPathExplain(state);
           }
           if (isCrewExplain(state.explainTopic)) {
             return skipCrewExplain(state);
@@ -980,6 +1024,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
       }
       if (isLabExplain(state.explainTopic)) {
         return skipLabExplain(state);
+      }
+      if (isPathExplain(state.explainTopic)) {
+        return skipPathExplain(state);
       }
       if (isCrewExplain(state.explainTopic)) {
         return skipCrewExplain(state);
@@ -1284,6 +1331,52 @@ export function reduce(state: GameState, action: GameAction): GameState {
       return reduceCrewQualityRobotDone(state);
     case 'CREW_QUALITY_RESEND':
       return reduceCrewQualityResend(state);
+    case 'PATH_INSPECT_SOURCE':
+      return reducePathInspectSource(state);
+    case 'PATH_TRUST_RUMOR':
+      return reducePathTrustRumor(state);
+    case 'PATH_REFUSE_RUMOR':
+      return reducePathRefuseRumor(state);
+    case 'PATH_SET_GOAL':
+      return reducePathSetGoal(state, action.goal);
+    case 'PATH_SET_TOOLS':
+      return reducePathSetTools(state, action.tools);
+    case 'PATH_SET_STOP':
+      return reducePathSetStop(state, action.stop);
+    case 'PATH_LOAD_READING':
+      return reducePathLoadReading(state);
+    case 'PATH_LOAD_MANGO':
+      return reducePathLoadMango(state);
+    case 'PATH_LOAD_CLINIC':
+      return reducePathLoadClinic(state);
+    case 'PATH_RUN_SKILL':
+      return reducePathRunSkill(state);
+    case 'PATH_RUN_OLD':
+      return reducePathRunOld(state);
+    case 'PATH_RUN_CHAT':
+      return reducePathRunChat(state);
+    case 'PATH_EXTRA_STEP':
+      return reducePathExtraStep(state);
+    case 'PATH_EXAM':
+      return reducePathExam(state);
+    case 'PATH_QUIZ':
+      return reducePathQuiz(state);
+    case 'PATH_ROBOT_DONE':
+      return reducePathRobotDone(state);
+    case 'PATH_PREPARE':
+      return reducePathPrepare(state);
+    case 'PATH_SET_RECIPIENT':
+      return reducePathSetRecipient(state, action.recipient);
+    case 'PATH_SET_PAYLOAD':
+      return reducePathSetPayload(state, action.payload);
+    case 'PATH_INSPECT_SEND':
+      return reducePathInspectSend(state);
+    case 'PATH_REJECT':
+      return reducePathReject(state);
+    case 'PATH_CONFIRM':
+      return reducePathConfirm(state);
+    case 'PATH_RESEND_OLD':
+      return reducePathResendOld(state);
     case 'CONFIRM_NEW_ADVENTURE':
       return createInitialState();
     case 'DISMISS_RESTORE_NOTICE':
@@ -1354,6 +1447,7 @@ export function serializeState(state: GameState): SerializedTestState {
     skillQuest: { ...state.skillQuest },
     approvalQuest: { ...state.approvalQuest },
     crewQuest: { ...state.crewQuest },
+    pathQuest: { ...state.pathQuest },
     inspectTarget: state.inspectTarget,
     explainTopic: state.explainTopic,
     robotUnderstood: state.robotUnderstood,

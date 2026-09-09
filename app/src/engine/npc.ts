@@ -68,6 +68,7 @@ export function openingNode(state: GameState, id: NpcId): DialogueNodeId | null 
   if (id === 'robot') {
     if (state.encounter === 'unseen') return null;
     if (state.encounter === 'help_accepted') {
+      if (state.pathQuest.restored) return 'companion_after_restore';
       if (state.crewQuest.crewReady) return 'companion_after_crew';
       if (state.approvalQuest.approvalReady) return 'companion_after_approval';
       if (state.skillQuest.skillReady) return 'companion_after_skill';

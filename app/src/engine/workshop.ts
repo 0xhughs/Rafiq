@@ -297,7 +297,8 @@ function syncPhase(quest: WorkshopQuest): WorkshopQuest {
 
 export function workshopObjective(state: GameState): string {
   const quest = state.workshopQuest;
-  if (state.crewQuest?.crewReady) return OBJECTIVES.crewReady;
+  if (state.pathQuest?.restored) return OBJECTIVES.restored;
+  if (state.crewQuest?.crewReady) return OBJECTIVES.pathWork;
   if (state.approvalQuest?.approvalReady) return OBJECTIVES.crewWork;
   if (state.skillQuest?.skillReady) return OBJECTIVES.approvalWork;
   if (state.bridgeQuest?.bridgeReady) return OBJECTIVES.skillWork;
@@ -342,6 +343,7 @@ export function awardWorkshopEvidence(state: GameState): GameState {
 
 export function managerNode(state: GameState): DialogueNodeId {
   const quest = state.workshopQuest;
+  if (state.pathQuest?.restored) return 'manager_restore_thanks';
   if (state.crewQuest?.crewReady) return 'manager_crew_thanks';
   if (state.approvalQuest?.approvalReady) return 'manager_approval_thanks';
   if (state.skillQuest?.skillReady) return 'manager_skill_thanks';
@@ -380,7 +382,8 @@ export function closeWorkshopDialogue(state: GameState): GameState | null {
     node === 'companion_after_bridge' ||
     node === 'companion_after_skill' ||
     node === 'companion_after_approval' ||
-    node === 'companion_after_crew'
+    node === 'companion_after_crew' ||
+    node === 'companion_after_restore'
   ) {
     return {
       ...state,

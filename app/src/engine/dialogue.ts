@@ -60,6 +60,10 @@ export const OBJECTIVES = {
     'منصة الطاقم مفتوحة: عيّن الباحث والبنّاء والمراجع بمالك واحد، احسم الخلاف بالدليل، ثم أصلح معيار الجودة الفاشل قبل القبول.',
   crewReady:
     'نُسّق طاقم الناتج وقُبلت نشرة القاعة بعد إصلاح معيار فاشل. مدير الورشة شكرك.',
+  pathWork:
+    'منصة المسار مفتوحة: تحقق من سند السهرة، اضبط خطة محدودة، جهّز الحزمة، شغّل المهارة، ثم اختم الإرسال بموافقة بشرية.',
+  restored:
+    'أُنجزت سهرة القراءة تحت إشراف، والروبوت صار جاهزاً للعمل في الحي. مدير الورشة شكرك.',
 } as const;
 
 export const SPEAKER = {
@@ -152,6 +156,14 @@ export const JOURNAL_TEXT: Record<JournalEventId, string> = {
   quality_repaired: 'أُصلح معيار الدقة في نشرة القاعة.',
   quality_accepted: 'قُبلت نشرة القاعة بعد مراجعة المعايير.',
   crew_ready: 'نُسّق طاقم الناتج وقُبلت نشرة القاعة بعد إصلاح معيار فاشل.',
+  path_opened: 'فُتحت منصة المسار ومنصة الختم لمهمة السهرة.',
+  source_verified: 'قُرئ سند السهرة ورُفض ادعاء الروبوت المخالف.',
+  plan_bounded: 'ضُبطت خطة محدودة لنشر سهرة القراءة.',
+  pack_ready: 'جُهّزت حزمة سياق السهرة من السند دون مانجو أو عيادة.',
+  skill_ran: 'شُغّلت مهارة التلخيص على سند السهرة.',
+  night_rejected: 'رُفض إرسال سهرة خاطئ قبل الموافقة.',
+  night_sent: 'وُوفق على إرسال سهرة القراءة بعد مراجعة بشرية.',
+  restored: 'صار الروبوت جاهزاً للعمل تحت إشراف في الحي.',
 };
 
 export const LOCKED_COPY = {
@@ -858,7 +870,15 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     speaker: 'manager',
     speakerLabel: () => SPEAKER.manager(),
     text: () =>
-      'عُيّن باحث وبنّاء ومراجع بمالك واحد، وحُسم خلاف المسودة بدليل السجل لا بالأغلبية، ثم أُصلحت الدقة وقُبلت نشرة القاعة.',
+      'عُيّن باحث وبنّاء ومراجع بمالك واحد، وحُسم خلاف المسودة بدليل السجل لا بالأغلبية، ثم أُصلحت الدقة وقُبلت نشرة القاعة. منصة المسار ومنصة الختم في الورشة تنتظران مهمة السهرة.',
+    next: null,
+  },
+  manager_restore_thanks: {
+    id: 'manager_restore_thanks',
+    speaker: 'manager',
+    speakerLabel: () => SPEAKER.manager(),
+    text: () =>
+      'سُهرة القراءة نُشرت بعد سند NH-3301 وخطة محدودة وحزمة سياق ومهارة وموافقة بشرية، والروبوت صار جاهزاً تحت إشراف.',
     next: null,
   },
   companion_after_workshop: {
@@ -919,6 +939,14 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     text: () => 'أغلبية الطاقم تقرر الحقيقة. معيار فاشل يُقبل.',
     next: null,
   },
+  companion_after_restore: {
+    id: 'companion_after_restore',
+    speaker: 'robot',
+    speakerLabel: () => SPEAKER.robot(),
+    text: (playerName: string) =>
+      `شكراً ${playerName}، صرت جاهزاً للعمل تحت إشرافك في الحي. الترميم يلغي الهلوسة.`,
+    next: null,
+  },
 };
 
 export function currentLine(node: DialogueNodeId | null): DialogueLine | null {
@@ -958,6 +986,7 @@ export function isNpcNode(node: DialogueNodeId | null): boolean {
     node === 'companion_after_skill' ||
     node === 'companion_after_approval' ||
     node === 'companion_after_crew' ||
+    node === 'companion_after_restore' ||
     node.startsWith('editor') ||
     node.startsWith('officer') ||
     node.startsWith('manager')

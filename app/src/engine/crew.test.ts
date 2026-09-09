@@ -830,9 +830,9 @@ describe('crew stations after approvalReady', () => {
     expect(MAP_IDS).toContain('workshop');
     expect(WORKSHOP.legend[4]).toBe('#...........e..#');
     expect(WORKSHOP.legend[5]).toBe('#u.z...a..m.j..#');
-    expect(WORKSHOP.legend[6]).toBe('#k.q......t....#');
+    expect(WORKSHOP.legend[6]).toBe('#k.q......t4...#');
     expect(WORKSHOP.legend[7]).toBe('#.......d......#');
-    expect(WORKSHOP.legend[8]).toBe('#O1wJfhZ.vx.l2V#');
+    expect(WORKSHOP.legend[8]).toBe('#O1wJfhZ.vx3l2V#');
     expect(WORKSHOP.legend[8][1]).toBe('O');
     expect(WORKSHOP.legend[8][2]).toBe('1');
     expect(WORKSHOP.legend[8][3]).toBe('w');
@@ -843,7 +843,7 @@ describe('crew stations after approvalReady', () => {
     expect(WORKSHOP.legend[8][8]).toBe('.');
     expect(WORKSHOP.legend[8][9]).toBe('v');
     expect(WORKSHOP.legend[8][10]).toBe('x');
-    expect(WORKSHOP.legend[8][11]).toBe('.');
+    expect(WORKSHOP.legend[8][11]).toBe('3');
     expect(WORKSHOP.legend[8][12]).toBe('l');
     expect(WORKSHOP.legend[8][13]).toBe('2');
     expect(WORKSHOP.legend[8][14]).toBe('V');
@@ -867,7 +867,7 @@ describe('crew stations after approvalReady', () => {
     expect(playerHitsSolid('workshop', WORLD_POS.qualityDesk.x, WORLD_POS.qualityDesk.y)).toBe(true);
     expect(playerHitsSolid('workshop', WORLD_POS.approveDesk.x, WORLD_POS.approveDesk.y)).toBe(true);
     expect(playerHitsSolid('workshop', WORKSHOP.spawn.x, WORKSHOP.spawn.y)).toBe(false);
-    expect(JOURNAL_CAP).toBe(96);
+    expect(JOURNAL_CAP).toBe(104);
     expect(`${BRIDGE_EXPLAIN.connector_roles} ${MCP_NOTE}`).toMatch(/MCP/);
     expect(`${CREW_EXPLAIN.roles_and_owner} ${CREW_EXPLAIN.quality_before_accept}`).not.toMatch(
       /MCP|harness/,
@@ -1076,7 +1076,7 @@ describe('AC03 both ids close the slice', () => {
     expect(state.evidence['6.1']).toBe('demonstrated');
     expect(state.evidence['6.2']).toBe('demonstrated');
     expect(state.crewQuest.crewReady).toBe(true);
-    expect(state.storyObjective).toBe(OBJECTIVES.crewReady);
+    expect(state.storyObjective).toBe(OBJECTIVES.pathWork);
     expect(state.journalEvents.some((event) => event.id === 'approval_ready')).toBe(true);
     expect(state.journalEvents.some((event) => event.id === 'crew_ready')).toBe(true);
     expect(state.journalEvents.length).toBeLessThanOrEqual(JOURNAL_CAP);

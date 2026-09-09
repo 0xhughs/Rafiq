@@ -768,6 +768,14 @@ function drawWorkshop(ctx: CanvasRenderingContext2D): void {
   fillRound(ctx, qualityBench.x + 4, qualityBench.y + 6, qualityBench.w - 8, qualityBench.h - 10, 4, '#efe6d0');
   ctx.fillStyle = '#2a2118';
   ctx.fillText('جودة', qualityBench.x + qualityBench.w / 2, qualityBench.y + 28);
+  const pathTable = FURNITURE.workshop.pathTable;
+  fillRound(ctx, pathTable.x + 4, pathTable.y + 6, pathTable.w - 8, pathTable.h - 10, 4, '#dce8f4');
+  ctx.fillStyle = '#163238';
+  ctx.fillText('مسار', pathTable.x + pathTable.w / 2, pathTable.y + 28);
+  const sealBench = FURNITURE.workshop.sealBench;
+  fillRound(ctx, sealBench.x + 4, sealBench.y + 6, sealBench.w - 8, sealBench.h - 10, 4, '#efe6d0');
+  ctx.fillStyle = '#2a2118';
+  ctx.fillText('ختم', sealBench.x + sealBench.w / 2, sealBench.y + 28);
   const counter = FURNITURE.workshop.counter;
   fillRound(ctx, counter.x + 2, counter.y + 6, counter.w - 4, counter.h - 10, 6, PALETTE.workshop);
   ctx.fillStyle = '#ead9c0';
@@ -785,6 +793,7 @@ function drawRobot(
   commsRepaired: boolean,
   contextModule: boolean,
   planningCore: boolean,
+  restored: boolean,
 ): void {
   ctx.fillStyle = PALETTE.shadow;
   ctx.beginPath();
@@ -797,15 +806,17 @@ function drawRobot(
   ctx.moveTo(x - 6, y - 4);
   ctx.lineTo(x + 2, y + 10);
   ctx.stroke();
-  ctx.fillStyle = PALETTE.rust;
-  ctx.fillRect(x + 6, y + 2, 6, 8);
+  if (!restored) {
+    ctx.fillStyle = PALETTE.rust;
+    ctx.fillRect(x + 6, y + 2, 6, 8);
+  }
   fillRound(ctx, x + 10, y - 2, 8, 14, 3, PALETTE.robotDark);
-  ctx.fillStyle = companion ? PALETTE.robotEye : PALETTE.robotEyeDim;
+  ctx.fillStyle = companion || restored ? PALETTE.robotEye : PALETTE.robotEyeDim;
   ctx.beginPath();
   ctx.arc(x - 5, y - 4, 3, 0, Math.PI * 2);
   ctx.fill();
   const flicker = Math.sin(time / 180) > 0.2;
-  ctx.fillStyle = flicker ? PALETTE.robotEye : '#223';
+  ctx.fillStyle = restored ? PALETTE.robotEye : flicker ? PALETTE.robotEye : '#223';
   ctx.beginPath();
   ctx.arc(x + 5, y - 4, 3, 0, Math.PI * 2);
   ctx.fill();
@@ -814,9 +825,9 @@ function drawRobot(
   ctx.moveTo(x, y - 12);
   ctx.lineTo(x + 6, y - 22);
   ctx.stroke();
-  ctx.fillStyle = commsRepaired ? '#7fdbda' : PALETTE.rust;
+  ctx.fillStyle = commsRepaired || restored ? '#7fdbda' : PALETTE.rust;
   ctx.beginPath();
-  ctx.arc(x + 6, y - 22, commsRepaired ? 4 : 3, 0, Math.PI * 2);
+  ctx.arc(x + 6, y - 22, commsRepaired || restored ? 4 : 3, 0, Math.PI * 2);
   ctx.fill();
   if (commsRepaired) {
     fillRound(ctx, x - 16, y + 6, 10, 8, 2, '#2f5d62');
@@ -837,6 +848,9 @@ function drawRobot(
     ctx.strokeStyle = '#2f5d62';
     ctx.lineWidth = 1;
     ctx.stroke();
+  }
+  if (restored) {
+    fillRound(ctx, x - 8, y + 4, 16, 10, 2, '#7fdbda');
   }
   if (companion) {
     ctx.strokeStyle = 'rgba(127, 219, 218, 0.6)';
@@ -897,6 +911,7 @@ export function drawWorld(ctx: CanvasRenderingContext2D, state: GameState, time:
       state.parcelQuest.commsRepaired,
       state.libraryQuest.contextModule,
       state.agentQuest.agentReady,
+      state.pathQuest.restored,
     );
   }
   drawPlayer(ctx, state.position.x, state.position.y, state.facing);

@@ -208,7 +208,8 @@ function syncPhase(quest: LabQuest): LabQuest {
 }
 
 export function labObjective(state: GameState): string {
-  if (state.crewQuest?.crewReady) return OBJECTIVES.crewReady;
+  if (state.pathQuest?.restored) return OBJECTIVES.restored;
+  if (state.crewQuest?.crewReady) return OBJECTIVES.pathWork;
   if (state.approvalQuest?.approvalReady) return OBJECTIVES.crewWork;
   if (state.skillQuest?.skillReady) return OBJECTIVES.approvalWork;
   if (state.bridgeQuest?.bridgeReady) return OBJECTIVES.skillWork;
