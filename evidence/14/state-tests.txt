@@ -1,0 +1,16 @@
+
+> app@0.0.0 test
+> vitest run
+
+
+ RUN  v5.0.0 /workspace/app
+
+
+ Test Files  14 passed (14)
+      Tests  126 passed (126)
+   Start at  18:00:49
+   Duration  1.24s (transform 55%, import 22%, tests 21%, worker 2%)
+
+    Isolate  14 workers spawned · ~70ms startup each (spawn + environment, per file)
+             at least ~256ms faster with isolate: false — reuses workers across files instead of one per file
+
