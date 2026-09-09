@@ -219,7 +219,6 @@ Approved contract: `45f68f8987d184ba72f15970270aa506737e5bd37ec2b7efdc3123d0bfc5
 Approved candidate: `a6c3018582acd8bf0737ff9e684ed063eeb4a9ed32a8d3362184e1af3bc248b6`
 Implementation approval dispatch: `d-20260908-035-implrev-09`
 
-## Now
 ### 10 Fix the version people actually use
 Goal: Diagnose and repair the kiosk's simulated deployed version within a safe scope.
 Provides:
@@ -227,9 +226,12 @@ Provides:
 - Rejection of an unsafe/out-of-scope command; no real shell or deployment is accessible. Covers 4.5, 4.6, 5.4.
 Depends on: 09
 Target membership: inside
+Archive: `slices/10-fix-the-version-people-actually-use.md`
+Approved contract: `0e6d7f4d7cc607b401b35ab541646c8ae3ca5cf9bf271461fcc1b604d3ad61c5`
+Approved candidate: `4849c5ae734e5476a7d86cfc2bd98cf8b013c9b5c3a53883eb867e4921cf1fdc`
+Implementation approval dispatch: `d-20260909-040-implrev-10`
 
-## Later
-
+## Now
 ### 11 Give the robot a bounded job
 Goal: Turn the robot's plan into supervised action with visible limits.
 Provides:
@@ -237,6 +239,8 @@ Provides:
 - Visible planning-core restoration without implying perfect judgment. Covers 5.1, 5.2 and harness.
 Depends on: 10
 Target membership: inside
+
+## Later
 
 ### 12 The bridge between systems
 Goal: Connect the robot to a narrowly permitted civic information service.
