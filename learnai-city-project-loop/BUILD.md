@@ -34,7 +34,13 @@ MapId `festival`. Evidence union adds `'3.4' | '3.5'`. `festivalQuest` flags for
 - Reviewer maps AC01–AC06 and verifies snapshot.
 
 ## Proof
-Not completed yet.
+Builder claims for d-20260908-026-impl-07 (not independently accepted):
+- Candidate (coordinator recomputed): `b21f3762b9f113adc83d93718a92addde8524c443862bcddba68f664a168c650` (149 files).
+- Contract unchanged: `f521d4d6bbfceeb572750066fb9c5044443f7beb784c7b1c630ad4634c910ea1`.
+- Claimed checks: tsc/lint/build exit 0; vitest 87; Playwright 36/36 on preview :4180 and Vite :5179.
+- Claimed artifacts: `evidence/07/interior.png`, `table.png`, `receipts.png`, `reconcile.png`, `missing.png`, `policy.png`, `submission.png`, `success.png`, `overlays.png`, `state-tests.txt`, `project-checks.txt`, `browser-checks.md`.
+- Claimed: newsroom success does not award 3.4/3.5; no workshop mapId; WORLD_POS.robot unchanged.
+Reviewer must re-run checks in an isolated copy and map AC01–AC06.
 
 ## Review
 Plan approved. Implementation not started.
@@ -45,15 +51,15 @@ Each result records dispatch ID, reviewer identity, verdict, contract identity, 
 ## Loop state
 Execution mode / tool adapter: Cursor Cloud Agent coordinator with Task-spawned Builder and Reviewer subagents. Spawn = Task(generalPurpose). Send = Task resume. Wait = blocking Task completion. Stop = subagent completion; coordinator does not start a second writer in this checkout. Reviewer contexts are fresh and do not receive Builder reasoning. Mutating Reviewer checks, if needed, run on an isolated copy.
 Coordinator: cloud agent bc-6380229a-c83f-493f-af1c-47e5f2b00c70 (https://cursor.com/agents/bc-6380229a-c83f-493f-af1c-47e5f2b00c70), role Coordinator, checkout /workspace on branch cursor/rafiq-ai-city-adventure-0c70
-Worker / role / phase: pending launch / Builder / implementation
-Dispatch ID / launch state / input identity: d-20260908-026-impl-07 / pending launch / contract:f521d4d6bbfceeb572750066fb9c5044443f7beb784c7b1c630ad4634c910ea1 baseline:51ee56d805700a58f3377f812c7ed404b861844bed62ca4ede71ba30f150c957
-Pending result / last consumed dispatch: none / d-20260908-025-plan-07
+Worker / role / phase: pending launch / Reviewer / implementation
+Dispatch ID / launch state / input identity: d-20260908-027-implrev-07 / pending launch / contract:f521d4d6bbfceeb572750066fb9c5044443f7beb784c7b1c630ad4634c910ea1 candidate:b21f3762b9f113adc83d93718a92addde8524c443862bcddba68f664a168c650
+Pending result / last consumed dispatch: none / d-20260908-026-impl-07
 Snapshot capture and recheck commands / coverage / exclusions: Capture = `python3 .loop/identity.py snapshot --label <label>` from repository root. Recheck = same command; compare `.loop/snapshots/<label>.digest` and the JSON `digest` field. Contract = `python3 .loop/identity.py contract`; identity is `.loop/contract/hashes.json` field `contract`. Combined = `python3 .loop/identity.py both --label <label>`.
 Coverage: `app`, `evidence`, root `package.json`/`package-lock.json`/`pnpm-lock.yaml`/`yarn.lock`, `index.html`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `playwright.config.ts`, `vitest.config.ts`, `README.md`, `public`. Missing paths are skipped. Detect add/delete by regenerating the covered file list.
 Exclusions: `.git`, `.loop`, `learnai-city-project-loop`, `node_modules`, `app/node_modules`, `app/dist`, `dist`, `coverage`, `test-results`, `playwright-report`, `.vite`, `app/.vite`. Protocol files are identified by contract hash, not candidate snapshot.
 Baseline snapshot: shipped slice 06 `51ee56d805700a58f3377f812c7ed404b861844bed62ca4ede71ba30f150c957` (131 covered files)
 Contract identity: `f521d4d6bbfceeb572750066fb9c5044443f7beb784c7b1c630ad4634c910ea1` (`.loop/contract/hashes.json`)
-Candidate snapshot: none
+Candidate snapshot: `b21f3762b9f113adc83d93718a92addde8524c443862bcddba68f664a168c650` (149 files)
 Rejection count: 0
 Consecutive no-progress repairs: 0
 Open acceptance gaps / prior failing evidence: none
@@ -67,7 +73,7 @@ Next slice ID / draft: none
 Prior shipped receipt: slice 06 archive `slices/06-a-notice-the-neighborhood-can-trust.md`
 
 ## Status
-Building
+Ready for review
 
 ## Next
-Builder implements slice 07 under dispatch d-20260908-026-impl-07.
+Independent implementation review of slice 07 under dispatch d-20260908-027-implrev-07.
