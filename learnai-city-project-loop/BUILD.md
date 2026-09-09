@@ -50,9 +50,9 @@ Each result records dispatch ID, reviewer identity, verdict, contract identity, 
 ## Loop state
 Execution mode / tool adapter: Cursor Cloud Agent coordinator with Task-spawned Builder and Reviewer subagents. Spawn = Task(generalPurpose). Send = Task resume. Wait = blocking Task completion. Stop = subagent completion; coordinator does not start a second writer in this checkout. Reviewer contexts are fresh and do not receive Builder reasoning. Mutating Reviewer checks, if needed, run on an isolated copy.
 Coordinator: cloud agent bc-6380229a-c83f-493f-af1c-47e5f2b00c70 (https://cursor.com/agents/bc-6380229a-c83f-493f-af1c-47e5f2b00c70), role Coordinator, checkout /workspace on branch cursor/rafiq-continue-slices-0c70
-Worker / role / phase: pending launch / Reviewer / release
-Dispatch ID / launch state / input identity: d-20260909-069-release / pending launch / contract:b760de08209f685da8d8418cebe7d8bf6536e8c722ec1b4a583809ae75849a2e candidate:b680867179a7973832bbe4e06a99a3f77a8cde3ede5a507902af9eee879e07c0
-Pending result / last consumed dispatch: none / d-20260909-068-implrev-17
+Worker / role / phase: stopped / Reviewer / release
+Dispatch ID / launch state / input identity: d-20260909-069-release / completed / contract:b760de08209f685da8d8418cebe7d8bf6536e8c722ec1b4a583809ae75849a2e candidate:b680867179a7973832bbe4e06a99a3f77a8cde3ede5a507902af9eee879e07c0
+Pending result / last consumed dispatch: none / d-20260909-069-release
 Snapshot capture and recheck commands / coverage / exclusions: Capture = `python3 .loop/identity.py snapshot --label <label>` from repository root. Recheck = same command; compare `.loop/snapshots/<label>.digest` and the JSON `digest` field. Contract = `python3 .loop/identity.py contract`; identity is `.loop/contract/hashes.json` field `contract`. Combined = `python3 .loop/identity.py both --label <label>`.
 Coverage: `app`, `evidence`, root `package.json`/`package-lock.json`/`pnpm-lock.yaml`/`yarn.lock`, `index.html`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `playwright.config.ts`, `vitest.config.ts`, `README.md`, `public`. Missing paths are skipped. Detect add/delete by regenerating the covered file list.
 Exclusions: `.git`, `.loop`, `learnai-city-project-loop`, `node_modules`, `app/node_modules`, `app/dist`, `dist`, `coverage`, `test-results`, `playwright-report`, `.vite`, `app/.vite`. Protocol files are identified by contract hash, not candidate snapshot.
@@ -67,7 +67,7 @@ Review events:
 - ev-001 / d-20260909-066-plan-17 / plan / APPROVE_PLAN / contract:b760de08209f685da8d8418cebe7d8bf6536e8c722ec1b4a583809ae75849a2e snapshot:67b49f4efc910e807c33ce974e3b4c08f8fcd1f1d52c6324621cc8250227927e / gaps: none / identities matched / rejection count 0 / no-progress 0
 - ev-002 / d-20260909-068-implrev-17 / implementation / APPROVE_IMPLEMENTATION / contract:b760de08209f685da8d8418cebe7d8bf6536e8c722ec1b4a583809ae75849a2e snapshot:b680867179a7973832bbe4e06a99a3f77a8cde3ede5a507902af9eee879e07c0 / gaps: none / isolated re-run tsc/lint/build/vitest 140 / playwright 67/67 preview :4840 and Vite :4850 all 0 / rejection count 0 / no-progress 0
 Budget limit / consumed / measurement: Not configured; no execution budget was supplied.
-Blocker / resume status / resume action / recheck condition / deadline: none
+Blocker / resume status / resume action / recheck condition / deadline: RG03 (Chrome/Edge Windows, Firefox Windows, Safari macOS) and RG04 (five Arabic-speaking beginners) cannot be obtained in this Cloud Agent VM; RG02 missing e2e for unfinished later-arc reload and issued-ending resume / Human required / wait for environments + beginner pilot (and optional RG02 e2e) / re-run release review; Complete still needs RG03/RG04 or an explicit scope decision / none
 Advance phase: release pending
 Next slice ID / draft: none
 Prior shipped receipt: slice 17 archive `slices/17-your-passport.md`
@@ -76,4 +76,4 @@ Prior shipped receipt: slice 17 archive `slices/17-your-passport.md`
 Shipped
 
 ## Next
-Independent release review under dispatch d-20260909-069-release. Now is empty. Slice 18 stays outside the target.
+Human required. Release review d-20260909-069-release did not approve RG01–RG08. Slice 18 stays outside the target. Do not publish.
