@@ -34,7 +34,13 @@ No new `MapId`. Evidence union adds `'5.3'`. Interactables: `bridge_host`, `brid
 - T06 — Keep **01–11** e2e; agent success must **not** award 5.3 or set `bridgeReady`. Entering the host / opening the browser must not itself award. Update 11 assertions that treat `OBJECTIVES.agentReady` as the terminal HUD string (it becomes `OBJECTIVES.bridgeWork`). Keep `agent.spec.ts` `body` ↛ `MCP` on the agent-success path (connector overlay not open). Reviewer maps AC01–AC06 and verifies snapshot.
 
 ## Proof
-Not completed yet.
+Builder claims for d-20260909-047-impl-12 (not independently accepted):
+- Candidate (coordinator recomputed): `bcf132db68e8047cc451af252f2fc3ec4ce4c881e5a202d41b2aaa13317cae5b` (242 files).
+- Contract unchanged: `0ff46be3707c88cc9d283045710b455f5c78f379cea710c517419b5bf49db399`.
+- Claimed checks: tsc/lint/build exit 0; vitest 116; Playwright 51/51 on preview :4304 and Vite :5304.
+- Claimed artifacts: `evidence/12/` per T02 plus overlays.png, state-tests.txt, project-checks.txt, browser-checks.md.
+- Claimed: agent success does not award 5.3; persistable GameState has no MCP; overlay note teaches MCP; no fetch.
+Reviewer must re-run checks in an isolated copy and map AC01–AC06.
 
 ## Review
 Plan approved. Implementation not started.
@@ -45,15 +51,15 @@ Each result records dispatch ID, reviewer identity, verdict, contract identity, 
 ## Loop state
 Execution mode / tool adapter: Cursor Cloud Agent coordinator with Task-spawned Builder and Reviewer subagents. Spawn = Task(generalPurpose). Send = Task resume. Wait = blocking Task completion. Stop = subagent completion; coordinator does not start a second writer in this checkout. Reviewer contexts are fresh and do not receive Builder reasoning. Mutating Reviewer checks, if needed, run on an isolated copy.
 Coordinator: cloud agent bc-6380229a-c83f-493f-af1c-47e5f2b00c70 (https://cursor.com/agents/bc-6380229a-c83f-493f-af1c-47e5f2b00c70), role Coordinator, checkout /workspace on branch cursor/rafiq-continue-slices-0c70
-Worker / role / phase: pending launch / Builder / implementation
-Dispatch ID / launch state / input identity: d-20260909-047-impl-12 / pending launch / contract:0ff46be3707c88cc9d283045710b455f5c78f379cea710c517419b5bf49db399 baseline:4f375e9d461727666a465d2f9de132e3fbed7ab4a422f526fb4b3851a15e57ea
-Pending result / last consumed dispatch: none / d-20260909-046-plan-12
+Worker / role / phase: pending launch / Reviewer / implementation
+Dispatch ID / launch state / input identity: d-20260909-048-implrev-12 / pending launch / contract:0ff46be3707c88cc9d283045710b455f5c78f379cea710c517419b5bf49db399 candidate:bcf132db68e8047cc451af252f2fc3ec4ce4c881e5a202d41b2aaa13317cae5b
+Pending result / last consumed dispatch: none / d-20260909-047-impl-12
 Snapshot capture and recheck commands / coverage / exclusions: Capture = `python3 .loop/identity.py snapshot --label <label>` from repository root. Recheck = same command; compare `.loop/snapshots/<label>.digest` and the JSON `digest` field. Contract = `python3 .loop/identity.py contract`; identity is `.loop/contract/hashes.json` field `contract`. Combined = `python3 .loop/identity.py both --label <label>`.
 Coverage: `app`, `evidence`, root `package.json`/`package-lock.json`/`pnpm-lock.yaml`/`yarn.lock`, `index.html`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `playwright.config.ts`, `vitest.config.ts`, `README.md`, `public`. Missing paths are skipped. Detect add/delete by regenerating the covered file list.
 Exclusions: `.git`, `.loop`, `learnai-city-project-loop`, `node_modules`, `app/node_modules`, `app/dist`, `dist`, `coverage`, `test-results`, `playwright-report`, `.vite`, `app/.vite`. Protocol files are identified by contract hash, not candidate snapshot.
 Baseline snapshot: shipped slice 11 `4f375e9d461727666a465d2f9de132e3fbed7ab4a422f526fb4b3851a15e57ea` (224 covered files)
 Contract identity: `0ff46be3707c88cc9d283045710b455f5c78f379cea710c517419b5bf49db399` (`.loop/contract/hashes.json`)
-Candidate snapshot: none
+Candidate snapshot: `bcf132db68e8047cc451af252f2fc3ec4ce4c881e5a202d41b2aaa13317cae5b` (242 files)
 Rejection count: 0
 Consecutive no-progress repairs: 0
 Open acceptance gaps / prior failing evidence: none
@@ -67,7 +73,7 @@ Next slice ID / draft: none
 Prior shipped receipt: slice 11 archive `slices/11-give-the-robot-a-bounded-job.md`
 
 ## Status
-Building
+Ready for review
 
 ## Next
-Builder implements slice 12 under dispatch d-20260909-047-impl-12. Do not edit protocol files.
+Independent implementation review of slice 12 under dispatch d-20260909-048-implrev-12.
