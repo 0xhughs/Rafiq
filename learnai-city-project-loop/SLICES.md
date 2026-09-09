@@ -159,7 +159,6 @@ Approved contract: `14ded8bd2eba6ee19c51093e7a790df7feb1bec1ce8718d1a15d7104d4a4
 Approved candidate: `7cba3a83b9f8733ca19d79f67624b3b477a53b9819a90e009d2c923ae719695f`
 Implementation approval dispatch: `d-20260908-015-implrev-04`
 
-## Now
 ### 05 A place for the right memories
 Goal: Carry the relevant information forward without sharing private data.
 Provides:
@@ -167,9 +166,12 @@ Provides:
 - A visible context module and renewed access to a repair specification. Covers 1.4, 1.5, 2.5.
 Depends on: 04
 Target membership: inside
+Archive: `slices/05-a-place-for-the-right-memories.md`
+Approved contract: `4e7db2744f2ffb8738c9dcd015e207bef0313ef2df5e40618018f4451ed3b45a`
+Approved candidate: `158b856de69c486c49559dc92c27ab91a1822a0e132aba2d003448de648d0a8d`
+Implementation approval dispatch: `d-20260908-019-implrev-05`
 
-## Later
-
+## Now
 ### 06 A notice the neighborhood can trust
 Goal: Produce a useful, sourced community notice and repair-request draft.
 Provides:
@@ -177,6 +179,8 @@ Provides:
 - A reviewed notice/request that changes an NPC response and opens the workshop lead. Covers 2.3, 2.6, 3.1, 3.2, 3.3.
 Depends on: 05
 Target membership: inside
+
+## Later
 
 ### 07 The missing festival numbers
 Goal: Help the festival office plan from honest records and a permitted use of AI.
