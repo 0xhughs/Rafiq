@@ -123,7 +123,6 @@ Approved contract: `4db465f5267ec9d6deda0bfce6ef8277091d3e84d1d936736a7c90e1eed0
 Approved candidate: `84a55200ef09c2d1ab29df0892a002ef291488986cc14560efa95647d94d0b1d`
 Implementation approval dispatch: `d-20260908-003-implrev-01`
 
-## Now
 ### 02 Return to a living neighborhood
 Goal: Continue a saved adventure reliably and navigate its shared city spaces.
 Provides:
@@ -131,9 +130,12 @@ Provides:
 - Reusable NPC interactions, doors, companion presence and idempotent story gates; original course saves remain separate.
 Depends on: 01
 Target membership: inside
+Archive: `slices/02-return-to-a-living-neighborhood.md`
+Approved contract: `b7f85a536ef8ae535e3892b6636b0a0a7cad70f3bdd2d27ae67590c14fa442d9`
+Approved candidate: `f1feab0147e6f41f01c86f58a8d05e136cce7c84a706e1508b3d8bfcb424eb4f`
+Implementation approval dispatch: `d-20260908-007-implrev-02`
 
-## Later
-
+## Now
 ### 03 The price that was never checked
 Goal: Help the shopkeeper using supported information instead of the robot's confidence.
 Provides:
@@ -141,6 +143,8 @@ Provides:
 - A repair lead and verification habit; the robot can still make unsupported claims later. Covers 1.1, 1.2, 1.3, 1.6.
 Depends on: 02
 Target membership: inside
+
+## Later
 
 ### 04 The wrong parcel
 Goal: Guide the robot to retrieve the intended repair component through clear, revisable instructions.
