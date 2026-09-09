@@ -538,7 +538,7 @@ describe('agent stations after labReady', () => {
     expect(WORKSHOP.legend[5]).toBe('#u.z...a..m.j..#');
     expect(WORKSHOP.legend[6]).toBe('#k.q......t....#');
     expect(WORKSHOP.legend[7]).toBe('#.......d......#');
-    expect(WORKSHOP.legend[8]).toBe('#O.wJfhZ.vx.l.V#');
+    expect(WORKSHOP.legend[8]).toBe('#O1wJfhZ.vx.l2V#');
     expect(WORKSHOP.legend[8][3]).toBe('w');
     expect(WORKSHOP.legend[8][4]).toBe('J');
     expect(WORKSHOP.legend[8][5]).toBe('f');
@@ -561,7 +561,7 @@ describe('agent stations after labReady', () => {
     expect(playerHitsSolid('workshop', WORLD_POS.agentBoard.x, WORLD_POS.agentBoard.y)).toBe(true);
     expect(playerHitsSolid('workshop', WORLD_POS.labTerminal.x, WORLD_POS.labTerminal.y)).toBe(true);
     expect(playerHitsSolid('workshop', WORKSHOP.spawn.x, WORKSHOP.spawn.y)).toBe(false);
-    expect(JOURNAL_CAP).toBe(88);
+    expect(JOURNAL_CAP).toBe(96);
 
     let state = playToKioskDone(checkpoint());
     const beforeReady = listInteractables(state).map((item) => item.id);

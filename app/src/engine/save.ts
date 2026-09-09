@@ -16,6 +16,7 @@ import { parseAgentQuest } from './agent';
 import { parseBridgeQuest } from './bridge';
 import { parseSkillQuest } from './skill';
 import { parseApprovalQuest } from './approval';
+import { parseCrewQuest } from './crew';
 import type {
   EndingState,
   Facing,
@@ -140,6 +141,12 @@ const JOURNAL_IDS: readonly JournalEventId[] = [
   'case_context',
   'human_decided',
   'approval_ready',
+  'crew_opened',
+  'roles_assigned',
+  'conflict_resolved',
+  'quality_repaired',
+  'quality_accepted',
+  'crew_ready',
 ];
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -201,6 +208,7 @@ export function toEnvelope(state: GameState): SaveEnvelope {
     bridgeQuest: parseBridgeQuest(state.bridgeQuest),
     skillQuest: parseSkillQuest(state.skillQuest),
     approvalQuest: parseApprovalQuest(state.approvalQuest),
+    crewQuest: parseCrewQuest(state.crewQuest),
     robot: { companion },
     endingState: 'in_progress',
     mapsVisited: state.mapsVisited.length > 0 ? [...state.mapsVisited] : [state.map],
@@ -344,6 +352,7 @@ export function validateSave(raw: unknown): SaveEnvelope | null {
     bridgeQuest: parseBridgeQuest(data.bridgeQuest),
     skillQuest: parseSkillQuest(data.skillQuest),
     approvalQuest: parseApprovalQuest(data.approvalQuest),
+    crewQuest: parseCrewQuest(data.crewQuest),
     robot: { companion },
     endingState: 'in_progress' satisfies EndingState,
     mapsVisited: mapsVisited.length > 0 ? mapsVisited : [data.map],
@@ -363,9 +372,11 @@ export function hydrateSave(
   const bridgeQuest = parseBridgeQuest(envelope.bridgeQuest);
   const skillQuest = parseSkillQuest(envelope.skillQuest);
   const approvalQuest = parseApprovalQuest(envelope.approvalQuest);
+  const crewQuest = parseCrewQuest(envelope.crewQuest);
   let storyObjective =
     envelope.storyObjective || (companion ? OBJECTIVES.cornerStore : OBJECTIVES.takeTrash);
-  if (approvalQuest.approvalReady) storyObjective = OBJECTIVES.approvalReady;
+  if (crewQuest.crewReady) storyObjective = OBJECTIVES.crewReady;
+  else if (approvalQuest.approvalReady) storyObjective = OBJECTIVES.crewWork;
   else if (skillQuest.skillReady) storyObjective = OBJECTIVES.approvalWork;
   else if (bridgeQuest.bridgeReady) storyObjective = OBJECTIVES.skillWork;
   else if (agentQuest.agentReady) storyObjective = OBJECTIVES.bridgeWork;
@@ -406,6 +417,7 @@ export function hydrateSave(
     bridgeQuest,
     skillQuest,
     approvalQuest,
+    crewQuest,
     calculator: createCalculator(),
     inspectTarget: null,
     explainTopic: null,
@@ -516,6 +528,7 @@ export function shouldPersist(prev: GameState, next: GameState, action: GameActi
   if (JSON.stringify(prev.bridgeQuest) !== JSON.stringify(next.bridgeQuest)) return true;
   if (JSON.stringify(prev.skillQuest) !== JSON.stringify(next.skillQuest)) return true;
   if (JSON.stringify(prev.approvalQuest) !== JSON.stringify(next.approvalQuest)) return true;
+  if (JSON.stringify(prev.crewQuest) !== JSON.stringify(next.crewQuest)) return true;
   if (persistableGreeting(prev.librarian) !== persistableGreeting(next.librarian)) return true;
   if (persistableGreeting(prev.editor) !== persistableGreeting(next.editor)) return true;
   if (persistableGreeting(prev.officer) !== persistableGreeting(next.officer)) return true;

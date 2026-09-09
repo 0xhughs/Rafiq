@@ -201,6 +201,34 @@ import {
   skipApproveExplain,
 } from './approval';
 import {
+  closeCrewOverlay,
+  createCrewQuest,
+  isCrewExplain,
+  isCrewOverlay,
+  openCrewDesk,
+  openQualityDesk,
+  reduceCrewAccept,
+  reduceCrewAssignBuilder,
+  reduceCrewAssignResearcher,
+  reduceCrewAssignReviewer,
+  reduceCrewHandoff,
+  reduceCrewInspectSource,
+  reduceCrewMajority,
+  reduceCrewOpenCriteria,
+  reduceCrewPickConflict,
+  reduceCrewPickEvidence,
+  reduceCrewQualityMajority,
+  reduceCrewQualityResend,
+  reduceCrewQualityRobotDone,
+  reduceCrewRepairAccuracy,
+  reduceCrewRepairTone,
+  reduceCrewResend,
+  reduceCrewRobotDone,
+  reduceCrewRolesMerge,
+  reduceCrewSetOwner,
+  skipCrewExplain,
+} from './crew';
+import {
   closeNewsroomDialogue,
   closeNewsroomOverlay,
   createNewsroomQuest,
@@ -298,6 +326,7 @@ export function createInitialState(): GameState {
     bridgeQuest: createBridgeQuest(),
     skillQuest: createSkillQuest(),
     approvalQuest: createApprovalQuest(),
+    crewQuest: createCrewQuest(),
     calculator: createCalculator(),
     inspectTarget: null,
     explainTopic: null,
@@ -628,6 +657,7 @@ export function reduce(state: GameState, action: GameAction): GameState {
         bridgeQuest: createBridgeQuest(),
         skillQuest: createSkillQuest(),
         approvalQuest: createApprovalQuest(),
+        crewQuest: createCrewQuest(),
         calculator: createCalculator(),
         inspectTarget: null,
         explainTopic: null,
@@ -797,6 +827,10 @@ export function reduce(state: GameState, action: GameAction): GameState {
           return openApproveDesk(state);
         case 'decision_desk':
           return openDecisionDesk(state);
+        case 'crew_desk':
+          return openCrewDesk(state);
+        case 'quality_desk':
+          return openQualityDesk(state);
         default:
           return state;
       }
@@ -817,6 +851,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
     case 'CLOSE_OVERLAY':
       if (state.mode === 'dialogue') return closeDialogue(state);
       if (state.mode === 'paused') return { ...state, mode: 'playing' };
+      if (isCrewOverlay(state.mode)) {
+        return closeCrewOverlay(state);
+      }
       if (isApproveOverlay(state.mode)) {
         return closeApproveOverlay(state);
       }
@@ -854,6 +891,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
           }
           if (isLabExplain(state.explainTopic)) {
             return skipLabExplain(state);
+          }
+          if (isCrewExplain(state.explainTopic)) {
+            return skipCrewExplain(state);
           }
           if (isApproveExplain(state.explainTopic)) {
             return skipApproveExplain(state);
@@ -940,6 +980,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
       }
       if (isLabExplain(state.explainTopic)) {
         return skipLabExplain(state);
+      }
+      if (isCrewExplain(state.explainTopic)) {
+        return skipCrewExplain(state);
       }
       if (isApproveExplain(state.explainTopic)) {
         return skipApproveExplain(state);
@@ -1203,6 +1246,44 @@ export function reduce(state: GameState, action: GameAction): GameState {
       return reduceApproveCaseKeep(state);
     case 'APPROVE_CASE_ROBOT_DONE':
       return reduceApproveCaseRobotDone(state);
+    case 'CREW_ASSIGN_RESEARCHER':
+      return reduceCrewAssignResearcher(state);
+    case 'CREW_ASSIGN_BUILDER':
+      return reduceCrewAssignBuilder(state);
+    case 'CREW_ASSIGN_REVIEWER':
+      return reduceCrewAssignReviewer(state);
+    case 'CREW_ROLES_MERGE':
+      return reduceCrewRolesMerge(state);
+    case 'CREW_SET_OWNER':
+      return reduceCrewSetOwner(state, action.owner);
+    case 'CREW_HANDOFF':
+      return reduceCrewHandoff(state);
+    case 'CREW_INSPECT_SOURCE':
+      return reduceCrewInspectSource(state);
+    case 'CREW_MAJORITY':
+      return reduceCrewMajority(state);
+    case 'CREW_PICK_EVIDENCE':
+      return reduceCrewPickEvidence(state);
+    case 'CREW_PICK_CONFLICT':
+      return reduceCrewPickConflict(state);
+    case 'CREW_ROBOT_DONE':
+      return reduceCrewRobotDone(state);
+    case 'CREW_RESEND':
+      return reduceCrewResend(state);
+    case 'CREW_OPEN_CRITERIA':
+      return reduceCrewOpenCriteria(state);
+    case 'CREW_REPAIR_ACCURACY':
+      return reduceCrewRepairAccuracy(state);
+    case 'CREW_REPAIR_TONE':
+      return reduceCrewRepairTone(state);
+    case 'CREW_ACCEPT':
+      return reduceCrewAccept(state);
+    case 'CREW_QUALITY_MAJORITY':
+      return reduceCrewQualityMajority(state);
+    case 'CREW_QUALITY_ROBOT_DONE':
+      return reduceCrewQualityRobotDone(state);
+    case 'CREW_QUALITY_RESEND':
+      return reduceCrewQualityResend(state);
     case 'CONFIRM_NEW_ADVENTURE':
       return createInitialState();
     case 'DISMISS_RESTORE_NOTICE':
@@ -1272,6 +1353,7 @@ export function serializeState(state: GameState): SerializedTestState {
     bridgeQuest: { ...state.bridgeQuest },
     skillQuest: { ...state.skillQuest },
     approvalQuest: { ...state.approvalQuest },
+    crewQuest: { ...state.crewQuest },
     inspectTarget: state.inspectTarget,
     explainTopic: state.explainTopic,
     robotUnderstood: state.robotUnderstood,

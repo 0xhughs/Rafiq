@@ -653,6 +653,23 @@ export function listInteractables(state: GameState): Actionable[] {
     );
   }
 
+  if (state.map === 'workshop' && state.approvalQuest.approvalReady) {
+    items.push(
+      {
+        id: 'crew_desk',
+        label: HINT_LABELS.crewDesk,
+        x: WORLD_POS.crewDesk.x,
+        y: WORLD_POS.crewDesk.y,
+      },
+      {
+        id: 'quality_desk',
+        label: HINT_LABELS.qualityDesk,
+        x: WORLD_POS.qualityDesk.x,
+        y: WORLD_POS.qualityDesk.y,
+      },
+    );
+  }
+
   return items;
 }
 

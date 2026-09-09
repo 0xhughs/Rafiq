@@ -47,7 +47,7 @@ test('skill-success through human send approval and personal clinic decision', a
   expect(afterSkill.approvalQuest.approvalReady).toBe(false);
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-skill-ready', 'true');
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-approval-ready', 'false');
-  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '14');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '15');
   await expect(page.getByTestId('hud-objective')).toHaveText(OBJECTIVES.approvalWork);
   await expect(page.getByTestId('planning-core')).toHaveText('نواة التخطيط');
   await expect(page.getByTestId('civic-connector')).toHaveText('موصل السجل');
@@ -174,7 +174,9 @@ test('skill-success through human send approval and personal clinic decision', a
   await expect(page.getByTestId('civic-connector')).toHaveText('موصل السجل');
   await expect(page.getByTestId('skill-shelf')).toHaveText('رف المهارات');
   await expect(page.getByTestId('human-gate')).toHaveText('موافقة بشرية');
-  await expect(page.getByTestId('hud-objective')).toHaveText(OBJECTIVES.approvalReady);
+  await expect(page.getByTestId('crew-output')).toHaveCount(0);
+  await expect(page.getByTestId('hud-objective')).toHaveText(OBJECTIVES.crewWork);
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-crew-ready', 'false');
 
   await interactAt(page, 'workshop', WORLD_POS.manager.x, WORLD_POS.manager.y);
   await expect(page.getByTestId('dialogue-text')).toContainText(

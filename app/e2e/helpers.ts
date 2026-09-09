@@ -4,7 +4,7 @@ import type { GameAction, MapId, SerializedTestState } from '../src/engine/types
 
 export async function waitForGame(page: Page): Promise<void> {
   await page.waitForFunction(() => Boolean(window.__RAFIQ_TEST__));
-  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '14');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '15');
 }
 
 export async function getState(page: Page): Promise<SerializedTestState> {
@@ -606,4 +606,37 @@ export async function playToSkillDone(page: Page, name = 'علي حسن'): Promi
   expect(done.evidence['5.7']).toBeUndefined();
   expect(done.evidence['6.3']).toBeUndefined();
   expect(done.approvalQuest.approvalReady).toBe(false);
+}
+
+export async function playToApprovalDone(page: Page, name = 'علي حسن'): Promise<void> {
+  await playToSkillDone(page, name);
+  await interactAt(page, 'workshop', WORLD_POS.approveDesk.x, WORLD_POS.approveDesk.y);
+  await page.getByTestId('approve-prepare').click();
+  await page.getByTestId('approve-inspect').click();
+  await page.getByTestId('approve-reject').click();
+  await page.getByTestId('approve-recipient-librarian').click();
+  await page.getByTestId('approve-payload-exact').click();
+  await page.getByTestId('approve-confirm').click();
+  await expect(page.getByTestId('approve-feedback')).toHaveText(
+    'بعد التعديل أعد المراجعة. لا إرسال صامت.',
+  );
+  await page.getByTestId('approve-inspect').click();
+  await page.getByTestId('approve-confirm').click();
+  await expect(page.getByTestId('approve-receipt')).toBeVisible();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'workshop', WORLD_POS.decisionDesk.x, WORLD_POS.decisionDesk.y);
+  await page.getByTestId('approve-case-prepare').click();
+  await page.getByTestId('approve-case-auto').click();
+  await page.getByTestId('approve-case-majority').click();
+  await page.getByTestId('approve-case-keep').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  const done = await getState(page);
+  expect(done.evidence['5.7']).toBe('demonstrated');
+  expect(done.evidence['6.3']).toBe('demonstrated');
+  expect(done.approvalQuest.approvalReady).toBe(true);
+  expect(done.evidence['6.1']).toBeUndefined();
+  expect(done.evidence['6.2']).toBeUndefined();
+  expect(done.crewQuest.crewReady).toBe(false);
 }

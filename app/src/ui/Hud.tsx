@@ -129,6 +129,11 @@ export function Hud({ state, onHelp, onDismissRestore }: Props) {
           موافقة بشرية
         </p>
       ) : null}
+      {state.crewQuest.crewReady ? (
+        <p className="inventory cassette-chip" data-testid="crew-output">
+          ناتج مُراجع
+        </p>
+      ) : null}
     </header>
   );
 }

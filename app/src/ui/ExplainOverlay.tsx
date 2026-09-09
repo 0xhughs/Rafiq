@@ -10,6 +10,7 @@ import { AGENT_EXPLAIN } from '../engine/agent';
 import { BRIDGE_EXPLAIN } from '../engine/bridge';
 import { SKILL_EXPLAIN } from '../engine/skill';
 import { APPROVE_EXPLAIN } from '../engine/approval';
+import { CREW_EXPLAIN } from '../engine/crew';
 import type { GameState } from '../engine/types';
 
 const NOTES = {
@@ -25,6 +26,7 @@ const NOTES = {
   ...BRIDGE_EXPLAIN,
   ...SKILL_EXPLAIN,
   ...APPROVE_EXPLAIN,
+  ...CREW_EXPLAIN,
 };
 
 interface Props {

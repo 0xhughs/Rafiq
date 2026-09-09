@@ -17,6 +17,7 @@ interface Props {
   bridgeReady: boolean;
   skillReady: boolean;
   approvalReady: boolean;
+  crewReady: boolean;
 }
 
 export function CheckpointNote({
@@ -36,12 +37,15 @@ export function CheckpointNote({
   bridgeReady,
   skillReady,
   approvalReady,
+  crewReady,
 }: Props) {
   if (!visible) return null;
   let text =
     'رفيق أصبح رفيقك في الحي. البقالة عند الزاوية مفتوحة الآن، وبعدها واجهة المكتبة. بقية ألغاز المغامرة ما زالت قيد التطوير.';
-  if (approvalReady) {
-    text = OBJECTIVES.approvalReady;
+  if (crewReady) {
+    text = OBJECTIVES.crewReady;
+  } else if (approvalReady) {
+    text = OBJECTIVES.crewWork;
   } else if (skillReady) {
     text = OBJECTIVES.approvalWork;
   } else if (bridgeReady) {

@@ -760,6 +760,14 @@ function drawWorkshop(ctx: CanvasRenderingContext2D): void {
   fillRound(ctx, personalCase.x + 4, personalCase.y + 6, personalCase.w - 8, personalCase.h - 10, 4, '#efe6d0');
   ctx.fillStyle = '#2a2118';
   ctx.fillText('قرار', personalCase.x + personalCase.w / 2, personalCase.y + 28);
+  const crewTable = FURNITURE.workshop.crewTable;
+  fillRound(ctx, crewTable.x + 4, crewTable.y + 6, crewTable.w - 8, crewTable.h - 10, 4, '#dce8f4');
+  ctx.fillStyle = '#163238';
+  ctx.fillText('طاقم', crewTable.x + crewTable.w / 2, crewTable.y + 28);
+  const qualityBench = FURNITURE.workshop.qualityBench;
+  fillRound(ctx, qualityBench.x + 4, qualityBench.y + 6, qualityBench.w - 8, qualityBench.h - 10, 4, '#efe6d0');
+  ctx.fillStyle = '#2a2118';
+  ctx.fillText('جودة', qualityBench.x + qualityBench.w / 2, qualityBench.y + 28);
   const counter = FURNITURE.workshop.counter;
   fillRound(ctx, counter.x + 2, counter.y + 6, counter.w - 4, counter.h - 10, 6, PALETTE.workshop);
   ctx.fillStyle = '#ead9c0';

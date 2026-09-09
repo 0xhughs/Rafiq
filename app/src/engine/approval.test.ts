@@ -772,7 +772,7 @@ describe('approval stations after skillReady', () => {
     expect(WORKSHOP.legend[5]).toBe('#u.z...a..m.j..#');
     expect(WORKSHOP.legend[6]).toBe('#k.q......t....#');
     expect(WORKSHOP.legend[7]).toBe('#.......d......#');
-    expect(WORKSHOP.legend[8]).toBe('#O.wJfhZ.vx.l.V#');
+    expect(WORKSHOP.legend[8]).toBe('#O1wJfhZ.vx.l2V#');
     expect(WORKSHOP.legend[8][1]).toBe('O');
     expect(WORKSHOP.legend[8][3]).toBe('w');
     expect(WORKSHOP.legend[8][4]).toBe('J');
@@ -804,13 +804,15 @@ describe('approval stations after skillReady', () => {
     expect(playerHitsSolid('workshop', WORLD_POS.decisionDesk.x, WORLD_POS.decisionDesk.y)).toBe(true);
     expect(playerHitsSolid('workshop', WORLD_POS.skillBench.x, WORLD_POS.skillBench.y)).toBe(true);
     expect(playerHitsSolid('workshop', WORKSHOP.spawn.x, WORKSHOP.spawn.y)).toBe(false);
-    expect(JOURNAL_CAP).toBe(88);
+    expect(JOURNAL_CAP).toBe(96);
     expect(`${BRIDGE_EXPLAIN.connector_roles} ${MCP_NOTE}`).toMatch(/MCP/);
     expect(`${APPROVE_EXPLAIN.human_before_send} ${APPROVE_EXPLAIN.what_not_to_automate}`).not.toMatch(
       /MCP|harness/,
     );
     expect(OBJECTIVES.approvalWork).not.toMatch(/MCP|harness/);
     expect(OBJECTIVES.approvalReady).not.toMatch(/MCP|harness/);
+    expect(OBJECTIVES.crewWork).not.toMatch(/MCP|harness/);
+    expect(OBJECTIVES.crewReady).not.toMatch(/MCP|harness/);
     expect(JOURNAL_TEXT.approval_ready).not.toMatch(/MCP|harness/);
     expect(JSON.stringify(createApprovalQuest())).not.toMatch(/MCP|harness/);
     expect(JSON.stringify(createSkillQuest())).not.toMatch(/MCP|harness/);
@@ -1029,7 +1031,10 @@ describe('AC03 both ids close the slice', () => {
     expect(state.evidence['5.7']).toBe('demonstrated');
     expect(state.evidence['6.3']).toBe('demonstrated');
     expect(state.approvalQuest.approvalReady).toBe(true);
-    expect(state.storyObjective).toBe(OBJECTIVES.approvalReady);
+    expect(state.storyObjective).toBe(OBJECTIVES.crewWork);
+    expect(state.evidence['6.1']).toBeUndefined();
+    expect(state.evidence['6.2']).toBeUndefined();
+    expect(state.crewQuest.crewReady).toBe(false);
     expect(state.journalEvents.some((event) => event.id === 'skill_ready')).toBe(true);
     expect(state.journalEvents.some((event) => event.id === 'approval_ready')).toBe(true);
     expect(state.journalEvents.length).toBeLessThanOrEqual(JOURNAL_CAP);
@@ -1051,12 +1056,13 @@ describe('AC03 both ids close the slice', () => {
 
     const envelope = toEnvelope(playToSkillDone(checkpoint()));
     expect(envelope.saveVersion).toBe(1);
-    const legacy = { ...envelope, approvalQuest: undefined };
+    const legacy = { ...envelope, approvalQuest: undefined, crewQuest: undefined };
     const parsed = validateSave(JSON.stringify(legacy));
     expect(parsed).not.toBeNull();
     const hydrated = hydrateSave(parsed!, 'ok', false);
     expect(hydrated.approvalQuest).toEqual(createApprovalQuest());
     expect(hydrated.approvalQuest.approvalReady).toBe(false);
+    expect(hydrated.crewQuest.crewReady).toBe(false);
     expect(hydrated.skillQuest.skillReady).toBe(true);
     expect(hydrated.storyObjective).toBe(OBJECTIVES.approvalWork);
     expect(parseApprovalQuest(undefined).phase).toBe('unstarted');

@@ -10,13 +10,7 @@ import {
   canAward52,
   neighborBoardText,
 } from './agent';
-import {
-  BRIDGE_EXPLAIN,
-  HOUR_SAT,
-  HOUR_SUN,
-  HOUR_WED,
-  MCP_NOTE,
-} from './bridge';
+import { BRIDGE_EXPLAIN, MCP_NOTE } from './bridge';
 import { createLabQuest } from './lab';
 import { listInteractables } from './interact';
 import { STREET, WORKSHOP, WORLD_POS } from './maps';
@@ -25,37 +19,49 @@ import { createInitialState, reduce } from './state';
 import { hydrateSave, toEnvelope, validateSave } from './save';
 import type { GameAction, GameState, MapId } from './types';
 import { MAP_IDS } from './types';
+import { BULLETIN_1447, createSkillQuest } from './skill';
+import { HOUR_THU, SEND_RECEIPT } from './approval';
 import {
-  BULLETIN_1447,
-  BULLETIN_2208,
-  CLOCK_START,
-  CLOCK_SUN8,
-  DEMO_SLOT_KEY,
-  HOUR_FRI,
-  HOUR_MON,
-  INPUT_RECORD,
-  ONESHOT_TEXT,
-  OUTPUT_DRAFT,
-  RUN_COUNT_LABEL,
-  SKILL_CARD_EMPTY,
-  SKILL_EXPLAIN,
-  SKILL_FEEDBACK,
-  SKILL_NAME,
-  STANDING_LINE,
-  STEPS_LOOKUP,
-  STOP_UNKNOWN,
-  TRAY_EMPTY,
-  TRAY_SUN,
-  TRIGGER_HOURS,
-  TRIGGER_LOG,
-  canAward55,
-  canAward56,
-  createSkillQuest,
-  fiveFieldsCorrect,
-  oneshotText,
-  parseSkillQuest,
-  trialText,
-} from './skill';
+  ACCEPTED_TEXT,
+  CREW_EXPLAIN,
+  CREW_FEEDBACK,
+  CRIT_ACCURACY_FAIL,
+  CRIT_ACCURACY_OK,
+  HALL_NOTICE,
+  HALL_NOTICE_FLAW,
+  HANDOFF_TEXT,
+  QUALITY_EMPTY,
+  ROLES_EMPTY,
+  SOURCE_TEXT,
+  VERSION_EMPTY,
+  VERSION_V1,
+  VERSION_V2,
+  canAward61,
+  canAward62,
+  createCrewQuest,
+  parseCrewQuest,
+  awardCrewEvidence,
+  reduceCrewAccept,
+  reduceCrewAssignBuilder,
+  reduceCrewAssignResearcher,
+  reduceCrewAssignReviewer,
+  reduceCrewHandoff,
+  reduceCrewInspectSource,
+  reduceCrewMajority,
+  reduceCrewOpenCriteria,
+  reduceCrewPickConflict,
+  reduceCrewPickEvidence,
+  reduceCrewQualityMajority,
+  reduceCrewQualityResend,
+  reduceCrewQualityRobotDone,
+  reduceCrewRepairAccuracy,
+  reduceCrewRepairTone,
+  reduceCrewResend,
+  reduceCrewRobotDone,
+  reduceCrewRolesMerge,
+  reduceCrewSetOwner,
+  versionText,
+} from './crew';
 
 function start(name = 'علي حسن'): GameState {
   let state = createInitialState();
@@ -691,8 +697,135 @@ function complete56(state: GameState): GameState {
   return next;
 }
 
-describe('skill stations after bridgeReady', () => {
-  it('places J and Z on row 8, keeps landmarks, and does not award 5.5/5.6 on bridge success', () => {
+function playToSkillDone(state: GameState): GameState {
+  let next = complete56(playToBridgeDone(state));
+  next = playing(next);
+  expect(next.evidence['5.5']).toBe('demonstrated');
+  expect(next.evidence['5.6']).toBe('demonstrated');
+  expect(next.skillQuest.skillReady).toBe(true);
+  expect(next.evidence['5.7']).toBeUndefined();
+  expect(next.evidence['6.3']).toBeUndefined();
+  expect(next.approvalQuest.approvalReady).toBe(false);
+  expect(next.storyObjective).toBe(OBJECTIVES.approvalWork);
+  return next;
+}
+
+function openDesk(state: GameState): GameState {
+  const next = playing(state);
+  return act(at(next, WORLD_POS.approveDesk.x, WORLD_POS.approveDesk.y, 'workshop'), {
+    type: 'INTERACT',
+  });
+}
+
+function openCase(state: GameState): GameState {
+  const next = playing(state);
+  return act(at(next, WORLD_POS.decisionDesk.x, WORLD_POS.decisionDesk.y, 'workshop'), {
+    type: 'INTERACT',
+  });
+}
+
+function complete57(state: GameState): GameState {
+  let next = state.mode === 'approve' && state.approvalQuest.view === 'send' ? state : openDesk(state);
+  next = act(next, { type: 'APPROVE_PREPARE' });
+  next = act(next, { type: 'APPROVE_INSPECT' });
+  next = act(next, { type: 'APPROVE_REJECT' });
+  next = act(next, { type: 'APPROVE_SET_RECIPIENT', recipient: 'librarian' });
+  next = act(next, { type: 'APPROVE_SET_PAYLOAD', payload: 'exact' });
+  next = act(next, { type: 'APPROVE_INSPECT' });
+  next = act(next, { type: 'APPROVE_CONFIRM' });
+  return next;
+}
+
+function complete63(state: GameState): GameState {
+  let next =
+    state.mode === 'approve' && state.approvalQuest.view === 'personal' ? state : openCase(state);
+  next = act(next, { type: 'APPROVE_CASE_PREPARE' });
+  next = act(next, { type: 'APPROVE_CASE_AUTO' });
+  next = act(next, { type: 'APPROVE_CASE_MAJORITY' });
+  next = act(next, { type: 'APPROVE_CASE_KEEP' });
+  return next;
+}
+
+
+function openCrew(state: GameState): GameState {
+  const next = playing(state);
+  return act(at(next, WORLD_POS.crewDesk.x, WORLD_POS.crewDesk.y, 'workshop'), {
+    type: 'INTERACT',
+  });
+}
+
+function openQuality(state: GameState): GameState {
+  const next = playing(state);
+  return act(at(next, WORLD_POS.qualityDesk.x, WORLD_POS.qualityDesk.y, 'workshop'), {
+    type: 'INTERACT',
+  });
+}
+
+function playToApprovalDone(state: GameState): GameState {
+  const next = playing(complete63(complete57(playToSkillDone(state))));
+  expect(next.evidence['5.7']).toBe('demonstrated');
+  expect(next.evidence['6.3']).toBe('demonstrated');
+  expect(next.approvalQuest.approvalReady).toBe(true);
+  expect(next.evidence['6.1']).toBeUndefined();
+  expect(next.evidence['6.2']).toBeUndefined();
+  expect(next.crewQuest.crewReady).toBe(false);
+  expect(next.approvalQuest.bulletinSent).toBe(true);
+  expect(next.approvalQuest.receiptText).toBe(SEND_RECEIPT);
+  return next;
+}
+
+function complete62(state: GameState): GameState {
+  let next = state.mode === 'crew' && state.crewQuest.view === 'roles' ? state : openCrew(state);
+  next = act(next, { type: 'CREW_ASSIGN_RESEARCHER' });
+  next = act(next, { type: 'CREW_ASSIGN_BUILDER' });
+  next = act(next, { type: 'CREW_ASSIGN_REVIEWER' });
+  next = act(next, { type: 'CREW_SET_OWNER', owner: 'librarian' });
+  next = act(next, { type: 'CREW_HANDOFF' });
+  next = act(next, { type: 'CREW_INSPECT_SOURCE' });
+  next = act(next, { type: 'CREW_MAJORITY' });
+  next = act(next, { type: 'CREW_PICK_EVIDENCE' });
+  return next;
+}
+
+function complete61(state: GameState): GameState {
+  let next =
+    state.mode === 'crew' && state.crewQuest.view === 'quality' ? state : openQuality(state);
+  next = act(next, { type: 'CREW_OPEN_CRITERIA' });
+  next = act(next, { type: 'CREW_REPAIR_ACCURACY' });
+  next = act(next, { type: 'CREW_ACCEPT' });
+  return next;
+}
+
+const CREW_SRC = [
+  reduceCrewAssignResearcher,
+  reduceCrewAssignBuilder,
+  reduceCrewAssignReviewer,
+  reduceCrewRolesMerge,
+  reduceCrewSetOwner,
+  reduceCrewHandoff,
+  reduceCrewInspectSource,
+  reduceCrewMajority,
+  reduceCrewPickEvidence,
+  reduceCrewPickConflict,
+  reduceCrewRobotDone,
+  reduceCrewResend,
+  reduceCrewOpenCriteria,
+  reduceCrewRepairAccuracy,
+  reduceCrewRepairTone,
+  reduceCrewAccept,
+  reduceCrewQualityMajority,
+  reduceCrewQualityRobotDone,
+  reduceCrewQualityResend,
+  canAward61,
+  canAward62,
+  parseCrewQuest,
+  awardCrewEvidence,
+]
+  .map((fn) => fn.toString())
+  .join('\n');
+
+describe('crew stations after approvalReady', () => {
+  it('places 1 and 2 on row 8, keeps landmarks, and does not award 6.1/6.2 on approval success', () => {
     expect(WORLD_POS.robot).toEqual({ x: 12 * TILE + 24, y: 5 * TILE + 24 });
     expect(MAP_IDS).toContain('workshop');
     expect(WORKSHOP.legend[4]).toBe('#...........e..#');
@@ -700,6 +833,8 @@ describe('skill stations after bridgeReady', () => {
     expect(WORKSHOP.legend[6]).toBe('#k.q......t....#');
     expect(WORKSHOP.legend[7]).toBe('#.......d......#');
     expect(WORKSHOP.legend[8]).toBe('#O1wJfhZ.vx.l2V#');
+    expect(WORKSHOP.legend[8][1]).toBe('O');
+    expect(WORKSHOP.legend[8][2]).toBe('1');
     expect(WORKSHOP.legend[8][3]).toBe('w');
     expect(WORKSHOP.legend[8][4]).toBe('J');
     expect(WORKSHOP.legend[8][5]).toBe('f');
@@ -708,9 +843,15 @@ describe('skill stations after bridgeReady', () => {
     expect(WORKSHOP.legend[8][8]).toBe('.');
     expect(WORKSHOP.legend[8][9]).toBe('v');
     expect(WORKSHOP.legend[8][10]).toBe('x');
+    expect(WORKSHOP.legend[8][11]).toBe('.');
     expect(WORKSHOP.legend[8][12]).toBe('l');
+    expect(WORKSHOP.legend[8][13]).toBe('2');
+    expect(WORKSHOP.legend[8][14]).toBe('V');
     expect(WORKSHOP.legend[6][8]).toBe('.');
     expect(WORKSHOP.legend[7][8]).toBe('d');
+    expect(WORKSHOP.legend[5][1]).toBe('u');
+    expect(WORKSHOP.legend[5][3]).toBe('z');
+    expect(WORKSHOP.legend[5][12]).toBe('j');
     expect(JSON.stringify(WORKSHOP.legend.join(''))).not.toMatch(/[PEIRFDGY]/);
     const street = STREET.legend.join('');
     expect(street).toContain('P');
@@ -719,24 +860,27 @@ describe('skill stations after bridgeReady', () => {
     expect(street).toContain('E');
     expect(street).toContain('G');
     expect(street).toContain('Y');
-    expect(WORLD_POS.builderBench).not.toEqual(WORLD_POS.skillBench);
-    expect(playerHitsSolid('workshop', WORLD_POS.skillBench.x, WORLD_POS.skillBench.y)).toBe(true);
-    expect(playerHitsSolid('workshop', WORLD_POS.skillClock.x, WORLD_POS.skillClock.y)).toBe(true);
-    expect(playerHitsSolid('workshop', WORLD_POS.bridgeHost.x, WORLD_POS.bridgeHost.y)).toBe(true);
-    expect(playerHitsSolid('workshop', WORLD_POS.bridgeBrowser.x, WORLD_POS.bridgeBrowser.y)).toBe(true);
-    expect(playerHitsSolid('workshop', WORLD_POS.agentConsole.x, WORLD_POS.agentConsole.y)).toBe(true);
-    expect(playerHitsSolid('workshop', WORLD_POS.labTerminal.x, WORLD_POS.labTerminal.y)).toBe(true);
+    expect(WORLD_POS.crewDesk).not.toEqual(WORLD_POS.approveDesk);
+    expect(WORLD_POS.qualityDesk).not.toEqual(WORLD_POS.decisionDesk);
+    expect(WORLD_POS.crewDesk).not.toEqual(WORLD_POS.qualityDesk);
+    expect(playerHitsSolid('workshop', WORLD_POS.crewDesk.x, WORLD_POS.crewDesk.y)).toBe(true);
+    expect(playerHitsSolid('workshop', WORLD_POS.qualityDesk.x, WORLD_POS.qualityDesk.y)).toBe(true);
+    expect(playerHitsSolid('workshop', WORLD_POS.approveDesk.x, WORLD_POS.approveDesk.y)).toBe(true);
     expect(playerHitsSolid('workshop', WORKSHOP.spawn.x, WORKSHOP.spawn.y)).toBe(false);
     expect(JOURNAL_CAP).toBe(96);
     expect(`${BRIDGE_EXPLAIN.connector_roles} ${MCP_NOTE}`).toMatch(/MCP/);
-    expect(`${SKILL_EXPLAIN.oneshot_vs_skill} ${SKILL_EXPLAIN.standing_vs_skill} ${SKILL_EXPLAIN.routine_clock}`).not.toMatch(
+    expect(`${CREW_EXPLAIN.roles_and_owner} ${CREW_EXPLAIN.quality_before_accept}`).not.toMatch(
       /MCP|harness/,
     );
-    expect(OBJECTIVES.skillWork).not.toMatch(/MCP|harness/);
-    expect(OBJECTIVES.skillReady).not.toMatch(/MCP|harness/);
-    expect(OBJECTIVES.approvalWork).not.toMatch(/MCP|harness/);
-    expect(JOURNAL_TEXT.skill_ready).not.toMatch(/MCP|harness/);
+    expect(OBJECTIVES.crewWork).not.toMatch(/MCP|harness/);
+    expect(OBJECTIVES.crewReady).not.toMatch(/MCP|harness/);
+    expect(JOURNAL_TEXT.crew_ready).not.toMatch(/MCP|harness/);
+    expect(JSON.stringify(createCrewQuest())).not.toMatch(/MCP|harness/);
     expect(JSON.stringify(createSkillQuest())).not.toMatch(/MCP|harness/);
+    expect(CREW_SRC).not.toMatch(/fetch\(/);
+    expect(CREW_SRC).not.toMatch(/Date\.now\(/);
+    expect(CREW_SRC).not.toMatch(/setInterval/);
+    expect(CREW_SRC).not.toMatch(/eval\(/);
 
     const labDone = playToLabDone(checkpoint());
     expect(JSON.stringify(labDone)).not.toMatch(/MCP/);
@@ -748,248 +892,222 @@ describe('skill stations after bridgeReady', () => {
     expect(JSON.stringify(agentDone)).not.toMatch(/MCP/);
     expect(JSON.stringify(agentDone)).not.toMatch(/harness/);
 
-    let state = playToAgentDone(checkpoint());
+    let state = playToSkillDone(checkpoint());
     const beforeReady = listInteractables(state).map((item) => item.id);
-    expect(beforeReady).not.toContain('skill_bench');
-    expect(beforeReady).not.toContain('skill_clock');
-    expect(beforeReady).toContain('bridge_host');
-    state = playToBridgeDone(checkpoint());
-    expect(state.storyObjective).toBe(OBJECTIVES.skillWork);
-    expect(state.bridgeQuest.bridgeReady).toBe(true);
-    expect(state.skillQuest.skillReady).toBe(false);
-    expect(state.evidence['5.3']).toBe('demonstrated');
-    expect(state.evidence['5.5']).toBeUndefined();
-    expect(state.evidence['5.6']).toBeUndefined();
+    expect(beforeReady).toContain('approve_desk');
+    expect(beforeReady).not.toContain('crew_desk');
+    expect(beforeReady).not.toContain('quality_desk');
+    state = playToApprovalDone(checkpoint());
+    expect(state.storyObjective).toBe(OBJECTIVES.crewWork);
+    expect(state.approvalQuest.approvalReady).toBe(true);
+    expect(state.crewQuest.crewReady).toBe(false);
+    expect(state.evidence['5.7']).toBe('demonstrated');
+    expect(state.evidence['6.3']).toBe('demonstrated');
+    expect(state.evidence['6.1']).toBeUndefined();
+    expect(state.evidence['6.2']).toBeUndefined();
     expect(JSON.stringify(state)).not.toMatch(/MCP/);
     expect(JSON.stringify(state)).not.toMatch(/harness/);
     const after = listInteractables(state).map((item) => item.id);
-    expect(after).toContain('skill_bench');
-    expect(after).toContain('skill_clock');
-    expect(after).toContain('bridge_host');
-    expect(after).toContain('agent_console');
-    expect(after).toContain('lab_terminal');
+    expect(after).toContain('crew_desk');
+    expect(after).toContain('quality_desk');
+    expect(after).toContain('approve_desk');
+    expect(after).toContain('decision_desk');
   });
 });
 
-describe('5.5 reusable skill', () => {
-  it('awards only after oneshot invent, correct, standing refuse, five fields, save, and NH-2208', () => {
-    let state = playToBridgeDone(checkpoint());
-    state = openBench(state);
-    expect(state.mode).toBe('skill');
-    expect(state.skillQuest.view).toBe('bench');
-    expect(state.skillQuest.openedBench).toBe(true);
-    expect(state.evidence['5.5']).toBeUndefined();
-    expect(state.skillQuest.skillReady).toBe(false);
-    expect(SKILL_CARD_EMPTY).toBe('لا مهارة محفوظة');
-    state = act(state, { type: 'SKILL_ONESHOT' });
-    expect(oneshotText(state.skillQuest)).toBe(ONESHOT_TEXT);
-    expect(ONESHOT_TEXT).toContain('الدقيقة 7');
-    expect(state.evidence['5.5']).toBeUndefined();
-    expect(state.skillQuest.skillSaved).toBe(false);
-    state = act(state, { type: 'SKILL_SAVE' });
-    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.saveBeforeCorrect);
-    state = act(state, { type: 'SKILL_CORRECT' });
-    expect(oneshotText(state.skillQuest)).toBe(BULLETIN_1447);
-    expect(BULLETIN_1447).toContain(HOUR_SAT);
-    expect(BULLETIN_1447).toContain(HOUR_SUN);
-    expect(BULLETIN_1447).toContain(HOUR_WED);
-    state = act(state, { type: 'SKILL_SAVE' });
-    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.missingConfig);
-    state = act(state, { type: 'SKILL_SET_TRIGGER', trigger: 'anytime' });
-    state = act(state, { type: 'SKILL_SET_INPUT', input: 'secret' });
-    state = act(state, { type: 'SKILL_SET_STEPS', steps: 'mix_opinion' });
-    state = act(state, { type: 'SKILL_SET_OUTPUT', output: 'send_now' });
-    state = act(state, { type: 'SKILL_SET_STOP', stop: 'always_invent' });
-    state = act(state, { type: 'SKILL_SAVE' });
-    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.wrongTrigger);
-    state = act(state, { type: 'SKILL_SET_TRIGGER', trigger: 'hours_record' });
-    state = act(state, { type: 'SKILL_SAVE' });
-    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.wrongInput);
-    state = act(state, { type: 'SKILL_SET_INPUT', input: 'record_id' });
-    state = act(state, { type: 'SKILL_SAVE' });
-    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.wrongSteps);
-    state = act(state, { type: 'SKILL_SET_STEPS', steps: 'lookup_format' });
-    state = act(state, { type: 'SKILL_SAVE' });
-    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.wrongOutput);
-    state = act(state, { type: 'SKILL_SET_OUTPUT', output: 'tray_draft' });
-    state = act(state, { type: 'SKILL_SAVE' });
-    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.wrongStop);
-    state = act(state, { type: 'SKILL_SET_STOP', stop: 'unknown_stop' });
-    expect(fiveFieldsCorrect(state.skillQuest)).toBe(true);
-    state = act(state, { type: 'SKILL_STANDING' });
-    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.standing);
-    expect(STANDING_LINE).toBe('العربية المبسطة. لا تخترع أرقاماً.');
-    expect(state.evidence['5.5']).toBeUndefined();
-    state = act(state, { type: 'SKILL_SAVE' });
-    expect(state.skillQuest.skillSaved).toBe(true);
-    expect(state.skillQuest.inspectedCard).toBe(true);
-    expect(SKILL_NAME).toBe('تلخيص ساعات القاعة');
-    expect(TRIGGER_HOURS).toBe('عند ورود سجل ساعات قاعة الحي');
-    expect(INPUT_RECORD).toContain('NH-xxxx');
-    expect(STEPS_LOOKUP).toContain('ابحث');
-    expect(OUTPUT_DRAFT).toContain('الدرج');
-    expect(STOP_UNKNOWN).toContain('غير محددة');
-    expect(JSON.stringify(state.skillQuest)).not.toContain(DEMO_SLOT_KEY);
-    expect(canAward55(state.skillQuest, true)).toBe(false);
-    state = act(state, { type: 'SKILL_TRIAL_SAME' });
-    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.trialSame);
-    expect(state.evidence['5.5']).toBeUndefined();
-    state = act(state, { type: 'SKILL_TRIAL_SECOND' });
-    expect(trialText(state.skillQuest)).toBe(BULLETIN_2208);
-    expect(BULLETIN_2208).toContain(HOUR_FRI);
-    expect(BULLETIN_2208).toContain(HOUR_MON);
-    expect(canAward55(state.skillQuest, true)).toBe(true);
-    expect(state.evidence['5.5']).toBe('demonstrated');
-    expect(state.evidence['5.6']).toBeUndefined();
-    expect(state.skillQuest.skillReady).toBe(false);
-    expect(state.storyObjective).toBe(OBJECTIVES.skillWork);
+describe('6.2 distinct roles and evidence version', () => {
+  it('awards only after distinct roles, librarian owner, handoff, inspect, majority refuse, and evidence v2', () => {
+    let state = playToApprovalDone(checkpoint());
+    state = openCrew(state);
+    expect(state.mode).toBe('crew');
+    expect(state.crewQuest.view).toBe('roles');
+    expect(state.crewQuest.openedRoles).toBe(true);
+    expect(state.evidence['6.2']).toBeUndefined();
+    expect(ROLES_EMPTY).toBe('لا طاقم معيّن');
+    expect(versionText(state.crewQuest)).toBe(VERSION_EMPTY);
+    state = act(state, { type: 'CREW_ASSIGN_RESEARCHER' });
+    expect(state.evidence['6.2']).toBeUndefined();
+    state = act(state, { type: 'CREW_ROLES_MERGE' });
+    expect(state.shopFeedback).toBe(CREW_FEEDBACK.merge);
+    expect(state.evidence['6.2']).toBeUndefined();
+    state = act(state, { type: 'CREW_ASSIGN_BUILDER' });
+    state = act(state, { type: 'CREW_ASSIGN_REVIEWER' });
+    expect(state.crewQuest.roleResearcher).toBe(true);
+    expect(state.crewQuest.roleBuilder).toBe(true);
+    expect(state.crewQuest.roleReviewer).toBe(true);
+    expect(state.evidence['6.2']).toBeUndefined();
+    state = act(state, { type: 'CREW_HANDOFF' });
+    expect(state.shopFeedback).toBe(CREW_FEEDBACK.handoffFirst);
+    state = act(state, { type: 'CREW_SET_OWNER', owner: 'majority' });
+    expect(state.shopFeedback).toBe(CREW_FEEDBACK.ownerMajority);
+    state = act(state, { type: 'CREW_SET_OWNER', owner: 'robot' });
+    expect(state.shopFeedback).toBe(CREW_FEEDBACK.ownerRobot);
+    expect(state.evidence['6.2']).toBeUndefined();
+    state = act(state, { type: 'CREW_SET_OWNER', owner: 'librarian' });
+    state = act(state, { type: 'CREW_HANDOFF' });
+    expect(state.crewQuest.handoffShown).toBe(true);
+    expect(versionText(state.crewQuest)).toBe(VERSION_V1);
+    expect(HANDOFF_TEXT).toContain('أمينة القاعة');
+    expect(state.evidence['6.2']).toBeUndefined();
+    state = act(state, { type: 'CREW_PICK_EVIDENCE' });
+    expect(state.shopFeedback).toBe(CREW_FEEDBACK.inspectFirst);
+    state = act(state, { type: 'CREW_INSPECT_SOURCE' });
+    expect(SOURCE_TEXT).toContain('NH-1447');
+    expect(state.evidence['6.2']).toBeUndefined();
+    state = act(state, { type: 'CREW_PICK_EVIDENCE' });
+    expect(state.shopFeedback).toBe(CREW_FEEDBACK.refuseMajority);
+    state = act(state, { type: 'CREW_PICK_CONFLICT' });
+    expect(state.shopFeedback).toBe(CREW_FEEDBACK.pickConflict);
+    expect(versionText(state.crewQuest)).toBe(VERSION_V1);
+    expect(HALL_NOTICE_FLAW).toContain(HOUR_THU);
+    state = act(state, { type: 'CREW_MAJORITY' });
+    expect(state.shopFeedback).toBe(CREW_FEEDBACK.majorityTruth);
+    expect(versionText(state.crewQuest)).not.toContain(HOUR_THU);
+    state = act(state, { type: 'CREW_ROBOT_DONE' });
+    expect(state.shopFeedback).toBe(CREW_FEEDBACK.robotDoneRoles);
+    state = act(state, { type: 'CREW_RESEND' });
+    expect(state.shopFeedback).toBe(CREW_FEEDBACK.resend);
+    expect(state.approvalQuest.receiptText).toBe(SEND_RECEIPT);
+    expect(state.approvalQuest.bulletinSent).toBe(true);
+    expect(state.evidence['6.2']).toBeUndefined();
+    state = act(state, { type: 'CREW_PICK_EVIDENCE' });
+    expect(state.crewQuest.pickedDraft).toBe('evidence');
+    expect(state.crewQuest.sharedVersion).toBe('v2');
+    expect(versionText(state.crewQuest)).toBe(VERSION_V2);
+    expect(VERSION_V2).toContain('sat-10');
+    expect(VERSION_V2).toContain('sun-16');
+    expect(VERSION_V2).toContain('wed-18');
+    expect(VERSION_V2).toContain('لا تعليق.');
+    expect(VERSION_V2).not.toContain(HOUR_THU);
+    expect(canAward62(state.crewQuest, true)).toBe(true);
+    expect(state.evidence['6.2']).toBe('demonstrated');
+    expect(state.evidence['6.1']).toBeUndefined();
+    expect(state.crewQuest.crewReady).toBe(false);
+    expect(state.approvalQuest.receiptText).toBe(SEND_RECEIPT);
   });
 
-  it('inspect-only, manager-talk, robot تم, standing, connector, and secret do not award 5.5', () => {
-    let state = playToBridgeDone(checkpoint());
-    expect(state.storyObjective).toBe(OBJECTIVES.skillWork);
-    state = openBench(state);
-    expect(state.skillQuest.openedBench).toBe(true);
-    expect(state.evidence['5.5']).toBeUndefined();
+  it('assign-only, inspect-only, handoff-only, manager-talk, and robot تم do not award 6.2', () => {
+    let state = playToApprovalDone(checkpoint());
+    state = openCrew(state);
+    expect(state.evidence['6.2']).toBeUndefined();
+    state = act(state, { type: 'CREW_ASSIGN_RESEARCHER' });
+    state = act(state, { type: 'CREW_ASSIGN_BUILDER' });
+    state = act(state, { type: 'CREW_ASSIGN_REVIEWER' });
+    expect(state.evidence['6.2']).toBeUndefined();
+    state = act(state, { type: 'CREW_SET_OWNER', owner: 'librarian' });
+    state = act(state, { type: 'CREW_HANDOFF' });
+    expect(state.evidence['6.2']).toBeUndefined();
+    state = act(state, { type: 'CREW_INSPECT_SOURCE' });
+    expect(state.evidence['6.2']).toBeUndefined();
     state = playing(state);
     state = act(at(state, WORLD_POS.manager.x, WORLD_POS.manager.y, 'workshop'), { type: 'INTERACT' });
-    expect(state.dialogueNode).toBe('manager_bridge_thanks');
-    expect(DIALOGUE.manager_bridge_thanks.text(state.playerName)).toMatch(
-      /مسودة ساعات قاعة الحي حُفظت من NH-1447/,
+    expect(state.dialogueNode).toBe('manager_approval_thanks');
+    expect(DIALOGUE.manager_approval_thanks.text(state.playerName)).toMatch(
+      /رُفض إرسال خاطئ ثم وُوفق على نشرة القاعة إلى أمينة القاعة، وقرار عيادة ليان بقي عند إنسان/,
     );
-    expect(state.evidence['5.5']).toBeUndefined();
-    state = act(state, { type: 'ADVANCE_DIALOGUE' });
-    state = openClock(state);
-    expect(state.mode).toBe('skill');
-    expect(state.evidence['5.5']).toBeUndefined();
-    expect(state.evidence['5.6']).toBeUndefined();
-    state = playing(state);
-    state = openBench(state);
-    state = act(state, { type: 'SKILL_ROBOT_DONE' });
-    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.robotDone);
-    expect(state.evidence['5.5']).toBeUndefined();
-    state = act(state, { type: 'SKILL_STANDING' });
-    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.standing);
-    state = act(state, { type: 'SKILL_LOAD_CONNECTOR' });
-    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.connector);
-    state = act(state, { type: 'SKILL_EMBED_SECRET' });
-    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.secret);
-    expect(state.evidence['5.5']).toBeUndefined();
-    expect(state.skillQuest.skillReady).toBe(false);
+    expect(DIALOGUE.manager_approval_thanks.text(state.playerName)).toContain(
+      'منصة الطاقم ومنضدة الجودة في الورشة تنتظران تنسيق الأدوار ومراجعة الناتج.',
+    );
+    expect(state.evidence['6.2']).toBeUndefined();
+    expect(state.crewQuest.crewReady).toBe(false);
   });
 });
 
-describe('5.6 routine clock', () => {
-  it('awards only after sun-8 fire, pause, and a silent post-pause tick', () => {
-    let state = playToBridgeDone(checkpoint());
-    state = openClock(state);
-    expect(state.mode).toBe('skill');
-    expect(state.skillQuest.view).toBe('clock');
-    expect(state.skillQuest.clockLabel).toBe(CLOCK_START);
-    expect(CLOCK_START).toContain('16:00');
-    expect(state.skillQuest.trayText).toBe(TRAY_EMPTY);
-    expect(RUN_COUNT_LABEL(0)).toBe('تشغيلات الروتين: 0');
-    state = act(state, { type: 'SKILL_ARM' });
-    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.armBeforeSkill);
-    expect(state.evidence['5.6']).toBeUndefined();
-    state = act(state, { type: 'SKILL_SET_SCHEDULE', schedule: 'every_event' });
-    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.eventSchedule);
-    state = act(state, { type: 'SKILL_SET_SCHEDULE', schedule: 'send_dawn' });
-    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.sendSchedule);
-    state = playing(state);
-    state = complete55(state);
-    expect(state.evidence['5.5']).toBe('demonstrated');
-    expect(state.evidence['5.6']).toBeUndefined();
-    state = playing(state);
-    state = openClock(state);
-    state = act(state, { type: 'SKILL_TICK_EMPTY' });
-    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.emptySource);
-    expect(state.skillQuest.trayText).toBe(TRAY_EMPTY);
-    expect(state.skillQuest.runCount).toBe(0);
-    state = act(state, { type: 'SKILL_SET_SCHEDULE', schedule: 'sun8' });
-    state = act(state, { type: 'SKILL_ARM' });
-    expect(state.skillQuest.armed).toBe(true);
-    state = act(state, { type: 'SKILL_TICK_SUN8' });
-    expect(state.skillQuest.fired).toBe(true);
-    expect(state.skillQuest.inspectedFire).toBe(true);
-    expect(state.skillQuest.clockLabel).toBe(CLOCK_SUN8);
-    expect(CLOCK_SUN8).toContain('08:00');
-    expect(state.skillQuest.trayText).toBe(TRAY_SUN);
-    expect(TRAY_SUN).toContain(HOUR_SAT);
-    expect(state.skillQuest.runCount).toBe(1);
-    expect(TRIGGER_LOG).toContain(SKILL_NAME);
-    expect(state.evidence['5.6']).toBeUndefined();
-    expect(state.mode).toBe('skill');
-    state = act(state, { type: 'SKILL_PAUSE' });
-    expect(state.mode).toBe('skill');
-    expect(state.mode).not.toBe('paused');
-    expect(state.skillQuest.paused).toBe(true);
-    expect(state.evidence['5.6']).toBeUndefined();
-    const tray = state.skillQuest.trayText;
-    const count = state.skillQuest.runCount;
-    state = act(state, { type: 'SKILL_TICK_SUN8' });
-    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.paused);
-    expect(state.skillQuest.trayText).toBe(tray);
-    expect(state.skillQuest.runCount).toBe(count);
-    expect(state.skillQuest.silentTick).toBe(true);
-    expect(canAward56(state.skillQuest, true)).toBe(true);
-    expect(state.evidence['5.6']).toBe('demonstrated');
-    expect(state.skillQuest.skillReady).toBe(true);
-    expect(state.storyObjective).toBe(OBJECTIVES.approvalWork);
-    expect(state.evidence['5.7']).toBeUndefined();
-    expect(state.evidence['6.3']).toBeUndefined();
-    expect(state.approvalQuest.approvalReady).toBe(false);
-    expect(state.journalEvents.some((event) => event.id === 'bridge_ready')).toBe(true);
-    expect(state.journalEvents.some((event) => event.id === 'skill_ready')).toBe(true);
+describe('6.1 quality repair then accept', () => {
+  it('awards only after criteria, failed accuracy, repair, and accept without thu-09', () => {
+    let state = playToApprovalDone(checkpoint());
+    state = openQuality(state);
+    expect(state.mode).toBe('crew');
+    expect(state.crewQuest.view).toBe('quality');
+    expect(QUALITY_EMPTY).toBe('لا تقييم معروض');
+    expect(state.evidence['6.1']).toBeUndefined();
+    state = act(state, { type: 'CREW_ACCEPT' });
+    expect(state.shopFeedback).toBe(CREW_FEEDBACK.criteriaFirst);
+    state = act(state, { type: 'CREW_OPEN_CRITERIA' });
+    expect(state.crewQuest.criteriaOpened).toBe(true);
+    expect(state.crewQuest.accuracyOk).toBe(false);
+    expect(CRIT_ACCURACY_FAIL).toBe('الدقة: فشل');
+    expect(HALL_NOTICE_FLAW).toContain(HOUR_THU);
+    expect(state.evidence['6.1']).toBeUndefined();
+    state = act(state, { type: 'CREW_ACCEPT' });
+    expect(state.shopFeedback).toBe(CREW_FEEDBACK.failedCriterion);
+    state = act(state, { type: 'CREW_REPAIR_TONE' });
+    expect(state.shopFeedback).toBe(CREW_FEEDBACK.repairTone);
+    state = act(state, { type: 'CREW_QUALITY_MAJORITY' });
+    expect(state.shopFeedback).toBe(CREW_FEEDBACK.qualityMajority);
+    state = act(state, { type: 'CREW_QUALITY_ROBOT_DONE' });
+    expect(state.shopFeedback).toBe(CREW_FEEDBACK.robotDoneQuality);
+    state = act(state, { type: 'CREW_QUALITY_RESEND' });
+    expect(state.shopFeedback).toBe(CREW_FEEDBACK.resend);
+    expect(state.approvalQuest.receiptText).toBe(SEND_RECEIPT);
+    expect(state.evidence['6.1']).toBeUndefined();
+    state = act(state, { type: 'CREW_REPAIR_ACCURACY' });
+    expect(state.crewQuest.accuracyOk).toBe(true);
+    expect(state.crewQuest.repaired).toBe(true);
+    expect(CRIT_ACCURACY_OK).toBe('الدقة: نجح');
+    expect(HALL_NOTICE).toBe(BULLETIN_1447);
+    expect(state.evidence['6.1']).toBeUndefined();
+    state = act(state, { type: 'CREW_ACCEPT' });
+    expect(state.crewQuest.accepted).toBe(true);
+    expect(state.crewQuest.acceptedText).toBe(ACCEPTED_TEXT);
+    expect(ACCEPTED_TEXT).toContain('sat-10');
+    expect(ACCEPTED_TEXT).not.toContain(HOUR_THU);
+    expect(canAward61(state.crewQuest, true)).toBe(true);
+    expect(state.evidence['6.1']).toBe('demonstrated');
+    expect(state.evidence['6.2']).toBeUndefined();
+    expect(state.crewQuest.crewReady).toBe(false);
+    expect(state.approvalQuest.bulletinSent).toBe(true);
+    expect(state.approvalQuest.receiptText).toBe(SEND_RECEIPT);
+  });
+});
+
+describe('AC03 both ids close the slice', () => {
+  it('sets crewReady, thanks, hydrate, and keeps the desks independent', () => {
+    const onlyRoles = complete62(playToApprovalDone(checkpoint()));
+    expect(onlyRoles.evidence['6.2']).toBe('demonstrated');
+    expect(onlyRoles.evidence['6.1']).toBeUndefined();
+    expect(onlyRoles.crewQuest.crewReady).toBe(false);
+    const onlyQuality = complete61(playToApprovalDone(checkpoint()));
+    expect(onlyQuality.evidence['6.1']).toBe('demonstrated');
+    expect(onlyQuality.evidence['6.2']).toBeUndefined();
+    expect(onlyQuality.crewQuest.crewReady).toBe(false);
+
+    let state = complete61(complete62(playToApprovalDone(checkpoint())));
+    expect(state.evidence['6.1']).toBe('demonstrated');
+    expect(state.evidence['6.2']).toBe('demonstrated');
+    expect(state.crewQuest.crewReady).toBe(true);
+    expect(state.storyObjective).toBe(OBJECTIVES.crewReady);
+    expect(state.journalEvents.some((event) => event.id === 'approval_ready')).toBe(true);
+    expect(state.journalEvents.some((event) => event.id === 'crew_ready')).toBe(true);
     expect(state.journalEvents.length).toBeLessThanOrEqual(JOURNAL_CAP);
     expect(JSON.stringify(state)).not.toMatch(/MCP/);
     expect(JSON.stringify(state)).not.toMatch(/harness/);
+    expect(state.approvalQuest.receiptText).toBe(SEND_RECEIPT);
     state = playing(state);
     state = act(at(state, WORLD_POS.manager.x, WORLD_POS.manager.y, 'workshop'), { type: 'INTERACT' });
-    expect(state.dialogueNode).toBe('manager_skill_thanks');
-    expect(DIALOGUE.manager_skill_thanks.text(state.playerName)).toMatch(
-      /حُفظت مهارة تلخيص ساعات القاعة وجُرّبت على NH-2208، والروتين المجدول توقف بعد الإلبات/,
+    expect(state.dialogueNode).toBe('manager_crew_thanks');
+    expect(DIALOGUE.manager_crew_thanks.text(state.playerName)).toMatch(
+      /عُيّن باحث وبنّاء ومراجع بمالك واحد، وحُسم خلاف المسودة بدليل السجل لا بالأغلبية، ثم أُصلحت الدقة وقُبلت نشرة القاعة/,
     );
     state = act(state, { type: 'ADVANCE_DIALOGUE' });
     state = act(at(state, WORLD_POS.robot.x, WORLD_POS.robot.y, 'street'), { type: 'INTERACT' });
-    expect(state.dialogueNode).toBe('companion_after_skill');
-    expect(DIALOGUE.companion_after_skill.text(state.playerName)).toMatch(
-      /الدستور الدائم مهارة|الروتين المتوقف ما زال يعمل/,
+    expect(state.dialogueNode).toBe('companion_after_crew');
+    expect(DIALOGUE.companion_after_crew.text(state.playerName)).toMatch(
+      /أغلبية الطاقم تقرر الحقيقة|معيار فاشل يُقبل/,
     );
     expect(robotPosition(state).x).toBe(state.position.x - 32);
-  });
 
-  it('cancel-without-fire and pause-without-fire do not award, and hydrates missing skillQuest', () => {
-    let state = complete55(playToBridgeDone(checkpoint()));
-    state = playing(state);
-    state = openClock(state);
-    state = act(state, { type: 'SKILL_SET_SCHEDULE', schedule: 'sun8' });
-    state = act(state, { type: 'SKILL_ARM' });
-    state = act(state, { type: 'SKILL_CANCEL' });
-    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.cancelled);
-    state = act(state, { type: 'SKILL_TICK_SUN8' });
-    expect(state.skillQuest.fired).toBe(false);
-    expect(state.evidence['5.6']).toBeUndefined();
-    expect(state.skillQuest.skillReady).toBe(false);
-    state = act(state, { type: 'SKILL_PAUSE' });
-    expect(state.skillQuest.paused).toBe(true);
-    expect(state.skillQuest.fired).toBe(false);
-    expect(state.evidence['5.6']).toBeUndefined();
-    state = complete56(playToBridgeDone(checkpoint()));
-    expect(state.evidence['5.5']).toBe('demonstrated');
-    expect(state.evidence['5.6']).toBe('demonstrated');
-    expect(state.skillQuest.skillReady).toBe(true);
-    const envelope = toEnvelope(playToBridgeDone(checkpoint()));
+    const envelope = toEnvelope(playToApprovalDone(checkpoint()));
     expect(envelope.saveVersion).toBe(1);
-    const legacy = { ...envelope, skillQuest: undefined };
+    const legacy = { ...envelope, crewQuest: undefined };
     const parsed = validateSave(JSON.stringify(legacy));
     expect(parsed).not.toBeNull();
     const hydrated = hydrateSave(parsed!, 'ok', false);
-    expect(hydrated.skillQuest).toEqual(createSkillQuest());
-    expect(hydrated.skillQuest.skillReady).toBe(false);
-    expect(hydrated.bridgeQuest.bridgeReady).toBe(true);
-    expect(hydrated.storyObjective).toBe(OBJECTIVES.skillWork);
-    expect(parseSkillQuest(undefined).phase).toBe('unstarted');
+    expect(hydrated.crewQuest).toEqual(createCrewQuest());
+    expect(hydrated.crewQuest.crewReady).toBe(false);
+    expect(hydrated.approvalQuest.approvalReady).toBe(true);
+    expect(hydrated.storyObjective).toBe(OBJECTIVES.crewWork);
+    expect(parseCrewQuest(undefined).phase).toBe('unstarted');
     expect(createLabQuest().labReady).toBe(false);
   });
 });

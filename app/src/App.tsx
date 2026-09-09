@@ -35,6 +35,7 @@ import { AgentOverlay } from './ui/AgentOverlay';
 import { BridgeOverlay } from './ui/BridgeOverlay';
 import { SkillOverlay } from './ui/SkillOverlay';
 import { ApproveOverlay } from './ui/ApproveOverlay';
+import { CrewOverlay } from './ui/CrewOverlay';
 import { evidenceAttr } from './engine/shop';
 
 function reducer(state: GameState, action: GameAction): GameState {
@@ -136,7 +137,7 @@ export default function App() {
       data-dialogue={state.dialogueNode ?? ''}
       data-save={state.saveStatus}
       data-evidence={evidenceAttr(state.evidence)}
-      data-slice="14"
+      data-slice="15"
       data-shop-quest={state.shopQuest.phase}
       data-parcel-quest={state.parcelQuest.phase}
       data-comms-repaired={state.parcelQuest.commsRepaired ? 'true' : 'false'}
@@ -159,6 +160,8 @@ export default function App() {
       data-skill-ready={state.skillQuest.skillReady ? 'true' : 'false'}
       data-approval-quest={state.approvalQuest.phase}
       data-approval-ready={state.approvalQuest.approvalReady ? 'true' : 'false'}
+      data-crew-quest={state.crewQuest.phase}
+      data-crew-ready={state.crewQuest.crewReady ? 'true' : 'false'}
       data-context-window={state.libraryQuest.windowSlots.join(',')}
       data-cassette={state.libraryQuest.contextModule ? 'contextModule' : ''}
       data-workshop-lead={state.newsroomQuest.workshopLead ? 'true' : 'false'}
@@ -186,6 +189,7 @@ export default function App() {
         bridgeReady={state.bridgeQuest.bridgeReady}
         skillReady={state.skillQuest.skillReady}
         approvalReady={state.approvalQuest.approvalReady}
+        crewReady={state.crewQuest.crewReady}
       />
       {naming ? (
         <NameEntry
@@ -405,6 +409,31 @@ export default function App() {
           onCaseShare={() => dispatch({ type: 'APPROVE_CASE_SHARE' })}
           onCaseKeep={() => dispatch({ type: 'APPROVE_CASE_KEEP' })}
           onCaseRobotDone={() => dispatch({ type: 'APPROVE_CASE_ROBOT_DONE' })}
+          onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+        />
+      ) : null}
+      {state.mode === 'crew' ? (
+        <CrewOverlay
+          state={state}
+          onAssignResearcher={() => dispatch({ type: 'CREW_ASSIGN_RESEARCHER' })}
+          onAssignBuilder={() => dispatch({ type: 'CREW_ASSIGN_BUILDER' })}
+          onAssignReviewer={() => dispatch({ type: 'CREW_ASSIGN_REVIEWER' })}
+          onMerge={() => dispatch({ type: 'CREW_ROLES_MERGE' })}
+          onOwner={(owner) => dispatch({ type: 'CREW_SET_OWNER', owner })}
+          onHandoff={() => dispatch({ type: 'CREW_HANDOFF' })}
+          onInspectSource={() => dispatch({ type: 'CREW_INSPECT_SOURCE' })}
+          onMajority={() => dispatch({ type: 'CREW_MAJORITY' })}
+          onPickEvidence={() => dispatch({ type: 'CREW_PICK_EVIDENCE' })}
+          onPickConflict={() => dispatch({ type: 'CREW_PICK_CONFLICT' })}
+          onRobotDone={() => dispatch({ type: 'CREW_ROBOT_DONE' })}
+          onResend={() => dispatch({ type: 'CREW_RESEND' })}
+          onOpenCriteria={() => dispatch({ type: 'CREW_OPEN_CRITERIA' })}
+          onRepairAccuracy={() => dispatch({ type: 'CREW_REPAIR_ACCURACY' })}
+          onRepairTone={() => dispatch({ type: 'CREW_REPAIR_TONE' })}
+          onAccept={() => dispatch({ type: 'CREW_ACCEPT' })}
+          onQualityMajority={() => dispatch({ type: 'CREW_QUALITY_MAJORITY' })}
+          onQualityRobotDone={() => dispatch({ type: 'CREW_QUALITY_ROBOT_DONE' })}
+          onQualityResend={() => dispatch({ type: 'CREW_QUALITY_RESEND' })}
           onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
         />
       ) : null}

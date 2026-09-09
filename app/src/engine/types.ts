@@ -50,7 +50,8 @@ export type Mode =
   | 'agent'
   | 'bridge'
   | 'skill'
-  | 'approve';
+  | 'approve'
+  | 'crew';
 
 export type TrashState = 'home' | 'carried' | 'disposed';
 
@@ -101,6 +102,8 @@ export const EVIDENCE_IDS = [
   '5.5',
   '5.6',
   '5.7',
+  '6.1',
+  '6.2',
   '6.3',
 ] as const;
 export type EvidenceId = (typeof EVIDENCE_IDS)[number];
@@ -176,7 +179,9 @@ export type ExplainTopic =
   | 'standing_vs_skill'
   | 'routine_clock'
   | 'human_before_send'
-  | 'what_not_to_automate';
+  | 'what_not_to_automate'
+  | 'roles_and_owner'
+  | 'quality_before_accept';
 export type ContextNoteId = 'constraint' | 'hold' | 'festival' | 'mango';
 export type PackFileId = 'spec' | 'delivery' | 'festival' | 'news_draft';
 export type PackStampId = 'rafiq_repair' | 'festival' | 'unnamed';
@@ -563,6 +568,41 @@ export interface ApprovalQuest {
   view: ApprovalView;
 }
 
+export const CREW_PHASES = ['unstarted', 'working', 'ready'] as const;
+export type CrewPhase = (typeof CREW_PHASES)[number];
+export type CrewView = 'roles' | 'quality';
+export type CrewOwner = 'librarian' | 'majority' | 'robot';
+export type CrewDraft = 'evidence' | 'conflict';
+export type CrewVersion = 'v0' | 'v1' | 'v2';
+
+export interface CrewQuest {
+  phase: CrewPhase;
+  openedRoles: boolean;
+  openedQuality: boolean;
+  roleResearcher: boolean;
+  roleBuilder: boolean;
+  roleReviewer: boolean;
+  mergeRefused: boolean;
+  owner: CrewOwner | null;
+  handoffShown: boolean;
+  sourceInspected: boolean;
+  majorityRefused: boolean;
+  pickedDraft: CrewDraft | null;
+  sharedVersion: CrewVersion;
+  criteriaOpened: boolean;
+  accuracyOk: boolean;
+  sourceOk: boolean;
+  toneOk: boolean;
+  completeOk: boolean;
+  riskOk: boolean;
+  repaired: boolean;
+  accepted: boolean;
+  acceptedText: string;
+  crewReady: boolean;
+  pendingExplain: ExplainTopic | null;
+  view: CrewView;
+}
+
 export type ParcelId = 'r17' | 'r19' | 'r71';
 export type ParcelPick = ParcelId | 'gray' | null;
 export type LocationPick = 'west' | 'east' | 'any' | null;
@@ -732,7 +772,13 @@ export type JournalEventId =
   | 'send_approved'
   | 'case_context'
   | 'human_decided'
-  | 'approval_ready';
+  | 'approval_ready'
+  | 'crew_opened'
+  | 'roles_assigned'
+  | 'conflict_resolved'
+  | 'quality_repaired'
+  | 'quality_accepted'
+  | 'crew_ready';
 
 export interface JournalEvent {
   id: JournalEventId;
@@ -826,13 +872,15 @@ export type DialogueNodeId =
   | 'manager_bridge_thanks'
   | 'manager_skill_thanks'
   | 'manager_approval_thanks'
+  | 'manager_crew_thanks'
   | 'companion_after_workshop'
   | 'companion_after_kiosk'
   | 'companion_after_lab'
   | 'companion_after_agent'
   | 'companion_after_bridge'
   | 'companion_after_skill'
-  | 'companion_after_approval';
+  | 'companion_after_approval'
+  | 'companion_after_crew';
 
 export type DialogueChoiceId =
   | 'agree'
@@ -918,7 +966,9 @@ export type InteractableId =
   | 'skill_bench'
   | 'skill_clock'
   | 'approve_desk'
-  | 'decision_desk';
+  | 'decision_desk'
+  | 'crew_desk'
+  | 'quality_desk';
 
 export type PortalId =
   | 'home'
@@ -988,6 +1038,7 @@ export interface GameState {
   bridgeQuest: BridgeQuest;
   skillQuest: SkillQuest;
   approvalQuest: ApprovalQuest;
+  crewQuest: CrewQuest;
   calculator: CalculatorState;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
@@ -1136,7 +1187,26 @@ export type GameAction =
   | { type: 'APPROVE_CASE_MAJORITY' }
   | { type: 'APPROVE_CASE_SHARE' }
   | { type: 'APPROVE_CASE_KEEP' }
-  | { type: 'APPROVE_CASE_ROBOT_DONE' };
+  | { type: 'APPROVE_CASE_ROBOT_DONE' }
+  | { type: 'CREW_ASSIGN_RESEARCHER' }
+  | { type: 'CREW_ASSIGN_BUILDER' }
+  | { type: 'CREW_ASSIGN_REVIEWER' }
+  | { type: 'CREW_ROLES_MERGE' }
+  | { type: 'CREW_SET_OWNER'; owner: CrewOwner }
+  | { type: 'CREW_HANDOFF' }
+  | { type: 'CREW_INSPECT_SOURCE' }
+  | { type: 'CREW_MAJORITY' }
+  | { type: 'CREW_PICK_EVIDENCE' }
+  | { type: 'CREW_PICK_CONFLICT' }
+  | { type: 'CREW_ROBOT_DONE' }
+  | { type: 'CREW_RESEND' }
+  | { type: 'CREW_OPEN_CRITERIA' }
+  | { type: 'CREW_REPAIR_ACCURACY' }
+  | { type: 'CREW_REPAIR_TONE' }
+  | { type: 'CREW_ACCEPT' }
+  | { type: 'CREW_QUALITY_MAJORITY' }
+  | { type: 'CREW_QUALITY_ROBOT_DONE' }
+  | { type: 'CREW_QUALITY_RESEND' };
 
 export interface DialogueChoice {
   id: DialogueChoiceId;
@@ -1205,6 +1275,7 @@ export interface SerializedTestState {
   bridgeQuest: BridgeQuest;
   skillQuest: SkillQuest;
   approvalQuest: ApprovalQuest;
+  crewQuest: CrewQuest;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
   robotUnderstood: string | null;
@@ -1244,6 +1315,7 @@ export interface SaveEnvelope {
   bridgeQuest: BridgeQuest;
   skillQuest: SkillQuest;
   approvalQuest: ApprovalQuest;
+  crewQuest: CrewQuest;
   robot: { companion: boolean };
   endingState: EndingState;
   mapsVisited: MapId[];

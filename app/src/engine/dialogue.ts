@@ -56,6 +56,10 @@ export const OBJECTIVES = {
     'منصة الموافقة مفتوحة: راجع إرسال النشرة، ارفض الخاطئ ووافق على المصحح، ثم أبقِ قرار العيادة عندك.',
   approvalReady:
     'وُوفق على إرسال النشرة المصحح، وبقي قرار العيادة عند إنسان. مدير الورشة شكرك.',
+  crewWork:
+    'منصة الطاقم مفتوحة: عيّن الباحث والبنّاء والمراجع بمالك واحد، احسم الخلاف بالدليل، ثم أصلح معيار الجودة الفاشل قبل القبول.',
+  crewReady:
+    'نُسّق طاقم الناتج وقُبلت نشرة القاعة بعد إصلاح معيار فاشل. مدير الورشة شكرك.',
 } as const;
 
 export const SPEAKER = {
@@ -142,6 +146,12 @@ export const JOURNAL_TEXT: Record<JournalEventId, string> = {
   case_context: 'عُرض سياق قرار عيادة ليان وبقي القرار عند الإنسان.',
   human_decided: 'بقي قرار ملاحظة العيادة عند نورة. الروبوت لم يقرر.',
   approval_ready: 'وُوفق على إرسال النشرة المصحح، وبقي قرار العيادة عند إنسان.',
+  crew_opened: 'فتحتَ منصة الطاقم ومنضدة الجودة في الورشة.',
+  roles_assigned: 'عُيّن الباحث والبنّاء والمراجع أدواراً مختلفة.',
+  conflict_resolved: 'حُسم خلاف المسودة بدليل السجل لا بالأغلبية.',
+  quality_repaired: 'أُصلح معيار الدقة في نشرة القاعة.',
+  quality_accepted: 'قُبلت نشرة القاعة بعد مراجعة المعايير.',
+  crew_ready: 'نُسّق طاقم الناتج وقُبلت نشرة القاعة بعد إصلاح معيار فاشل.',
 };
 
 export const LOCKED_COPY = {
@@ -840,7 +850,15 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     speaker: 'manager',
     speakerLabel: () => SPEAKER.manager(),
     text: () =>
-      'رُفض إرسال خاطئ ثم وُوفق على نشرة القاعة إلى أمينة القاعة، وقرار عيادة ليان بقي عند إنسان',
+      'رُفض إرسال خاطئ ثم وُوفق على نشرة القاعة إلى أمينة القاعة، وقرار عيادة ليان بقي عند إنسان. منصة الطاقم ومنضدة الجودة في الورشة تنتظران تنسيق الأدوار ومراجعة الناتج.',
+    next: null,
+  },
+  manager_crew_thanks: {
+    id: 'manager_crew_thanks',
+    speaker: 'manager',
+    speakerLabel: () => SPEAKER.manager(),
+    text: () =>
+      'عُيّن باحث وبنّاء ومراجع بمالك واحد، وحُسم خلاف المسودة بدليل السجل لا بالأغلبية، ثم أُصلحت الدقة وقُبلت نشرة القاعة.',
     next: null,
   },
   companion_after_workshop: {
@@ -894,6 +912,13 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     text: () => 'الموافقة الآلية تكفي. أغلبية الجيران تقرر عيادة الطفل.',
     next: null,
   },
+  companion_after_crew: {
+    id: 'companion_after_crew',
+    speaker: 'robot',
+    speakerLabel: () => SPEAKER.robot(),
+    text: () => 'أغلبية الطاقم تقرر الحقيقة. معيار فاشل يُقبل.',
+    next: null,
+  },
 };
 
 export function currentLine(node: DialogueNodeId | null): DialogueLine | null {
@@ -932,6 +957,7 @@ export function isNpcNode(node: DialogueNodeId | null): boolean {
     node === 'companion_after_bridge' ||
     node === 'companion_after_skill' ||
     node === 'companion_after_approval' ||
+    node === 'companion_after_crew' ||
     node.startsWith('editor') ||
     node.startsWith('officer') ||
     node.startsWith('manager')

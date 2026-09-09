@@ -75,7 +75,7 @@ export interface PortalDef {
   ends: [PortalEnd, PortalEnd];
 }
 
-const SOLID_LETTERS = new Set(['#', 'B', 'T', 'K', 'M', 'C', 'H', 'L', 'W', 'n', 'p', 'c', 'k', 'Q', 'b', 'y', 's', 'f', 'A', 'u', 'x', 'z', 'm', 'j', 'v', 't', 'U', 'X', 'q', 'a', 'e', 'w', 'l', 'h', 'J', 'Z', 'O', 'V']);
+const SOLID_LETTERS = new Set(['#', 'B', 'T', 'K', 'M', 'C', 'H', 'L', 'W', 'n', 'p', 'c', 'k', 'Q', 'b', 'y', 's', 'f', 'A', 'u', 'x', 'z', 'm', 'j', 'v', 't', 'U', 'X', 'q', 'a', 'e', 'w', 'l', 'h', 'J', 'Z', 'O', 'V', '1', '2']);
 
 const APARTMENT_LEGEND = [
   '################',
@@ -208,7 +208,7 @@ const WORKSHOP_LEGEND = [
   '#u.z...a..m.j..#',
   '#k.q......t....#',
   '#.......d......#',
-  '#O.wJfhZ.vx.l.V#',
+  '#O1wJfhZ.vx.l2V#',
   '################',
 ];
 
@@ -455,6 +455,8 @@ function kindFromLetter(letter: string): CellKind {
     case 'Z':
     case 'O':
     case 'V':
+    case '1':
+    case '2':
       return 'file';
     case 'N':
       return 'neighbor';
@@ -572,6 +574,8 @@ export const FURNITURE = {
     hallClock: mergeRects(collectKind(WORKSHOP, ['Z']))[0],
     approvalDesk: mergeRects(collectKind(WORKSHOP, ['O']))[0],
     personalCase: mergeRects(collectKind(WORKSHOP, ['V']))[0],
+    crewTable: mergeRects(collectKind(WORKSHOP, ['1']))[0],
+    qualityBench: mergeRects(collectKind(WORKSHOP, ['2']))[0],
     walls: collectKind(WORKSHOP, ['#']),
   },
 };
@@ -809,6 +813,8 @@ export const WORLD_POS = {
   skillClock: letterCenter(WORKSHOP, 'Z'),
   approveDesk: letterCenter(WORKSHOP, 'O'),
   decisionDesk: letterCenter(WORKSHOP, 'V'),
+  crewDesk: letterCenter(WORKSHOP, '1'),
+  qualityDesk: letterCenter(WORKSHOP, '2'),
   workshopTalk: cellCenter(4, 6),
   workshopWestWallInside: cellCenter(1, 4),
 };
