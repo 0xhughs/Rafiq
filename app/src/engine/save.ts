@@ -6,6 +6,7 @@ import { getMap, MAPS } from './maps';
 import { validateName } from './names';
 import { createCalculator, parseEvidence, parseShopQuest } from './shop';
 import { parseParcelQuest } from './parcel';
+import { parseLibraryQuest } from './library';
 import type {
   EndingState,
   Facing,
@@ -74,6 +75,12 @@ const JOURNAL_IDS: readonly JournalEventId[] = [
   'parcel_overbroad_stopped',
   'parcel_instruction_failed',
   'parcel_retrieved',
+  'archive_visit',
+  'notes_overflow',
+  'constraint_restored',
+  'file_redacted',
+  'pack_assembled',
+  'spec_released',
 ];
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -117,10 +124,12 @@ export function toEnvelope(state: GameState): SaveEnvelope {
     neighbor: persistableGreeting(state.neighbor),
     shopkeeper: persistableGreeting(state.shopkeeper),
     clerk: persistableGreeting(state.clerk),
+    librarian: persistableGreeting(state.librarian),
     journalEvents: state.journalEvents.slice(-JOURNAL_CAP),
     evidence: parseEvidence(state.evidence),
     shopQuest: parseShopQuest(state.shopQuest),
     parcelQuest: parseParcelQuest(state.parcelQuest),
+    libraryQuest: parseLibraryQuest(state.libraryQuest),
     robot: { companion },
     endingState: 'in_progress',
     mapsVisited: state.mapsVisited.length > 0 ? [...state.mapsVisited] : [state.map],
@@ -202,6 +211,11 @@ export function validateSave(raw: unknown): SaveEnvelope | null {
     typeof clerkRaw === 'string' && (GREETINGS as readonly string[]).includes(clerkRaw)
       ? persistableGreeting(clerkRaw as NpcGreeting)
       : 'unmet';
+  const librarianRaw = data.librarian;
+  const librarian: NpcGreeting =
+    typeof librarianRaw === 'string' && (GREETINGS as readonly string[]).includes(librarianRaw)
+      ? persistableGreeting(librarianRaw as NpcGreeting)
+      : 'unmet';
   const journalEvents = parseJournal(data.journalEvents);
   if (!journalEvents) return null;
   if (!isObject(data.evidence)) return null;
@@ -226,10 +240,12 @@ export function validateSave(raw: unknown): SaveEnvelope | null {
     neighbor: persistableGreeting(data.neighbor as NpcGreeting),
     shopkeeper: persistableGreeting(data.shopkeeper as NpcGreeting),
     clerk,
+    librarian,
     journalEvents,
     evidence: parseEvidence(data.evidence),
     shopQuest: parseShopQuest(data.shopQuest),
     parcelQuest: parseParcelQuest(data.parcelQuest),
+    libraryQuest: parseLibraryQuest(data.libraryQuest),
     robot: { companion },
     endingState: 'in_progress' satisfies EndingState,
     mapsVisited: mapsVisited.length > 0 ? mapsVisited : [data.map],
@@ -262,10 +278,12 @@ export function hydrateSave(
     neighbor: persistableGreeting(envelope.neighbor),
     shopkeeper: persistableGreeting(envelope.shopkeeper),
     clerk: persistableGreeting(envelope.clerk),
+    librarian: persistableGreeting(envelope.librarian ?? 'unmet'),
     journalEvents: envelope.journalEvents.slice(-JOURNAL_CAP),
     evidence: parseEvidence(envelope.evidence),
     shopQuest: parseShopQuest(envelope.shopQuest),
     parcelQuest: parseParcelQuest(envelope.parcelQuest),
+    libraryQuest: parseLibraryQuest(envelope.libraryQuest),
     calculator: createCalculator(),
     inspectTarget: null,
     explainTopic: null,
@@ -363,6 +381,8 @@ export function shouldPersist(prev: GameState, next: GameState, action: GameActi
   if (JSON.stringify(prev.evidence) !== JSON.stringify(next.evidence)) return true;
   if (shopQuestPersisted(prev.shopQuest) !== shopQuestPersisted(next.shopQuest)) return true;
   if (JSON.stringify(prev.parcelQuest) !== JSON.stringify(next.parcelQuest)) return true;
+  if (JSON.stringify(prev.libraryQuest) !== JSON.stringify(next.libraryQuest)) return true;
+  if (persistableGreeting(prev.librarian) !== persistableGreeting(next.librarian)) return true;
   return false;
 }
 

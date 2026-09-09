@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { SAVE_STATUS_COPY } from '../engine/dialogue';
+import { NOTE_TITLE } from '../engine/library';
 import type { GameState } from '../engine/types';
 
 interface Props {
@@ -32,6 +33,16 @@ export function PauseHelp({ state, onResume, onNewAdventure }: Props) {
           ) : (
             state.journalEvents.map((event) => (
               <li key={event.id}>{event.text}</li>
+            ))
+          )}
+        </ul>
+        <p className="field-label">ملاحظات مثبتة في الدفتر</p>
+        <ul className="journal-events" data-testid="pinned-notes">
+          {state.libraryQuest.pinnedNotes.length === 0 ? (
+            <li>لا شيء مثبت. التثبيت هنا لا يملأ نافذة العمل ذات المقعدين.</li>
+          ) : (
+            state.libraryQuest.pinnedNotes.map((note) => (
+              <li key={note}>{NOTE_TITLE[note]}</li>
             ))
           )}
         </ul>

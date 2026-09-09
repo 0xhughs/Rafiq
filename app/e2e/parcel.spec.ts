@@ -104,14 +104,16 @@ test('shop_helped through parcel success with physical actions', async ({ page }
   expect(done.evidence['2.4']).toBe('demonstrated');
   expect(done.inventory).toContain('repair_parcel');
   expect(done.parcelQuest.commsRepaired).toBe(true);
+  expect(done.evidence['1.4']).toBeUndefined();
+  expect(done.evidence['1.5']).toBeUndefined();
+  expect(done.evidence['2.5']).toBeUndefined();
   await expect(page.getByTestId('inventory')).toContainText('طرد الإصلاح');
   await page.getByTestId('help-button').click();
   await expect(page.getByTestId('journal-events')).toContainText('طرود');
   await page.getByTestId('resume-button').click();
 
   await interactAt(page, 'library', WORLD_POS.libraryInner.x, WORLD_POS.libraryInner.y);
-  await expect(page.getByTestId('dialogue-text')).toContainText('مقفل');
-  await closeOverlay(page);
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-map', 'archive');
   await interactAt(page, 'street', WORLD_POS.robot.x, WORLD_POS.robot.y);
   await expect(page.getByTestId('dialogue-text')).toContainText(/المكتبة|منتصف/);
   await assertNoLessonUi(page);

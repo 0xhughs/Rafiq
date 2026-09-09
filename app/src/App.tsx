@@ -18,6 +18,9 @@ import { CalculatorOverlay } from './ui/CalculatorOverlay';
 import { CrateOverlay } from './ui/CrateOverlay';
 import { InstructionOverlay } from './ui/InstructionOverlay';
 import { PayOverlay } from './ui/PayOverlay';
+import { ContextOverlay } from './ui/ContextOverlay';
+import { RedactOverlay } from './ui/RedactOverlay';
+import { PackOverlay } from './ui/PackOverlay';
 import { evidenceAttr } from './engine/shop';
 
 function reducer(state: GameState, action: GameAction): GameState {
@@ -121,6 +124,8 @@ export default function App() {
       data-evidence={evidenceAttr(state.evidence)}
       data-shop-quest={state.shopQuest.phase}
       data-parcel-quest={state.parcelQuest.phase}
+      data-library-quest={state.libraryQuest.phase}
+      data-cassette={state.libraryQuest.contextModule ? 'contextModule' : ''}
     >
       <Hud
         state={state}
@@ -132,6 +137,7 @@ export default function App() {
         visible={state.checkpointReached}
         shopHelped={state.shopQuest.phase === 'helped'}
         parcelDone={state.parcelQuest.commsRepaired}
+        moduleReady={state.libraryQuest.contextModule}
       />
       {naming ? (
         <NameEntry
@@ -196,6 +202,34 @@ export default function App() {
         <PayOverlay
           state={state}
           onDecide={(who) => dispatch({ type: 'PAY_DECIDE', who })}
+          onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+        />
+      ) : null}
+      {state.mode === 'context' ? (
+        <ContextOverlay
+          state={state}
+          onLoad={(note) => dispatch({ type: 'CONTEXT_LOAD', note })}
+          onEject={(note) => dispatch({ type: 'CONTEXT_EJECT', note })}
+          onPin={(note) => dispatch({ type: 'CONTEXT_PIN', note })}
+          onRecite={() => dispatch({ type: 'CONTEXT_RECITE' })}
+          onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+        />
+      ) : null}
+      {state.mode === 'redact' ? (
+        <RedactOverlay
+          state={state}
+          onRedact={(field) => dispatch({ type: 'REDACT_TOGGLE', field })}
+          onFact={(field) => dispatch({ type: 'FACT_TOGGLE', field })}
+          onGive={() => dispatch({ type: 'REDACT_GIVE' })}
+          onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+        />
+      ) : null}
+      {state.mode === 'pack' ? (
+        <PackOverlay
+          state={state}
+          onToggle={(file) => dispatch({ type: 'PACK_TOGGLE', file })}
+          onStamp={(stamp) => dispatch({ type: 'PACK_STAMP', stamp })}
+          onAssemble={() => dispatch({ type: 'PACK_ASSEMBLE' })}
           onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
         />
       ) : null}

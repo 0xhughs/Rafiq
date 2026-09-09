@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { playerHitsSolid } from './collision';
 import { DIALOGUE, OBJECTIVES } from './dialogue';
 import { WORLD_POS } from './maps';
 import { robotPosition } from './npc';
@@ -126,10 +127,13 @@ function playShopHelped(state: GameState): GameState {
   next = act(next, { type: 'ADVANCE_DIALOGUE' });
   next = skipExplain(next);
   expect(next.shopQuest.phase).toBe('helped');
-  expect(next.evidence['2.1']).toBeUndefined();
-  expect(next.evidence['2.2']).toBeUndefined();
-  expect(next.evidence['2.4']).toBeUndefined();
-  return next;
+    expect(next.evidence['2.1']).toBeUndefined();
+    expect(next.evidence['2.2']).toBeUndefined();
+    expect(next.evidence['2.4']).toBeUndefined();
+    expect(next.evidence['1.4']).toBeUndefined();
+    expect(next.evidence['1.5']).toBeUndefined();
+    expect(next.evidence['2.5']).toBeUndefined();
+    return next;
 }
 
 function enterParcel(state: GameState): GameState {
@@ -348,7 +352,7 @@ describe('hydration, NL, and leftover 01-03 invariants', () => {
     expect(state.shopFeedback).toMatch(/صياغة/);
   });
 
-  it('keeps library inner locked and the robot unsupported after parcel success', () => {
+  it('opens archive after parcel success while the robot stays unsupported', () => {
     let state = stopOverbroad(briefClerk(enterParcel(playShopHelped(checkpoint()))));
     state = fillComplete(state, 'r17');
     state = act(state, { type: 'INSTRUCTION_SEND' });
@@ -360,18 +364,22 @@ describe('hydration, NL, and leftover 01-03 invariants', () => {
     state = fillComplete(state, 'r19');
     state = act(state, { type: 'INSTRUCTION_SEND' });
     expect(state.evidence['2.4']).toBe('demonstrated');
+    expect(state.evidence['1.4']).toBeUndefined();
+    expect(state.evidence['1.5']).toBeUndefined();
+    expect(state.evidence['2.5']).toBeUndefined();
     state = act(state, { type: 'ADVANCE_DIALOGUE' });
     state = skipExplain(state);
     state = act(at(state, WORLD_POS.libraryInner.x, WORLD_POS.libraryInner.y, 'library'), {
       type: 'INTERACT',
     });
-    expect(state.dialogueNode).toBe('library_inner_locked');
-    state = act(state, { type: 'ADVANCE_DIALOGUE' });
+    expect(state.map).toBe('archive');
+    expect(playerHitsSolid('archive', state.position.x, state.position.y)).toBe(false);
+    expect(state.dialogueNode).toBeNull();
+    expect(state.storyObjective).toBe(OBJECTIVES.archiveWork);
     state = act(at(state, WORLD_POS.robot.x, WORLD_POS.robot.y, 'street'), { type: 'INTERACT' });
     expect(state.dialogueNode).toBe('companion_after_parcel');
     expect(DIALOGUE.companion_after_parcel.text(state.playerName)).toMatch(/المكتبة|الفجر|منتصف/);
     expect(robotPosition(state).x).toBe(state.position.x - 32);
-    expect(state.storyObjective).toBe(OBJECTIVES.parcelDone);
     expect(JSON.stringify(state.storyObjective)).not.toMatch(/2\.1|امتحان|اختبار/);
     expect(PARCEL_LABEL.r17).toBe('ر-١٧');
   });

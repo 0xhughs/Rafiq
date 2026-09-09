@@ -23,7 +23,9 @@ export const OBJECTIVES = {
   stopOverbroad: 'أوقف محاولة أخذ كل الطرود الرمادية والدفع عنها.',
   writeInstruction: 'اكتب تعليماً يسمّي الطرد، ومكانه، وما لا يُفعل، وكيف يُعاد.',
   reviseParcel: 'الأمر الغامض فشل. صحّح الناقص وأرسل أمراً جديداً لحجز ر-١٩.',
-  parcelDone: 'حصلت على طرد الإصلاح. باب المكتبة الداخلي ما زال مقفلاً.',
+  parcelDone: 'حصلت على طرد الإصلاح. ادخل قاعة القراءة من الباب الداخلي في المكتبة.',
+  archiveWork: 'قاعة القراءة: نافذة ملاحظتين، ملف الحي بلا أسرار، ثم حزمة الملفات المسماة.',
+  moduleReady: 'وحدة السياق جاهزة. اقرأ المواصفات في القاعة. قاعة الأخبار لم تُفتح.',
 } as const;
 
 export const SPEAKER = {
@@ -32,6 +34,7 @@ export const SPEAKER = {
   neighbor: () => 'الجارة',
   shopkeeper: () => 'البقال',
   clerk: () => 'موظف الطرود',
+  librarian: () => 'أمينة القاعة',
   notice: () => 'ملاحظة',
 };
 
@@ -50,6 +53,12 @@ export const JOURNAL_TEXT: Record<JournalEventId, string> = {
   parcel_overbroad_stopped: 'أوقفْتَ محاولة أخذ كل الطرود الرمادية والدفع عنها.',
   parcel_instruction_failed: 'أمر غامض فشل أمام طردين رماديين متشابهين.',
   parcel_retrieved: 'وصل حجز الإصلاح بعد تعليمات أوضح.',
+  archive_visit: 'دخلتَ قاعة القراءة خلف باب المكتبة الداخلي.',
+  notes_overflow: 'نافذة الملاحظتين امتلأت وسقطت الملاحظة الأقدم.',
+  constraint_restored: 'من النافذة المحدودة عاد قيد التسليم، لا من الدفتر وحده.',
+  file_redacted: 'أُعطي الروبوت حقائق الرف بلا أسماء ولا هاتف ولا عنوان.',
+  pack_assembled: 'جُمعت حزمة إصلاح رفيق من المواصفات وملف التسليم فقط.',
+  spec_released: 'غلاف المواصفات صار مقروءاً، ووحدة السياق ظاهرة.',
 };
 
 export const LOCKED_COPY = {
@@ -386,7 +395,8 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     id: 'shopkeeper_helped_revisit',
     speaker: 'shopkeeper',
     speakerLabel: () => SPEAKER.shopkeeper(),
-    text: () => 'ما زلت أشكرك. طرد الإصلاح عند مكتب طرود الرصيف، وباب المكتبة الداخلي مقفل.',
+    text: () =>
+      'ما زلت أشكرك. طرد الإصلاح عند مكتب طرود الرصيف إن لم تستلمه بعد.',
     next: null,
   },
   locked_shop: {
@@ -446,7 +456,7 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     speaker: 'clerk',
     speakerLabel: () => SPEAKER.clerk(),
     text: () =>
-      'وصل الحجز المقصود. وحدة الاتصال الصغيرة لرفيقك مع الطرد. باب المكتبة الداخلي ما زال مقفلاً.',
+      'وصل الحجز المقصود. وحدة الاتصال الصغيرة لرفيقك مع الطرد. باب قاعة القراءة في المكتبة صار يُفتح.',
     next: null,
   },
   parcel_delegate_prompt: {
@@ -501,6 +511,46 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
       'المكتبة الداخلية توزّع قطع الإصلاح مجاناً بعد منتصف الليل. لم أقرأ أي إعلان على الباب.',
     next: null,
   },
+  librarian_hello: {
+    id: 'librarian_hello',
+    speaker: 'librarian',
+    speakerLabel: () => SPEAKER.librarian(),
+    text: () =>
+      'أهلاً بك في قاعة القراءة. قيد تسليم ضاع بين أوراق لا علاقة لها به، وملف الحي يحمل ما لا يُشارك، وأربع ورقات تنتظر حزمة باسمها.',
+    next: 'librarian_brief',
+  },
+  librarian_brief: {
+    id: 'librarian_brief',
+    speaker: 'librarian',
+    speakerLabel: () => SPEAKER.librarian(),
+    text: () =>
+      'النافذة على المنضدة تتسع لاثنتين فقط وهي ممتلئة الآن. اقرأ ملف الحي قبل أن يراه الروبوت، ثم اجمع المواصفات وملف التسليم تحت ختم «حزمة إصلاح رفيق».',
+    next: null,
+  },
+  librarian_revisit: {
+    id: 'librarian_revisit',
+    speaker: 'librarian',
+    speakerLabel: () => SPEAKER.librarian(),
+    text: () =>
+      'النافذة ليست الدفتر، والملف ليس للأسماء، والحزمة ليست للمهرجان. القاعة ما زالت مفتوحة.',
+    next: null,
+  },
+  librarian_after_success: {
+    id: 'librarian_after_success',
+    speaker: 'librarian',
+    speakerLabel: () => SPEAKER.librarian(),
+    text: () =>
+      'غلاف المواصفات مفتوح للقراءة. وحدة السياق ظاهرة على رفيقك. قاعة الأخبار لم تُفتح بعد.',
+    next: null,
+  },
+  companion_after_archive: {
+    id: 'companion_after_archive',
+    speaker: 'robot',
+    speakerLabel: () => SPEAKER.robot(),
+    text: () =>
+      'قاعة الأخبار توزّع الشهادات وحدها بعد منتصف الليل. لم أقرأ أي لائحة على الباب.',
+    next: null,
+  },
 };
 
 export function currentLine(node: DialogueNodeId | null): DialogueLine | null {
@@ -525,9 +575,11 @@ export function isNpcNode(node: DialogueNodeId | null): boolean {
     node.startsWith('shop') ||
     node.startsWith('clerk') ||
     node.startsWith('parcel') ||
+    node.startsWith('librarian') ||
     node === 'companion_revisit' ||
     node === 'companion_after_shop' ||
-    node === 'companion_after_parcel'
+    node === 'companion_after_parcel' ||
+    node === 'companion_after_archive'
   );
 }
 

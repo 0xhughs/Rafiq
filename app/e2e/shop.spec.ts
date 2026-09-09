@@ -132,6 +132,9 @@ test('help-accepted through shop success with physical actions', async ({ page }
     '1.3': 'demonstrated',
     '1.6': 'demonstrated',
   });
+  expect(done.evidence['1.4']).toBeUndefined();
+  expect(done.evidence['1.5']).toBeUndefined();
+  expect(done.evidence['2.5']).toBeUndefined();
   expect(done.shopQuest.phase).toBe('helped');
 
   await interactAt(page, 'shop', WORLD_POS.shopkeeper.x, WORLD_POS.shopkeeper.y);

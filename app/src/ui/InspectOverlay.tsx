@@ -86,6 +86,38 @@ export function InspectOverlay({ state, onClose }: Props) {
           <p className="card-note">الدفع من النافذة لصاحب الطلب. الروبوت لا يدفع.</p>
         </article>
       ) : null}
+      {target === 'notes' ? (
+        <article className="paper-card" data-testid="notes-crate">
+          <p className="card-stamp">أوراق على الصندوق</p>
+          <h2>أربع ملاحظات</h2>
+          <ul className="stock-list">
+            <li>قيد التسليم — الرف الغربي، بلا دفع</li>
+            <li>بطاقة الحجز — الحجز ليس للبيع</li>
+            <li>ورقة المهرجان — فجر وحلويات</li>
+            <li>ملاحظة المانجو — رف أيسر واثنا عشر</li>
+          </ul>
+          <p className="card-note">حمّلها في نافذة المنضدة. النافذة تتسع لاثنتين فقط.</p>
+        </article>
+      ) : null}
+      {target === 'spec' ? (
+        <article className="paper-card" data-testid="spec-case">
+          <p className="card-stamp">غلاف المواصفات</p>
+          <h2>قطعة الإصلاح</h2>
+          {state.libraryQuest.specReleased ? (
+            <pre className="notice-body" data-testid="spec-text">
+              {`مواصفات قطعة الإصلاح
+الرف: م-٤
+الوقت المناسب للقراءة: بعد العصر
+المواصفات في القاعة فقط.
+لا تخلط ملف المهرجان أو مسودة الخبر مع هذه الحزمة.`}
+            </pre>
+          ) : (
+            <p className="card-note" data-testid="spec-sealed">
+              الغلاف ما زال مقفلاً حتى تكتمل النافذة والملف الآمن والحزمة المسماة.
+            </p>
+          )}
+        </article>
+      ) : null}
       <div className="button-row card-actions">
         <button type="button" className="primary" data-testid="inspect-close" onClick={onClose}>
           إعادة البطاقة

@@ -280,11 +280,20 @@ describe('pause overlay', () => {
 });
 
 describe('city maps and portals', () => {
-  it('registers five walkable maps and bidirectional portal pairs', () => {
+  it('registers walkable maps and bidirectional portal pairs', () => {
     expect(playerHitsSolid('shop', SHOP.spawn.x, SHOP.spawn.y)).toBe(false);
     expect(playerHitsSolid('library', LIBRARY.spawn.x, LIBRARY.spawn.y)).toBe(false);
     expect(playerHitsSolid('parcel', PARCEL.spawn.x, PARCEL.spawn.y)).toBe(false);
-    expect(PORTALS.map((portal) => portal.id).sort()).toEqual(['home', 'library', 'parcel', 'shop']);
+    expect(playerHitsSolid('archive', WORLD_POS.archiveSpawn.x, WORLD_POS.archiveSpawn.y)).toBe(
+      false,
+    );
+    expect(PORTALS.map((portal) => portal.id).sort()).toEqual([
+      'archive',
+      'home',
+      'library',
+      'parcel',
+      'shop',
+    ]);
     const streetPortals = PORTALS.filter((portal) =>
       portal.ends.some((end) => end.map === 'street'),
     );

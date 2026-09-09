@@ -1,6 +1,6 @@
 import { TILE } from '../engine/constants';
 import { robotPosition, robotVisible } from '../engine/npc';
-import { APARTMENT, FURNITURE, LIBRARY, PARCEL, SHOP, STREET, WORLD_POS, getMap } from '../engine/maps';
+import { APARTMENT, ARCHIVE, FURNITURE, LIBRARY, PARCEL, SHOP, STREET, WORLD_POS, getMap } from '../engine/maps';
 import type { Facing, GameState } from '../engine/types';
 
 const PALETTE = {
@@ -36,6 +36,8 @@ const PALETTE = {
   parcelDoor: '#1e3a40',
   parcelFloor: '#d7e0d8',
   parcelFloorAlt: '#cdd6ce',
+  archiveFloor: '#e8dcc4',
+  archiveFloorAlt: '#dfd0b4',
   grayBox: '#8b9298',
   counter: '#7a4a2a',
   shelf: '#5c4030',
@@ -367,7 +369,7 @@ function drawParcelOffice(ctx: CanvasRenderingContext2D, westTag: string): void 
   fillRound(ctx, door.x - 10, door.y - 22, 20, 44, 4, PALETTE.parcelDoor);
 }
 
-function drawLibraryExterior(ctx: CanvasRenderingContext2D): void {
+function drawLibraryExterior(ctx: CanvasRenderingContext2D, innerOpen: boolean): void {
   const map = LIBRARY;
   drawChecker(ctx, map.cols, map.rows, PALETTE.plaza, PALETTE.plazaAlt);
   drawWalls(ctx, FURNITURE.library.walls);
@@ -392,7 +394,7 @@ function drawLibraryExterior(ctx: CanvasRenderingContext2D): void {
   ctx.fill();
   ctx.fillStyle = '#15202c';
   ctx.font = '10px "Cairo", sans-serif';
-  ctx.fillText('مقفل', inner.x, inner.y + 28);
+  ctx.fillText(innerOpen ? 'مفتوح' : 'مقفل', inner.x, inner.y + 28);
   const door = map.door;
   fillRound(ctx, door.x - 10, door.y - 22, 20, 44, 4, '#8a4b2a');
 }
@@ -469,6 +471,50 @@ function drawPlayer(ctx: CanvasRenderingContext2D, x: number, y: number, facing:
   ctx.fill();
 }
 
+function drawArchiveRoom(ctx: CanvasRenderingContext2D, specOpen: boolean): void {
+  const map = ARCHIVE;
+  drawChecker(ctx, map.cols, map.rows, PALETTE.archiveFloor, PALETTE.archiveFloorAlt);
+  drawWalls(ctx, FURNITURE.archive.walls);
+  ctx.font = '11px "Noto Naskh Arabic", "Cairo", sans-serif';
+  ctx.direction = 'rtl';
+  ctx.textAlign = 'center';
+  for (const shelf of FURNITURE.archive.shelves) {
+    fillRound(ctx, shelf.x + 4, shelf.y + 4, shelf.w - 8, shelf.h - 8, 4, '#4a4e6a');
+    ctx.fillStyle = '#ead9c0';
+    ctx.fillRect(shelf.x + 10, shelf.y + 12, shelf.w - 20, 6);
+    ctx.fillRect(shelf.x + 10, shelf.y + 22, shelf.w - 20, 6);
+  }
+  const bench = FURNITURE.archive.bench;
+  fillRound(ctx, bench.x + 2, bench.y + 4, bench.w - 4, bench.h - 8, 4, '#efe6d0');
+  ctx.fillStyle = '#2a2118';
+  ctx.fillText('نافذة', bench.x + bench.w / 2, bench.y + 22);
+  ctx.fillStyle = '#c45c26';
+  ctx.fillRect(bench.x + 10, bench.y + 26, 12, 10);
+  ctx.fillRect(bench.x + 24, bench.y + 26, 12, 10);
+  const notes = FURNITURE.archive.notes;
+  fillRound(ctx, notes.x + 4, notes.y + 6, notes.w - 8, notes.h - 10, 4, '#f4e4c4');
+  ctx.fillStyle = '#5a3218';
+  ctx.fillText('أوراق', notes.x + notes.w / 2, notes.y + 28);
+  const file = FURNITURE.archive.file;
+  fillRound(ctx, file.x + 4, file.y + 6, file.w - 8, file.h - 10, 4, '#efe0b8');
+  ctx.fillStyle = '#5a3218';
+  ctx.fillText('ملف', file.x + file.w / 2, file.y + 28);
+  const pack = FURNITURE.archive.pack;
+  fillRound(ctx, pack.x + 4, pack.y + 6, pack.w - 8, pack.h - 10, 4, '#f3d9a4');
+  ctx.fillStyle = '#3a2414';
+  ctx.fillText('حزمة', pack.x + pack.w / 2, pack.y + 28);
+  const spec = FURNITURE.archive.spec;
+  fillRound(ctx, spec.x + 4, spec.y + 6, spec.w - 8, spec.h - 10, 4, specOpen ? '#d7efe4' : '#c9b48a');
+  ctx.fillStyle = '#163238';
+  ctx.fillText(specOpen ? 'مواصفات' : 'غلاف', spec.x + spec.w / 2, spec.y + 28);
+  const counter = FURNITURE.archive.counter;
+  fillRound(ctx, counter.x + 2, counter.y + 6, counter.w - 4, counter.h - 10, 6, '#4a5d78');
+  ctx.fillStyle = '#ead9c0';
+  ctx.fillText('المنضدة', counter.x + counter.w / 2, counter.y + 22);
+  const door = map.door;
+  fillRound(ctx, door.x - 10, door.y - 22, 20, 44, 4, PALETTE.libraryDoor);
+}
+
 function drawRobot(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -476,6 +522,7 @@ function drawRobot(
   time: number,
   companion: boolean,
   commsRepaired: boolean,
+  contextModule: boolean,
 ): void {
   ctx.fillStyle = PALETTE.shadow;
   ctx.beginPath();
@@ -512,6 +559,11 @@ function drawRobot(
   if (commsRepaired) {
     fillRound(ctx, x - 16, y + 6, 10, 8, 2, '#2f5d62');
   }
+  if (contextModule) {
+    fillRound(ctx, x - 18, y - 6, 12, 10, 2, '#1c3b40');
+    ctx.fillStyle = '#7fdbda';
+    ctx.fillRect(x - 16, y - 3, 8, 4);
+  }
   if (companion) {
     ctx.strokeStyle = 'rgba(127, 219, 218, 0.6)';
     ctx.beginPath();
@@ -538,8 +590,11 @@ export function drawWorld(ctx: CanvasRenderingContext2D, state: GameState, time:
   } else if (state.map === 'parcel') {
     drawParcelOffice(ctx, state.parcelQuest.r19Staged ? 'ر-١٩' : 'ر-١٧');
     drawVillager(ctx, WORLD_POS.clerk.x, WORLD_POS.clerk.y, '#2f5d62');
+  } else if (state.map === 'archive') {
+    drawArchiveRoom(ctx, state.libraryQuest.specReleased);
+    drawVillager(ctx, WORLD_POS.librarian.x, WORLD_POS.librarian.y, '#4a5d78');
   } else {
-    drawLibraryExterior(ctx);
+    drawLibraryExterior(ctx, state.parcelQuest.commsRepaired);
   }
   if (robotVisible(state)) {
     const robot = robotPosition(state);
@@ -550,6 +605,7 @@ export function drawWorld(ctx: CanvasRenderingContext2D, state: GameState, time:
       time,
       state.encounter === 'help_accepted',
       state.parcelQuest.commsRepaired,
+      state.libraryQuest.contextModule,
     );
   }
   drawPlayer(ctx, state.position.x, state.position.y, state.facing);

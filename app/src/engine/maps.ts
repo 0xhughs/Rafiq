@@ -25,7 +25,8 @@ export type CellKind =
   | 'parcel'
   | 'holdboard'
   | 'paywindow'
-  | 'instruction';
+  | 'instruction'
+  | 'file';
 
 export interface CellRect {
   kind: CellKind;
@@ -60,14 +61,15 @@ export interface PortalEnd {
 
 export interface PortalDef {
   id: PortalId;
-  interactable: 'door' | 'shop_door' | 'library_door' | 'parcel_door';
+  interactable: 'door' | 'shop_door' | 'library_door' | 'parcel_door' | 'library_inner';
   requiresHelp: boolean;
   requiresShopHelped?: boolean;
-  lockedNode: 'locked_shop' | 'locked_library' | 'locked_parcel' | null;
+  requiresCommsRepaired?: boolean;
+  lockedNode: 'locked_shop' | 'locked_library' | 'locked_parcel' | 'library_inner_locked' | null;
   ends: [PortalEnd, PortalEnd];
 }
 
-const SOLID_LETTERS = new Set(['#', 'B', 'T', 'K', 'M', 'C', 'H', 'L', 'W', 'n', 'p', 'c', 'k', 'Q', 'b', 'y', 's']);
+const SOLID_LETTERS = new Set(['#', 'B', 'T', 'K', 'M', 'C', 'H', 'L', 'W', 'n', 'p', 'c', 'k', 'Q', 'b', 'y', 's', 'f']);
 
 const APARTMENT_LEGEND = [
   '################',
@@ -142,6 +144,19 @@ const PARCEL_LEGEND = [
   '#..HHHHHHHH....#',
   '#..............#',
   '#s.............#',
+  '#..............#',
+  '#.......d......#',
+  '#..............#',
+  '################',
+];
+
+const ARCHIVE_LEGEND = [
+  '################',
+  '#WW....b.....WW#',
+  '#WW..........WW#',
+  '#..HHHHHHHH....#',
+  '#..............#',
+  '#n.f......p.s..#',
   '#..............#',
   '#.......d......#',
   '#..............#',
@@ -255,12 +270,18 @@ export const PARCEL = parseMap('parcel', PARCEL_LEGEND, {
   entryDir: 'north',
 });
 
+export const ARCHIVE = parseMap('archive', ARCHIVE_LEGEND, {
+  doorLetter: 'd',
+  entryDir: 'north',
+});
+
 export const MAPS: Record<MapId, MapDef> = {
   apartment: APARTMENT,
   street: STREET,
   shop: SHOP,
   library: LIBRARY,
   parcel: PARCEL,
+  archive: ARCHIVE,
 };
 
 export function getMap(id: MapId): MapDef {
@@ -339,6 +360,8 @@ function kindFromLetter(letter: string): CellKind {
       return 'paywindow';
     case 's':
       return 'instruction';
+    case 'f':
+      return 'file';
     case 'N':
       return 'neighbor';
     default:
@@ -394,6 +417,18 @@ export const FURNITURE = {
     desk: mergeRects(collectKind(PARCEL, ['s']))[0],
     walls: collectKind(PARCEL, ['#']),
   },
+  archive: {
+    shelves: collectKind(ARCHIVE, ['W']),
+    westShelves: collectKind(ARCHIVE, ['W']).filter((cell) => cell.col < 4),
+    eastShelves: collectKind(ARCHIVE, ['W']).filter((cell) => cell.col > 8),
+    counter: mergeRects(collectKind(ARCHIVE, ['H']))[0],
+    bench: mergeRects(collectKind(ARCHIVE, ['b']))[0],
+    notes: mergeRects(collectKind(ARCHIVE, ['n']))[0],
+    file: mergeRects(collectKind(ARCHIVE, ['f']))[0],
+    pack: mergeRects(collectKind(ARCHIVE, ['p']))[0],
+    spec: mergeRects(collectKind(ARCHIVE, ['s']))[0],
+    walls: collectKind(ARCHIVE, ['#']),
+  },
 };
 
 function letterCenter(map: MapDef, letter: string): Vec2 {
@@ -447,6 +482,17 @@ export const PORTALS: PortalDef[] = [
     ends: [
       { map: 'street', letter: 'R', spawnDir: 'south', arriveFacing: 'down' },
       { map: 'parcel', letter: 'd', spawnDir: 'north', arriveFacing: 'up' },
+    ],
+  },
+  {
+    id: 'archive',
+    interactable: 'library_inner',
+    requiresHelp: true,
+    requiresCommsRepaired: true,
+    lockedNode: 'library_inner_locked',
+    ends: [
+      { map: 'library', letter: 'F', spawnDir: 'south', arriveFacing: 'down' },
+      { map: 'archive', letter: 'd', spawnDir: 'north', arriveFacing: 'up' },
     ],
   },
 ];
@@ -526,6 +572,16 @@ export const WORLD_POS = {
   payWindow: letterCenter(PARCEL, 'y'),
   instructionDesk: letterCenter(PARCEL, 's'),
   parcelTalk: cellCenter(4, 6),
+  archiveExit: letterCenter(ARCHIVE, 'd'),
+  archiveSpawn: ARCHIVE.spawn,
+  librarian: cellCenter(6, 4),
+  contextBench: letterCenter(ARCHIVE, 'b'),
+  notesCrate: letterCenter(ARCHIVE, 'n'),
+  communityFile: letterCenter(ARCHIVE, 'f'),
+  packTable: letterCenter(ARCHIVE, 'p'),
+  specCase: letterCenter(ARCHIVE, 's'),
+  archiveTalk: cellCenter(4, 6),
+  archiveWestWallInside: cellCenter(1, 4),
 };
 
 export function doorHint(map: MapId): string {
@@ -542,4 +598,8 @@ export function libraryDoorHint(map: MapId): string {
 
 export function parcelDoorHint(map: MapId): string {
   return map === 'parcel' ? HINT_LABELS.parcelExit : HINT_LABELS.parcelEnter;
+}
+
+export function archiveDoorHint(map: MapId): string {
+  return map === 'archive' ? HINT_LABELS.archiveExit : HINT_LABELS.archiveEnter;
 }

@@ -299,6 +299,32 @@ input {
   margin: 0 0 4px;
 }
 
+.note-grid {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.paper-slip {
+  background: rgba(255, 250, 240, 0.72);
+  border: 1px dashed rgba(120, 80, 40, 0.28);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.paper-slip p {
+  margin: 0 0 8px;
+}
+
+.cassette-chip {
+  background: rgba(127, 219, 218, 0.18) !important;
+  border-color: rgba(127, 219, 218, 0.45) !important;
+}
+
+.stock-list button {
+  margin-inline-start: 8px;
+}
+
 .parcel-fail {
   background: #f6d6c8;
   color: #7a241c;

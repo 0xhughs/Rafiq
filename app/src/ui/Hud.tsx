@@ -84,6 +84,11 @@ export function Hud({ state, onHelp, onDismissRestore }: Props) {
           {state.shopFeedback}
         </p>
       ) : null}
+      {state.libraryQuest.contextModule ? (
+        <p className="inventory cassette-chip" data-testid="context-module">
+          وحدة السياق
+        </p>
+      ) : null}
     </header>
   );
 }

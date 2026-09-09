@@ -12,6 +12,25 @@ import { APARTMENT, destinationOf, PORTALS } from './maps';
 import { validateName } from './names';
 import { openNpc } from './npc';
 import {
+  closeLibraryDialogue,
+  closeLibraryOverlay,
+  createLibraryQuest,
+  isLibraryExplain,
+  isLibraryOverlay,
+  libraryObjective,
+  reduceContextEject,
+  reduceContextLoad,
+  reduceContextPin,
+  reduceContextRecite,
+  reduceFactToggle,
+  reducePackAssemble,
+  reducePackStamp,
+  reducePackToggle,
+  reduceRedactGive,
+  reduceRedactToggle,
+  skipLibraryExplain,
+} from './library';
+import {
   closeParcelDialogue,
   createParcelQuest,
   inspectParcel,
@@ -68,10 +87,12 @@ export function createInitialState(): GameState {
     neighbor: 'unmet',
     shopkeeper: 'unmet',
     clerk: 'unmet',
+    librarian: 'unmet',
     journalEvents: [],
     evidence: emptyEvidence(),
     shopQuest: createShopQuest(),
     parcelQuest: createParcelQuest(),
+    libraryQuest: createLibraryQuest(),
     calculator: createCalculator(),
     inspectTarget: null,
     explainTopic: null,
@@ -116,6 +137,10 @@ function goThroughPortal(state: GameState, portalId: PortalId): GameState {
     if (!portal.lockedNode) return state;
     return { ...state, mode: 'dialogue', dialogueNode: portal.lockedNode };
   }
+  if (portal.requiresCommsRepaired && !state.parcelQuest.commsRepaired) {
+    if (!portal.lockedNode) return state;
+    return { ...state, mode: 'dialogue', dialogueNode: portal.lockedNode };
+  }
   if (portal.requiresHelp && state.encounter !== 'help_accepted') {
     if (!portal.lockedNode) return state;
     return { ...state, mode: 'dialogue', dialogueNode: portal.lockedNode };
@@ -125,15 +150,20 @@ function goThroughPortal(state: GameState, portalId: PortalId): GameState {
   if (dest.map === 'shop') events = recordEvent(events, 'shop_visit');
   if (dest.map === 'library') events = recordEvent(events, 'library_visit');
   if (dest.map === 'parcel') events = recordEvent(events, 'parcel_visit');
-  return {
+  if (dest.map === 'archive') events = recordEvent(events, 'archive_visit');
+  const next = {
     ...state,
     map: dest.map,
     position: { x: dest.position.x, y: dest.position.y },
     facing: dest.facing,
     mapsVisited: visitMap(state.mapsVisited, dest.map),
     journalEvents: events,
-    storyObjective: dest.map === 'parcel' ? parcelObjective(state) : state.storyObjective,
   };
+  let storyObjective = dest.map === 'parcel' ? parcelObjective(next) : next.storyObjective;
+  if (dest.map === 'archive' || dest.map === 'library') {
+    storyObjective = libraryObjective({ ...next, storyObjective });
+  }
+  return { ...next, storyObjective };
 }
 
 function dispose(state: GameState): GameState {
@@ -158,6 +188,7 @@ function postponeNpc(state: GameState): GameState {
     neighbor: state.neighbor === 'greeted' ? 'greeted' : 'unmet',
     shopkeeper: state.shopkeeper === 'greeted' ? 'greeted' : 'unmet',
     clerk: state.clerk === 'greeted' ? 'greeted' : 'unmet',
+    librarian: state.librarian === 'greeted' ? 'greeted' : 'unmet',
   };
 }
 
@@ -169,6 +200,8 @@ function closeDialogue(state: GameState): GameState {
   if (shopClosed) return shopClosed;
   const parcelClosed = closeParcelDialogue(state);
   if (parcelClosed) return parcelClosed;
+  const libraryClosed = closeLibraryDialogue(state);
+  if (libraryClosed) return libraryClosed;
   if (state.dialogueNode === 'neighbor_thanks') {
     return {
       ...state,
@@ -189,7 +222,7 @@ function closeDialogue(state: GameState): GameState {
       checkpointReached: true,
       storyObjective:
         state.parcelQuest.commsRepaired
-          ? OBJECTIVES.parcelDone
+          ? libraryObjective(state)
           : state.shopQuest.phase === 'helped'
             ? OBJECTIVES.repairLead
             : state.storyObjective,
@@ -322,10 +355,12 @@ export function reduce(state: GameState, action: GameAction): GameState {
         neighbor: 'unmet',
         shopkeeper: 'unmet',
         clerk: 'unmet',
+        librarian: 'unmet',
         journalEvents: [],
         evidence: emptyEvidence(),
         shopQuest: createShopQuest(),
         parcelQuest: createParcelQuest(),
+        libraryQuest: createLibraryQuest(),
         calculator: createCalculator(),
         inspectTarget: null,
         explainTopic: null,
@@ -366,6 +401,8 @@ export function reduce(state: GameState, action: GameAction): GameState {
           return goThroughPortal(state, 'library');
         case 'parcel_door':
           return goThroughPortal(state, 'parcel');
+        case 'library_inner':
+          return goThroughPortal(state, 'archive');
         case 'dumpster':
           return dispose(state);
         case 'robot':
@@ -376,8 +413,8 @@ export function reduce(state: GameState, action: GameAction): GameState {
           return openNpc(state, 'shopkeeper');
         case 'clerk':
           return openNpc(state, 'clerk');
-        case 'library_inner':
-          return { ...state, mode: 'dialogue', dialogueNode: 'library_inner_locked' };
+        case 'librarian':
+          return openNpc(state, 'librarian');
         case 'shelf_west':
           return inspectShop(state, 'west');
         case 'shelf_east':
@@ -405,6 +442,16 @@ export function reduce(state: GameState, action: GameAction): GameState {
           return { ...state, mode: 'calculator', shopFeedback: null };
         case 'crate':
           return { ...state, mode: 'crate', shopFeedback: null };
+        case 'context_bench':
+          return { ...state, mode: 'context', shopFeedback: null };
+        case 'notes_crate':
+          return { ...state, mode: 'inspect', inspectTarget: 'notes', shopFeedback: null };
+        case 'community_file':
+          return { ...state, mode: 'redact', shopFeedback: null };
+        case 'pack_table':
+          return { ...state, mode: 'pack', shopFeedback: null };
+        case 'spec_case':
+          return { ...state, mode: 'inspect', inspectTarget: 'spec', shopFeedback: null };
         default:
           return state;
       }
@@ -427,6 +474,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
       if (state.mode === 'paused') return { ...state, mode: 'playing' };
       if (isShopOverlay(state.mode)) {
         if (state.mode === 'explain') {
+          if (isLibraryExplain(state.explainTopic)) {
+            return skipLibraryExplain(state);
+          }
           if (
             state.explainTopic === 'delegate' ||
             state.explainTopic === 'instruction' ||
@@ -443,6 +493,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
           explainTopic: null,
           shopFeedback: null,
         };
+      }
+      if (isLibraryOverlay(state.mode)) {
+        return closeLibraryOverlay(state);
       }
       if (isParcelOverlay(state.mode)) {
         return {
@@ -474,6 +527,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
       return reduceCrateDecide(state, action.who);
     case 'SKIP_EXPLAIN':
       if (state.mode !== 'explain') return state;
+      if (isLibraryExplain(state.explainTopic)) {
+        return skipLibraryExplain(state);
+      }
       if (
         state.explainTopic === 'delegate' ||
         state.explainTopic === 'instruction' ||
@@ -501,6 +557,26 @@ export function reduce(state: GameState, action: GameAction): GameState {
     case 'PAY_DECIDE':
       if (state.mode !== 'pay') return state;
       return reducePayDecide(state, action.who);
+    case 'CONTEXT_LOAD':
+      return reduceContextLoad(state, action.note);
+    case 'CONTEXT_EJECT':
+      return reduceContextEject(state, action.note);
+    case 'CONTEXT_PIN':
+      return reduceContextPin(state, action.note);
+    case 'CONTEXT_RECITE':
+      return reduceContextRecite(state);
+    case 'REDACT_TOGGLE':
+      return reduceRedactToggle(state, action.field);
+    case 'FACT_TOGGLE':
+      return reduceFactToggle(state, action.field);
+    case 'REDACT_GIVE':
+      return reduceRedactGive(state);
+    case 'PACK_TOGGLE':
+      return reducePackToggle(state, action.file);
+    case 'PACK_STAMP':
+      return reducePackStamp(state, action.stamp);
+    case 'PACK_ASSEMBLE':
+      return reducePackAssemble(state);
     case 'CONFIRM_NEW_ADVENTURE':
       return createInitialState();
     case 'DISMISS_RESTORE_NOTICE':
@@ -547,6 +623,7 @@ export function serializeState(state: GameState): SerializedTestState {
     neighbor: state.neighbor,
     shopkeeper: state.shopkeeper,
     clerk: state.clerk,
+    librarian: state.librarian,
     journalEvents: [...state.journalEvents],
     mapsVisited: [...state.mapsVisited],
     saveStatus: state.saveStatus,
@@ -556,6 +633,7 @@ export function serializeState(state: GameState): SerializedTestState {
     evidence: { ...state.evidence },
     shopQuest: { ...state.shopQuest },
     parcelQuest: { ...state.parcelQuest },
+    libraryQuest: { ...state.libraryQuest },
     inspectTarget: state.inspectTarget,
     explainTopic: state.explainTopic,
     robotUnderstood: state.robotUnderstood,

@@ -182,6 +182,27 @@ export async function playToShopHelped(page: Page, name = 'علي حسن'): Prom
   await completeShopVisit(page);
 }
 
+export async function playToParcelDone(page: Page, name = 'علي حسن'): Promise<void> {
+  await playToShopHelped(page, name);
+  await enterParcelOffice(page);
+  await briefParcelClerk(page);
+  await talkCompanionOnParcel(page);
+  await clickChoice(page, 'dialogue-choice-delegate_retrieve');
+  await clickChoice(page, 'dialogue-choice-stop_overbroad');
+  await page.getByTestId('dialogue-advance').click();
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'parcel', WORLD_POS.instructionDesk.x, WORLD_POS.instructionDesk.y);
+  await fillCompleteInstruction(page, 'r17');
+  await page.getByTestId('instruction-send').click();
+  await page.getByTestId('dialogue-advance').click();
+  await skipExplainIfOpen(page);
+}
+
+export async function enterArchive(page: Page): Promise<void> {
+  await interactAt(page, 'library', WORLD_POS.libraryInner.x, WORLD_POS.libraryInner.y);
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-map', 'archive');
+}
+
 export async function enterParcelOffice(page: Page): Promise<void> {
   await interactAt(page, 'street', WORLD_POS.parcelDoor.x, WORLD_POS.parcelDoor.y);
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-map', 'parcel');

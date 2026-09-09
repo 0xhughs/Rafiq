@@ -39,6 +39,14 @@ export const HINT_LABELS = {
   holdBoard: 'E / مسافة — لوحة الحجوزات',
   payWindow: 'E / مسافة — نافذة الدفع',
   instructionDesk: 'E / مسافة — ورقة التعليمات',
+  archiveEnter: 'E / مسافة — دخول قاعة القراءة',
+  archiveExit: 'E / مسافة — العودة إلى واجهة المكتبة',
+  librarian: 'E / مسافة — التحدث مع أمينة القاعة',
+  contextBench: 'E / مسافة — نافذة الملاحظات',
+  notesCrate: 'E / مسافة — أوراق الملاحظات',
+  communityFile: 'E / مسافة — ملف الحي',
+  packTable: 'E / مسافة — طاولة الحزمة',
+  specCase: 'E / مسافة — غلاف المواصفات',
 } as const;
 
 export const STORAGE_WARNING =

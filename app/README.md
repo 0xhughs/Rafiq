@@ -1,4 +1,6 @@
-# Rafiq (slice 04)
+# Rafiq (slice 05)
+
+Vite + React + TypeScript app for **رفيق — جواز إلى مدينة الذكاء الاصطناعي**.
 
 Vite + React + TypeScript app for **رفيق — جواز إلى مدينة الذكاء الاصطناعي**.
 

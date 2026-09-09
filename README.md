@@ -29,4 +29,4 @@ npm run lint
 
 ## Current slice
 
-Apartment, street, corner-store visit, parcel office, and library exterior are playable after agreeing to help the robot. After helping the shopkeeper, مكتب طرود الرصيف opens: the player delegates retrieval, stops an overbroad grab-or-pay, writes a four-part instruction, and revises an ambiguous gray-box command.
+Apartment, street, corner-store visit, parcel office, library exterior, and the inner reading room are playable after agreeing to help the robot. After the repair parcel arrives, باب المكتبة الداخلي opens into قاعة القراءة: a two-slot working-context window, a fictional community file that must be redacted, and a named context pack «حزمة إصلاح رفيق».

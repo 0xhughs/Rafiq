@@ -1,5 +1,6 @@
 import { HINT_LABELS, INTERACT_RANGE } from './constants';
 import {
+  archiveDoorHint,
   doorHint,
   FURNITURE,
   libraryDoorHint,
@@ -9,7 +10,7 @@ import {
   shopDoorHint,
   WORLD_POS,
 } from './maps';
-import { clerkVisible, isCompanion, neighborVisible, npcPosition, robotVisible, shopkeeperVisible } from './npc';
+import { clerkVisible, isCompanion, librarianVisible, neighborVisible, npcPosition, robotVisible, shopkeeperVisible } from './npc';
 import type { Actionable, GameState, InteractableId } from './types';
 
 function dist(ax: number, ay: number, bx: number, by: number): number {
@@ -65,6 +66,24 @@ function shopRect(id: InteractableId): { x: number; y: number; w: number; h: num
   }
 }
 
+function archiveRect(id: InteractableId): { x: number; y: number; w: number; h: number } | null {
+  const room = FURNITURE.archive;
+  switch (id) {
+    case 'context_bench':
+      return room.bench;
+    case 'notes_crate':
+      return room.notes;
+    case 'community_file':
+      return room.file;
+    case 'pack_table':
+      return room.pack;
+    case 'spec_case':
+      return room.spec;
+    default:
+      return null;
+  }
+}
+
 function parcelRect(id: InteractableId): { x: number; y: number; w: number; h: number } | null {
   const office = FURNITURE.parcel;
   switch (id) {
@@ -102,7 +121,7 @@ function itemDistance(state: GameState, item: Actionable): number {
     const box = FURNITURE.street.dumpster;
     return distToRect(state.position.x, state.position.y, box.x, box.y, box.w, box.h);
   }
-  const rect = shopRect(item.id) ?? parcelRect(item.id);
+  const rect = shopRect(item.id) ?? parcelRect(item.id) ?? archiveRect(item.id);
   if (rect) {
     return distToRect(state.position.x, state.position.y, rect.x, rect.y, rect.w, rect.h);
   }
@@ -113,6 +132,7 @@ function portalHint(id: InteractableId, map: GameState['map']): string {
   if (id === 'door') return doorHint(map);
   if (id === 'shop_door') return shopDoorHint(map);
   if (id === 'parcel_door') return parcelDoorHint(map);
+  if (id === 'library_inner') return archiveDoorHint(map);
   return libraryDoorHint(map);
 }
 
@@ -187,6 +207,16 @@ export function listInteractables(state: GameState): Actionable[] {
     });
   }
 
+  if (librarianVisible(state)) {
+    const librarian = npcPosition(state, 'librarian');
+    items.push({
+      id: 'librarian',
+      label: HINT_LABELS.librarian,
+      x: librarian.x,
+      y: librarian.y,
+    });
+  }
+
   if (state.map === 'shop' && state.encounter === 'help_accepted') {
     items.push(
       { id: 'shelf_west', label: HINT_LABELS.shelfWest, x: WORLD_POS.shelfWest.x, y: WORLD_POS.shelfWest.y },
@@ -196,15 +226,6 @@ export function listInteractables(state: GameState): Actionable[] {
       { id: 'calculator', label: HINT_LABELS.calculator, x: WORLD_POS.calculator.x, y: WORLD_POS.calculator.y },
       { id: 'crate', label: HINT_LABELS.crate, x: WORLD_POS.crate.x, y: WORLD_POS.crate.y },
     );
-  }
-
-  if (state.map === 'library') {
-    items.push({
-      id: 'library_inner',
-      label: HINT_LABELS.libraryInner,
-      x: WORLD_POS.libraryInner.x,
-      y: WORLD_POS.libraryInner.y,
-    });
   }
 
   if (state.map === 'parcel' && state.shopQuest.phase === 'helped') {
@@ -218,6 +239,41 @@ export function listInteractables(state: GameState): Actionable[] {
         label: HINT_LABELS.instructionDesk,
         x: WORLD_POS.instructionDesk.x,
         y: WORLD_POS.instructionDesk.y,
+      },
+    );
+  }
+
+  if (state.map === 'archive' && state.parcelQuest.commsRepaired) {
+    items.push(
+      {
+        id: 'context_bench',
+        label: HINT_LABELS.contextBench,
+        x: WORLD_POS.contextBench.x,
+        y: WORLD_POS.contextBench.y,
+      },
+      {
+        id: 'notes_crate',
+        label: HINT_LABELS.notesCrate,
+        x: WORLD_POS.notesCrate.x,
+        y: WORLD_POS.notesCrate.y,
+      },
+      {
+        id: 'community_file',
+        label: HINT_LABELS.communityFile,
+        x: WORLD_POS.communityFile.x,
+        y: WORLD_POS.communityFile.y,
+      },
+      {
+        id: 'pack_table',
+        label: HINT_LABELS.packTable,
+        x: WORLD_POS.packTable.x,
+        y: WORLD_POS.packTable.y,
+      },
+      {
+        id: 'spec_case',
+        label: HINT_LABELS.specCase,
+        x: WORLD_POS.specCase.x,
+        y: WORLD_POS.specCase.y,
       },
     );
   }

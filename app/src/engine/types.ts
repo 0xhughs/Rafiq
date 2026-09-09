@@ -1,6 +1,13 @@
-export type MapId = 'apartment' | 'street' | 'shop' | 'library' | 'parcel';
+export type MapId = 'apartment' | 'street' | 'shop' | 'library' | 'parcel' | 'archive';
 
-export const MAP_IDS: readonly MapId[] = ['apartment', 'street', 'shop', 'library', 'parcel'];
+export const MAP_IDS: readonly MapId[] = [
+  'apartment',
+  'street',
+  'shop',
+  'library',
+  'parcel',
+  'archive',
+];
 
 export type Mode =
   | 'name_entry'
@@ -14,7 +21,10 @@ export type Mode =
   | 'crate'
   | 'explain'
   | 'instruction'
-  | 'pay';
+  | 'pay'
+  | 'context'
+  | 'redact'
+  | 'pack';
 
 export type TrashState = 'home' | 'carried' | 'disposed';
 
@@ -34,7 +44,18 @@ export type SaveStatus = 'absent' | 'ok' | 'unavailable' | 'recovered';
 
 export type EndingState = 'in_progress';
 
-export const EVIDENCE_IDS = ['1.1', '1.2', '1.3', '1.6', '2.1', '2.2', '2.4'] as const;
+export const EVIDENCE_IDS = [
+  '1.1',
+  '1.2',
+  '1.3',
+  '1.4',
+  '1.5',
+  '1.6',
+  '2.1',
+  '2.2',
+  '2.4',
+  '2.5',
+] as const;
 export type EvidenceId = (typeof EVIDENCE_IDS)[number];
 export type EvidenceStatus = 'demonstrated';
 export type EvidenceMap = Partial<Record<EvidenceId, EvidenceStatus>>;
@@ -49,8 +70,56 @@ export const SHOP_PHASES = [
 ] as const;
 export type ShopPhase = (typeof SHOP_PHASES)[number];
 
-export type InspectTarget = 'west' | 'east' | 'price' | 'hold_west' | 'hold_east' | 'hold_board';
-export type ExplainTopic = 'lookup' | 'notice' | 'price' | 'tools' | 'delegate' | 'instruction' | 'revise';
+export type InspectTarget =
+  | 'west'
+  | 'east'
+  | 'price'
+  | 'hold_west'
+  | 'hold_east'
+  | 'hold_board'
+  | 'notes'
+  | 'spec';
+export type ExplainTopic =
+  | 'lookup'
+  | 'notice'
+  | 'price'
+  | 'tools'
+  | 'delegate'
+  | 'instruction'
+  | 'revise'
+  | 'context'
+  | 'privacy'
+  | 'pack';
+export type ContextNoteId = 'constraint' | 'hold' | 'festival' | 'mango';
+export type PackFileId = 'spec' | 'delivery' | 'festival' | 'news_draft';
+export type PackStampId = 'rafiq_repair' | 'festival' | 'unnamed';
+export type PrivateFieldId = 'name_noura' | 'name_khalid' | 'phone' | 'address';
+export type NeededFactId = 'shelf' | 'time' | 'spec_location';
+
+export const LIBRARY_PHASES = ['unstarted', 'briefed', 'working', 'module_ready'] as const;
+export type LibraryPhase = (typeof LIBRARY_PHASES)[number];
+
+export interface LibraryQuest {
+  phase: LibraryPhase;
+  briefed: boolean;
+  overflowSeen: boolean;
+  constraintRestored: boolean;
+  recitedConstraint: boolean;
+  windowSlots: ContextNoteId[];
+  pinnedNotes: ContextNoteId[];
+  lastDroppedNote: ContextNoteId | null;
+  lastRecitation: string;
+  redacted: Record<PrivateFieldId, boolean>;
+  hiddenFacts: Record<NeededFactId, boolean>;
+  fileGiven: boolean;
+  lastPayload: string;
+  packFiles: PackFileId[];
+  packStamp: PackStampId;
+  packAssembled: boolean;
+  specReleased: boolean;
+  contextModule: boolean;
+  pendingExplain: ExplainTopic | null;
+}
 export type ParcelId = 'r17' | 'r19' | 'r71';
 export type ParcelPick = ParcelId | 'gray' | null;
 export type LocationPick = 'west' | 'east' | 'any' | null;
@@ -164,7 +233,13 @@ export type JournalEventId =
   | 'parcel_visit'
   | 'parcel_overbroad_stopped'
   | 'parcel_instruction_failed'
-  | 'parcel_retrieved';
+  | 'parcel_retrieved'
+  | 'archive_visit'
+  | 'notes_overflow'
+  | 'constraint_restored'
+  | 'file_redacted'
+  | 'pack_assembled'
+  | 'spec_released';
 
 export interface JournalEvent {
   id: JournalEventId;
@@ -226,7 +301,12 @@ export type DialogueNodeId =
   | 'parcel_overbroad_stopped'
   | 'parcel_overbroad_allowed'
   | 'parcel_retrieved_ok'
-  | 'companion_after_parcel';
+  | 'companion_after_parcel'
+  | 'librarian_hello'
+  | 'librarian_brief'
+  | 'librarian_revisit'
+  | 'librarian_after_success'
+  | 'companion_after_archive';
 
 export type DialogueChoiceId =
   | 'agree'
@@ -263,15 +343,21 @@ export type InteractableId =
   | 'crate'
   | 'parcel_door'
   | 'clerk'
+  | 'librarian'
   | 'hold_west'
   | 'hold_east'
   | 'hold_board'
   | 'pay_window'
-  | 'instruction_desk';
+  | 'instruction_desk'
+  | 'context_bench'
+  | 'community_file'
+  | 'pack_table'
+  | 'spec_case'
+  | 'notes_crate';
 
-export type PortalId = 'home' | 'shop' | 'library' | 'parcel';
+export type PortalId = 'home' | 'shop' | 'library' | 'parcel' | 'archive';
 
-export type NpcId = 'robot' | 'neighbor' | 'shopkeeper' | 'clerk';
+export type NpcId = 'robot' | 'neighbor' | 'shopkeeper' | 'clerk' | 'librarian';
 
 export interface Vec2 {
   x: number;
@@ -303,10 +389,12 @@ export interface GameState {
   neighbor: NpcGreeting;
   shopkeeper: NpcGreeting;
   clerk: NpcGreeting;
+  librarian: NpcGreeting;
   journalEvents: JournalEvent[];
   evidence: EvidenceMap;
   shopQuest: ShopQuest;
   parcelQuest: ParcelQuest;
+  libraryQuest: LibraryQuest;
   calculator: CalculatorState;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
@@ -341,7 +429,17 @@ export type GameAction =
   | { type: 'SUBMIT_NL'; text: string }
   | { type: 'INSTRUCTION_SET'; field: 'parcel' | 'location' | 'constraints' | 'returnFormat'; value: string }
   | { type: 'INSTRUCTION_SEND' }
-  | { type: 'PAY_DECIDE'; who: 'player' | 'robot' };
+  | { type: 'PAY_DECIDE'; who: 'player' | 'robot' }
+  | { type: 'CONTEXT_LOAD'; note: ContextNoteId }
+  | { type: 'CONTEXT_EJECT'; note: ContextNoteId }
+  | { type: 'CONTEXT_PIN'; note: ContextNoteId }
+  | { type: 'CONTEXT_RECITE' }
+  | { type: 'REDACT_TOGGLE'; field: PrivateFieldId }
+  | { type: 'FACT_TOGGLE'; field: NeededFactId }
+  | { type: 'REDACT_GIVE' }
+  | { type: 'PACK_TOGGLE'; file: PackFileId }
+  | { type: 'PACK_STAMP'; stamp: PackStampId }
+  | { type: 'PACK_ASSEMBLE' };
 
 export interface DialogueChoice {
   id: DialogueChoiceId;
@@ -354,6 +452,7 @@ export type DialogueSpeaker =
   | 'neighbor'
   | 'shopkeeper'
   | 'clerk'
+  | 'librarian'
   | 'notice';
 
 export interface DialogueLine {
@@ -383,6 +482,7 @@ export interface SerializedTestState {
   neighbor: NpcGreeting;
   shopkeeper: NpcGreeting;
   clerk: NpcGreeting;
+  librarian: NpcGreeting;
   journalEvents: JournalEvent[];
   mapsVisited: MapId[];
   saveStatus: SaveStatus;
@@ -392,6 +492,7 @@ export interface SerializedTestState {
   evidence: EvidenceMap;
   shopQuest: ShopQuest;
   parcelQuest: ParcelQuest;
+  libraryQuest: LibraryQuest;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
   robotUnderstood: string | null;
@@ -413,10 +514,12 @@ export interface SaveEnvelope {
   neighbor: NpcGreeting;
   shopkeeper: NpcGreeting;
   clerk: NpcGreeting;
+  librarian: NpcGreeting;
   journalEvents: JournalEvent[];
   evidence: EvidenceMap;
   shopQuest: ShopQuest;
   parcelQuest: ParcelQuest;
+  libraryQuest: LibraryQuest;
   robot: { companion: boolean };
   endingState: EndingState;
   mapsVisited: MapId[];
