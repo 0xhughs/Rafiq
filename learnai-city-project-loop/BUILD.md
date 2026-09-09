@@ -34,7 +34,13 @@ No new `MapId`. Evidence union adds `'6.1' | '6.2'`. Interactables: `crew_desk`,
 - T06 — Keep **01–14** e2e; approval success must **not** award 6.1 or 6.2 or set `crewReady`. Entering the roles desk / opening quality must not itself award. Update 14 assertions that treat `OBJECTIVES.approvalReady` as the terminal HUD string (it becomes `OBJECTIVES.crewWork`). Keep `approve.spec.ts` manager `/رُفض إرسال خاطئ ثم وُوفق على نشرة القاعة إلى أمينة القاعة، وقرار عيادة ليان بقي عند إنسان/` and companion `/الموافقة الآلية تكفي|أغلبية الجيران تقرر/` while `!crewReady`. Keep `skill.spec.ts` manager `/حُفظت مهارة تلخيص ساعات القاعة وجُرّبت على NH-2208، والروتين المجدول توقف بعد الإلبات/` and companion `/الدستور الدائم مهارة|الروتين المتوقف ما زال يعمل/` while `!approvalReady`. Keep `bridge.spec.ts` manager `/مسودة ساعات قاعة الحي حُفظت من NH-1447/` and companion `/MCP مهارة تُحمَّل|الربط يفتح كل الأدوات/` while `!skillReady`. Keep `agent.spec.ts` `body` ↛ `MCP` on the agent-success path. Bump `data-slice` expects `14` → `15` in `helpers.ts` `waitForGame` plus `approve.spec.ts` / `skill.spec.ts` / `lab.spec.ts` / `bridge.spec.ts` / `agent.spec.ts`. Update unit tests that pin `JOURNAL_CAP === 88` and exact row-8 `#O.wJfhZ.vx.l.V#` (skill/bridge/lab/agent/approval) to cap `96` and `#O1wJfhZ.vx.l2V#` without moving their existing letters. Reviewer maps AC01–AC06 and verifies snapshot.
 
 ## Proof
-Not completed yet.
+Builder claims for d-20260909-059-impl-15 (not independently accepted):
+- Candidate (coordinator recomputed): `48a12a7ba2ff1e1f28aaa2f9239618609235bc9cb791e9754deb37ea339e3b7f` (291 files).
+- Contract unchanged: `722db4a4435bff7d87c38da436c28402dbb7df706d06444efaca3f5ebab9bef9`.
+- Claimed checks: tsc/lint/build exit 0; vitest 131; Playwright 60/60 on preview :4410 and Vite :4510.
+- Claimed artifacts: `evidence/15/` per T02 plus overlays.png, state-tests.txt, project-checks.txt, browser-checks.md.
+- Claimed: approval success does not award 6.1/6.2; persistable GameState has no MCP/harness; no silent re-send; majority is not truth.
+Reviewer must re-run checks in an isolated copy and map AC01–AC06.
 
 ## Review
 Plan approved. Implementation not started.
@@ -45,15 +51,15 @@ Each result records dispatch ID, reviewer identity, verdict, contract identity, 
 ## Loop state
 Execution mode / tool adapter: Cursor Cloud Agent coordinator with Task-spawned Builder and Reviewer subagents. Spawn = Task(generalPurpose). Send = Task resume. Wait = blocking Task completion. Stop = subagent completion; coordinator does not start a second writer in this checkout. Reviewer contexts are fresh and do not receive Builder reasoning. Mutating Reviewer checks, if needed, run on an isolated copy.
 Coordinator: cloud agent bc-6380229a-c83f-493f-af1c-47e5f2b00c70 (https://cursor.com/agents/bc-6380229a-c83f-493f-af1c-47e5f2b00c70), role Coordinator, checkout /workspace on branch cursor/rafiq-continue-slices-0c70
-Worker / role / phase: pending launch / Builder / implementation
-Dispatch ID / launch state / input identity: d-20260909-059-impl-15 / pending launch / contract:722db4a4435bff7d87c38da436c28402dbb7df706d06444efaca3f5ebab9bef9 baseline:4d122eda21ed6315dfeeeec5b8f650f13be2f1dce77b88500d4d637b244ac629
-Pending result / last consumed dispatch: none / d-20260909-058-plan-15
+Worker / role / phase: pending launch / Reviewer / implementation
+Dispatch ID / launch state / input identity: d-20260909-060-implrev-15 / pending launch / contract:722db4a4435bff7d87c38da436c28402dbb7df706d06444efaca3f5ebab9bef9 candidate:48a12a7ba2ff1e1f28aaa2f9239618609235bc9cb791e9754deb37ea339e3b7f
+Pending result / last consumed dispatch: none / d-20260909-059-impl-15
 Snapshot capture and recheck commands / coverage / exclusions: Capture = `python3 .loop/identity.py snapshot --label <label>` from repository root. Recheck = same command; compare `.loop/snapshots/<label>.digest` and the JSON `digest` field. Contract = `python3 .loop/identity.py contract`; identity is `.loop/contract/hashes.json` field `contract`. Combined = `python3 .loop/identity.py both --label <label>`.
 Coverage: `app`, `evidence`, root `package.json`/`package-lock.json`/`pnpm-lock.yaml`/`yarn.lock`, `index.html`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `playwright.config.ts`, `vitest.config.ts`, `README.md`, `public`. Missing paths are skipped. Detect add/delete by regenerating the covered file list.
 Exclusions: `.git`, `.loop`, `learnai-city-project-loop`, `node_modules`, `app/node_modules`, `app/dist`, `dist`, `coverage`, `test-results`, `playwright-report`, `.vite`, `app/.vite`. Protocol files are identified by contract hash, not candidate snapshot.
 Baseline snapshot: shipped slice 14 `4d122eda21ed6315dfeeeec5b8f650f13be2f1dce77b88500d4d637b244ac629` (275 covered files)
 Contract identity: `722db4a4435bff7d87c38da436c28402dbb7df706d06444efaca3f5ebab9bef9` (`.loop/contract/hashes.json`)
-Candidate snapshot: none
+Candidate snapshot: `48a12a7ba2ff1e1f28aaa2f9239618609235bc9cb791e9754deb37ea339e3b7f` (291 files)
 Rejection count: 0
 Consecutive no-progress repairs: 0
 Open acceptance gaps / prior failing evidence: none
@@ -67,7 +73,7 @@ Next slice ID / draft: none
 Prior shipped receipt: slice 14 archive `slices/14-the-decision-stays-with-you.md`
 
 ## Status
-Building
+Ready for review
 
 ## Next
-Builder implements slice 15 under dispatch d-20260909-059-impl-15. Do not edit protocol files.
+Independent implementation review of slice 15 under dispatch d-20260909-060-implrev-15.
