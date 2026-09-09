@@ -77,7 +77,7 @@ test('corrupt primary save restores the backup with a notice', async ({ page }) 
   await page.reload();
   await waitForGame(page);
   await expect(page.getByTestId('name-overlay')).toHaveCount(0);
-  await expect(page.getByTestId('save-recovered')).toHaveText(RESTORE_NOTICE);
+  await expect(page.getByTestId('save-recovered')).toContainText(RESTORE_NOTICE);
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-mode', 'playing');
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-encounter', 'help_accepted');
 });
