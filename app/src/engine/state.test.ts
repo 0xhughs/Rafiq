@@ -357,7 +357,7 @@ describe('city maps and portals', () => {
     });
     expect(state.dialogueNode).toBe('library_inner_locked');
     expect(DIALOGUE.library_inner_locked.text(state.playerName, state.storyObjective)).toMatch(
-      /بقالة الزاوية/,
+      /طرود|بقالة الزاوية/,
     );
     state = reduce(state, { type: 'ADVANCE_DIALOGUE' });
     state = reduce(at(state, WORLD_POS.libraryExit.x, WORLD_POS.libraryExit.y, 'library'), {

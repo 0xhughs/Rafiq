@@ -124,7 +124,9 @@ export default function App() {
       data-evidence={evidenceAttr(state.evidence)}
       data-shop-quest={state.shopQuest.phase}
       data-parcel-quest={state.parcelQuest.phase}
+      data-comms-repaired={state.parcelQuest.commsRepaired ? 'true' : 'false'}
       data-library-quest={state.libraryQuest.phase}
+      data-context-window={state.libraryQuest.windowSlots.join(',')}
       data-cassette={state.libraryQuest.contextModule ? 'contextModule' : ''}
     >
       <Hud

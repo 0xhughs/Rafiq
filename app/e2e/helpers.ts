@@ -45,15 +45,12 @@ export async function interactAt(
   x: number,
   y: number,
 ): Promise<void> {
-  await page.evaluate(
-    ({ map, x, y }) => {
-      const api = window.__RAFIQ_TEST__;
-      if (!api) throw new Error('missing __RAFIQ_TEST__');
-      api.teleport(map, x, y);
-      api.dispatch({ type: 'INTERACT' });
-    },
-    { map, x, y },
-  );
+  await teleport(page, map, x, y);
+  await page.evaluate(() => {
+    const api = window.__RAFIQ_TEST__;
+    if (!api) throw new Error('missing __RAFIQ_TEST__');
+    api.dispatch({ type: 'INTERACT' });
+  });
   await page.waitForTimeout(30);
 }
 
@@ -125,9 +122,17 @@ export async function closeOverlay(page: Page): Promise<void> {
 }
 
 export async function skipExplainIfOpen(page: Page): Promise<void> {
+  const root = page.getByTestId('game-root');
   const skip = page.getByTestId('explain-skip');
-  if (await skip.isVisible().catch(() => false)) {
-    await skip.click();
+  for (let i = 0; i < 10; i += 1) {
+    const mode = await root.getAttribute('data-mode');
+    if (mode === 'explain' || (await skip.isVisible().catch(() => false))) {
+      await skip.click();
+      await expect(root).toHaveAttribute('data-mode', 'playing');
+      return;
+    }
+    if (mode === 'playing') return;
+    await page.waitForTimeout(40);
   }
 }
 
@@ -196,9 +201,13 @@ export async function playToParcelDone(page: Page, name = 'علي حسن'): Prom
   await page.getByTestId('instruction-send').click();
   await page.getByTestId('dialogue-advance').click();
   await skipExplainIfOpen(page);
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-mode', 'playing');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-comms-repaired', 'true');
 }
 
 export async function enterArchive(page: Page): Promise<void> {
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-comms-repaired', 'true');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-mode', 'playing');
   await interactAt(page, 'library', WORLD_POS.libraryInner.x, WORLD_POS.libraryInner.y);
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-map', 'archive');
 }

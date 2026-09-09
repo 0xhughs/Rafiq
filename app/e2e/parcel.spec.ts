@@ -112,6 +112,7 @@ test('shop_helped through parcel success with physical actions', async ({ page }
   await expect(page.getByTestId('journal-events')).toContainText('طرود');
   await page.getByTestId('resume-button').click();
 
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-comms-repaired', 'true');
   await interactAt(page, 'library', WORLD_POS.libraryInner.x, WORLD_POS.libraryInner.y);
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-map', 'archive');
   await interactAt(page, 'street', WORLD_POS.robot.x, WORLD_POS.robot.y);
