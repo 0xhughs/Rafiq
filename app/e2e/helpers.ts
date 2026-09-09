@@ -4,7 +4,7 @@ import type { GameAction, MapId, SerializedTestState } from '../src/engine/types
 
 export async function waitForGame(page: Page): Promise<void> {
   await page.waitForFunction(() => Boolean(window.__RAFIQ_TEST__));
-  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '12');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '13');
 }
 
 export async function getState(page: Page): Promise<SerializedTestState> {
@@ -544,4 +544,34 @@ export async function playToAgentDone(page: Page, name = 'علي حسن'): Promi
   expect(done.agentQuest.agentReady).toBe(true);
   expect(done.evidence['5.3']).toBeUndefined();
   expect(done.bridgeQuest.bridgeReady).toBe(false);
+}
+
+export async function playToBridgeDone(page: Page, name = 'علي حسن'): Promise<void> {
+  await playToAgentDone(page, name);
+  await interactAt(page, 'workshop', WORLD_POS.bridgeHost.x, WORLD_POS.bridgeHost.y);
+  await page.getByTestId('bridge-connect').click();
+  await page.getByTestId('bridge-list-tools').click();
+  await page.getByTestId('bridge-list-resources').click();
+  await page.getByTestId('bridge-grant-lookup').click();
+  await page.getByTestId('bridge-grant-draft').click();
+  await page.getByTestId('bridge-grant-week').click();
+  await page.getByTestId('bridge-lookup').click();
+  await page.getByTestId('bridge-save-draft').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'workshop', WORLD_POS.bridgeBrowser.x, WORLD_POS.bridgeBrowser.y);
+  await page.getByTestId('bridge-browser-save').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'workshop', WORLD_POS.bridgeHost.x, WORLD_POS.bridgeHost.y);
+  await page.getByTestId('bridge-invoke-rewrite').click();
+  await page.getByTestId('bridge-invoke-pay').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  const done = await getState(page);
+  expect(done.evidence['5.3']).toBe('demonstrated');
+  expect(done.bridgeQuest.bridgeReady).toBe(true);
+  expect(done.evidence['5.5']).toBeUndefined();
+  expect(done.evidence['5.6']).toBeUndefined();
+  expect(done.skillQuest.skillReady).toBe(false);
 }

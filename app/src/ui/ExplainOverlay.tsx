@@ -8,6 +8,7 @@ import { KIOSK_EXPLAIN } from '../engine/kiosk';
 import { LAB_EXPLAIN } from '../engine/lab';
 import { AGENT_EXPLAIN } from '../engine/agent';
 import { BRIDGE_EXPLAIN } from '../engine/bridge';
+import { SKILL_EXPLAIN } from '../engine/skill';
 import type { GameState } from '../engine/types';
 
 const NOTES = {
@@ -21,6 +22,7 @@ const NOTES = {
   ...LAB_EXPLAIN,
   ...AGENT_EXPLAIN,
   ...BRIDGE_EXPLAIN,
+  ...SKILL_EXPLAIN,
 };
 
 interface Props {

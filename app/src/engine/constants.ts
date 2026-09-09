@@ -4,7 +4,7 @@ export const PLAYER_HALF_H = 14;
 export const PLAYER_SPEED = 150;
 export const INTERACT_RANGE = 58;
 export const MAX_STEP = 8;
-export const JOURNAL_CAP = 72;
+export const JOURNAL_CAP = 80;
 export const COMPANION_OFFSET = { x: -32, y: 10 } as const;
 
 export const SAVE_KEY = 'rafiq.adventure.v1';
@@ -80,6 +80,8 @@ export const HINT_LABELS = {
   agentBoard: 'E / مسافة — لوحة الحي',
   bridgeHost: 'E / مسافة — منصة الموصل',
   bridgeBrowser: 'E / مسافة — متصفح السجل',
+  skillBench: 'E / مسافة — منصة المهارة',
+  skillClock: 'E / مسافة — ساعة الحي',
   stockTable: 'E / مسافة — جدول المخزون',
   receiptsDesk: 'E / مسافة — إيصالات التوريد',
   reconcileDesk: 'E / مسافة — ورقة المطابقة',

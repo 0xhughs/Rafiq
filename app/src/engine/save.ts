@@ -14,6 +14,7 @@ import { parseKioskQuest } from './kiosk';
 import { parseLabQuest } from './lab';
 import { parseAgentQuest } from './agent';
 import { parseBridgeQuest } from './bridge';
+import { parseSkillQuest } from './skill';
 import type {
   EndingState,
   Facing,
@@ -124,6 +125,14 @@ const JOURNAL_IDS: readonly JournalEventId[] = [
   'draft_saved',
   'capability_denied',
   'bridge_ready',
+  'skill_opened',
+  'oneshot_corrected',
+  'skill_saved',
+  'second_trial',
+  'clock_armed',
+  'routine_fired',
+  'routine_paused',
+  'skill_ready',
 ];
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -183,6 +192,7 @@ export function toEnvelope(state: GameState): SaveEnvelope {
     labQuest: parseLabQuest(state.labQuest),
     agentQuest: parseAgentQuest(state.agentQuest),
     bridgeQuest: parseBridgeQuest(state.bridgeQuest),
+    skillQuest: parseSkillQuest(state.skillQuest),
     robot: { companion },
     endingState: 'in_progress',
     mapsVisited: state.mapsVisited.length > 0 ? [...state.mapsVisited] : [state.map],
@@ -324,6 +334,7 @@ export function validateSave(raw: unknown): SaveEnvelope | null {
     labQuest: parseLabQuest(data.labQuest),
     agentQuest: parseAgentQuest(data.agentQuest),
     bridgeQuest: parseBridgeQuest(data.bridgeQuest),
+    skillQuest: parseSkillQuest(data.skillQuest),
     robot: { companion },
     endingState: 'in_progress' satisfies EndingState,
     mapsVisited: mapsVisited.length > 0 ? mapsVisited : [data.map],
@@ -341,9 +352,11 @@ export function hydrateSave(
   const labQuest = parseLabQuest(envelope.labQuest);
   const agentQuest = parseAgentQuest(envelope.agentQuest);
   const bridgeQuest = parseBridgeQuest(envelope.bridgeQuest);
+  const skillQuest = parseSkillQuest(envelope.skillQuest);
   let storyObjective =
     envelope.storyObjective || (companion ? OBJECTIVES.cornerStore : OBJECTIVES.takeTrash);
-  if (bridgeQuest.bridgeReady) storyObjective = OBJECTIVES.bridgeReady;
+  if (skillQuest.skillReady) storyObjective = OBJECTIVES.skillReady;
+  else if (bridgeQuest.bridgeReady) storyObjective = OBJECTIVES.skillWork;
   else if (agentQuest.agentReady) storyObjective = OBJECTIVES.bridgeWork;
   else if (labQuest.labReady) storyObjective = OBJECTIVES.agentWork;
   return {
@@ -380,6 +393,7 @@ export function hydrateSave(
     labQuest,
     agentQuest,
     bridgeQuest,
+    skillQuest,
     calculator: createCalculator(),
     inspectTarget: null,
     explainTopic: null,
@@ -488,6 +502,7 @@ export function shouldPersist(prev: GameState, next: GameState, action: GameActi
   if (JSON.stringify(prev.labQuest) !== JSON.stringify(next.labQuest)) return true;
   if (JSON.stringify(prev.agentQuest) !== JSON.stringify(next.agentQuest)) return true;
   if (JSON.stringify(prev.bridgeQuest) !== JSON.stringify(next.bridgeQuest)) return true;
+  if (JSON.stringify(prev.skillQuest) !== JSON.stringify(next.skillQuest)) return true;
   if (persistableGreeting(prev.librarian) !== persistableGreeting(next.librarian)) return true;
   if (persistableGreeting(prev.editor) !== persistableGreeting(next.editor)) return true;
   if (persistableGreeting(prev.officer) !== persistableGreeting(next.officer)) return true;

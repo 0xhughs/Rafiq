@@ -1,11 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { playerHitsSolid } from './collision';
 import { JOURNAL_CAP, TILE } from './constants';
-import { DIALOGUE, OBJECTIVES } from './dialogue';
-import {
-  canAward43,
-  canAward44,
-} from './kiosk';
+import { DIALOGUE, JOURNAL_TEXT, OBJECTIVES } from './dialogue';
+import { canAward43, canAward44 } from './kiosk';
 import {
   AGENT_FEEDBACK,
   BOARD_EMPTY,
@@ -15,21 +12,10 @@ import {
 } from './agent';
 import {
   BRIDGE_EXPLAIN,
-  BRIDGE_FEEDBACK,
-  DRAFT_EMPTY,
-  DRAFT_SAVED,
   HOUR_SAT,
   HOUR_SUN,
   HOUR_WED,
   MCP_NOTE,
-  RESOURCE_WEEK,
-  TOOL_LOOKUP,
-  TOOL_SAVE,
-  canAward53,
-  createBridgeQuest,
-  grantLimited,
-  mcpComplete,
-  parseBridgeQuest,
 } from './bridge';
 import { createLabQuest } from './lab';
 import { listInteractables } from './interact';
@@ -39,6 +25,37 @@ import { createInitialState, reduce } from './state';
 import { hydrateSave, toEnvelope, validateSave } from './save';
 import type { GameAction, GameState, MapId } from './types';
 import { MAP_IDS } from './types';
+import {
+  BULLETIN_1447,
+  BULLETIN_2208,
+  CLOCK_START,
+  CLOCK_SUN8,
+  DEMO_SLOT_KEY,
+  HOUR_FRI,
+  HOUR_MON,
+  INPUT_RECORD,
+  ONESHOT_TEXT,
+  OUTPUT_DRAFT,
+  RUN_COUNT_LABEL,
+  SKILL_CARD_EMPTY,
+  SKILL_EXPLAIN,
+  SKILL_FEEDBACK,
+  SKILL_NAME,
+  STANDING_LINE,
+  STEPS_LOOKUP,
+  STOP_UNKNOWN,
+  TRAY_EMPTY,
+  TRAY_SUN,
+  TRIGGER_HOURS,
+  TRIGGER_LOG,
+  canAward55,
+  canAward56,
+  createSkillQuest,
+  fiveFieldsCorrect,
+  oneshotText,
+  parseSkillQuest,
+  trialText,
+} from './skill';
 
 function start(name = 'علي حسن'): GameState {
   let state = createInitialState();
@@ -605,8 +622,77 @@ function connectListGrant(state: GameState): GameState {
   return next;
 }
 
-describe('bridge stations after agentReady', () => {
-  it('places f and v on empty row 8, keeps landmarks, and does not award 5.3 on agent success', () => {
+function playToBridgeDone(state: GameState): GameState {
+  let next = playToAgentDone(state);
+  next = connectListGrant(next);
+  next = act(next, { type: 'BRIDGE_LOOKUP' });
+  next = act(next, { type: 'BRIDGE_SAVE_DRAFT' });
+  next = playing(next);
+  next = openBrowser(next);
+  next = act(next, { type: 'BRIDGE_BROWSER_SAVE' });
+  next = playing(next);
+  next = openHost(next);
+  next = act(next, { type: 'BRIDGE_INVOKE_REWRITE' });
+  next = act(next, { type: 'BRIDGE_INVOKE_PAY' });
+  expect(next.evidence['5.3']).toBe('demonstrated');
+  expect(next.bridgeQuest.bridgeReady).toBe(true);
+  expect(next.evidence['5.5']).toBeUndefined();
+  expect(next.evidence['5.6']).toBeUndefined();
+  expect(next.skillQuest.skillReady).toBe(false);
+  expect(JSON.stringify(next)).not.toMatch(/MCP/);
+  expect(JSON.stringify(next)).not.toMatch(/harness/);
+  return playing(next);
+}
+
+function openBench(state: GameState): GameState {
+  const next = playing(state);
+  return act(at(next, WORLD_POS.skillBench.x, WORLD_POS.skillBench.y, 'workshop'), {
+    type: 'INTERACT',
+  });
+}
+
+function openClock(state: GameState): GameState {
+  const next = playing(state);
+  return act(at(next, WORLD_POS.skillClock.x, WORLD_POS.skillClock.y, 'workshop'), {
+    type: 'INTERACT',
+  });
+}
+
+function fillFiveFields(state: GameState): GameState {
+  let next = state.mode === 'skill' && state.skillQuest.view === 'bench' ? state : openBench(state);
+  next = act(next, { type: 'SKILL_SET_TRIGGER', trigger: 'hours_record' });
+  next = act(next, { type: 'SKILL_SET_INPUT', input: 'record_id' });
+  next = act(next, { type: 'SKILL_SET_STEPS', steps: 'lookup_format' });
+  next = act(next, { type: 'SKILL_SET_OUTPUT', output: 'tray_draft' });
+  next = act(next, { type: 'SKILL_SET_STOP', stop: 'unknown_stop' });
+  return next;
+}
+
+function complete55(state: GameState): GameState {
+  let next = state.mode === 'skill' && state.skillQuest.view === 'bench' ? state : openBench(state);
+  next = act(next, { type: 'SKILL_ONESHOT' });
+  next = act(next, { type: 'SKILL_CORRECT' });
+  next = act(next, { type: 'SKILL_STANDING' });
+  next = fillFiveFields(next);
+  next = act(next, { type: 'SKILL_SAVE' });
+  next = act(next, { type: 'SKILL_TRIAL_SECOND' });
+  return next;
+}
+
+function complete56(state: GameState): GameState {
+  let next = complete55(state);
+  next = playing(next);
+  next = openClock(next);
+  next = act(next, { type: 'SKILL_SET_SCHEDULE', schedule: 'sun8' });
+  next = act(next, { type: 'SKILL_ARM' });
+  next = act(next, { type: 'SKILL_TICK_SUN8' });
+  next = act(next, { type: 'SKILL_PAUSE' });
+  next = act(next, { type: 'SKILL_TICK_SUN8' });
+  return next;
+}
+
+describe('skill stations after bridgeReady', () => {
+  it('places J and Z on row 8, keeps landmarks, and does not award 5.5/5.6 on bridge success', () => {
     expect(WORLD_POS.robot).toEqual({ x: 12 * TILE + 24, y: 5 * TILE + 24 });
     expect(MAP_IDS).toContain('workshop');
     expect(WORKSHOP.legend[4]).toBe('#...........e..#');
@@ -624,6 +710,7 @@ describe('bridge stations after agentReady', () => {
     expect(WORKSHOP.legend[8][10]).toBe('x');
     expect(WORKSHOP.legend[8][12]).toBe('l');
     expect(WORKSHOP.legend[6][8]).toBe('.');
+    expect(WORKSHOP.legend[7][8]).toBe('d');
     expect(JSON.stringify(WORKSHOP.legend.join(''))).not.toMatch(/[PEIRFDGY]/);
     const street = STREET.legend.join('');
     expect(street).toContain('P');
@@ -632,6 +719,9 @@ describe('bridge stations after agentReady', () => {
     expect(street).toContain('E');
     expect(street).toContain('G');
     expect(street).toContain('Y');
+    expect(WORLD_POS.builderBench).not.toEqual(WORLD_POS.skillBench);
+    expect(playerHitsSolid('workshop', WORLD_POS.skillBench.x, WORLD_POS.skillBench.y)).toBe(true);
+    expect(playerHitsSolid('workshop', WORLD_POS.skillClock.x, WORLD_POS.skillClock.y)).toBe(true);
     expect(playerHitsSolid('workshop', WORLD_POS.bridgeHost.x, WORLD_POS.bridgeHost.y)).toBe(true);
     expect(playerHitsSolid('workshop', WORLD_POS.bridgeBrowser.x, WORLD_POS.bridgeBrowser.y)).toBe(true);
     expect(playerHitsSolid('workshop', WORLD_POS.agentConsole.x, WORLD_POS.agentConsole.y)).toBe(true);
@@ -639,178 +729,263 @@ describe('bridge stations after agentReady', () => {
     expect(playerHitsSolid('workshop', WORKSHOP.spawn.x, WORKSHOP.spawn.y)).toBe(false);
     expect(JOURNAL_CAP).toBe(80);
     expect(`${BRIDGE_EXPLAIN.connector_roles} ${MCP_NOTE}`).toMatch(/MCP/);
+    expect(`${SKILL_EXPLAIN.oneshot_vs_skill} ${SKILL_EXPLAIN.standing_vs_skill} ${SKILL_EXPLAIN.routine_clock}`).not.toMatch(
+      /MCP|harness/,
+    );
+    expect(OBJECTIVES.skillWork).not.toMatch(/MCP|harness/);
+    expect(OBJECTIVES.skillReady).not.toMatch(/MCP|harness/);
+    expect(JOURNAL_TEXT.skill_ready).not.toMatch(/MCP|harness/);
+    expect(JSON.stringify(createSkillQuest())).not.toMatch(/MCP|harness/);
 
-    let state = playToLabDone(checkpoint());
+    const labDone = playToLabDone(checkpoint());
+    expect(JSON.stringify(labDone)).not.toMatch(/MCP/);
+    expect(JSON.stringify(labDone)).not.toMatch(/harness/);
+    const kioskDone = playToKioskDone(checkpoint());
+    expect(JSON.stringify(kioskDone)).not.toMatch(/MCP/);
+    expect(JSON.stringify(kioskDone)).not.toMatch(/harness/);
+    const agentDone = playToAgentDone(checkpoint());
+    expect(JSON.stringify(agentDone)).not.toMatch(/MCP/);
+    expect(JSON.stringify(agentDone)).not.toMatch(/harness/);
+
+    let state = playToAgentDone(checkpoint());
     const beforeReady = listInteractables(state).map((item) => item.id);
-    expect(beforeReady).not.toContain('bridge_host');
-    expect(beforeReady).not.toContain('bridge_browser');
-    expect(beforeReady).toContain('agent_console');
-    state = playToAgentDone(checkpoint());
-    expect(state.storyObjective).toBe(OBJECTIVES.bridgeWork);
-    expect(state.agentQuest.agentReady).toBe(true);
-    expect(state.bridgeQuest.bridgeReady).toBe(false);
-    expect(state.evidence['5.1']).toBe('demonstrated');
-    expect(state.evidence['5.2']).toBe('demonstrated');
-    expect(state.evidence['5.3']).toBeUndefined();
+    expect(beforeReady).not.toContain('skill_bench');
+    expect(beforeReady).not.toContain('skill_clock');
+    expect(beforeReady).toContain('bridge_host');
+    state = playToBridgeDone(checkpoint());
+    expect(state.storyObjective).toBe(OBJECTIVES.skillWork);
+    expect(state.bridgeQuest.bridgeReady).toBe(true);
+    expect(state.skillQuest.skillReady).toBe(false);
+    expect(state.evidence['5.3']).toBe('demonstrated');
+    expect(state.evidence['5.5']).toBeUndefined();
+    expect(state.evidence['5.6']).toBeUndefined();
     expect(JSON.stringify(state)).not.toMatch(/MCP/);
+    expect(JSON.stringify(state)).not.toMatch(/harness/);
     const after = listInteractables(state).map((item) => item.id);
+    expect(after).toContain('skill_bench');
+    expect(after).toContain('skill_clock');
     expect(after).toContain('bridge_host');
-    expect(after).toContain('bridge_browser');
     expect(after).toContain('agent_console');
     expect(after).toContain('lab_terminal');
   });
 });
 
-describe('5.3 civic lookup and draft', () => {
-  it('awards only after connect, list, limited grant, NH-1447 lookup, save, and seeing the draft', () => {
-    let state = playToAgentDone(checkpoint());
-    state = openHost(state);
-    expect(state.mode).toBe('bridge');
-    expect(state.bridgeQuest.openedHost).toBe(true);
-    expect(state.evidence['5.3']).toBeUndefined();
-    expect(state.bridgeQuest.bridgeReady).toBe(false);
-    state = act(state, { type: 'BRIDGE_LOOKUP' });
-    expect(state.shopFeedback).toBe(BRIDGE_FEEDBACK.notConnected);
-    expect(canAward53(state.bridgeQuest, true)).toBe(false);
-    state = act(state, { type: 'BRIDGE_CONNECT' });
-    expect(state.bridgeQuest.connected).toBe(true);
-    expect(MCP_NOTE).toMatch(/MCP/);
-    state = act(state, { type: 'BRIDGE_SAVE_DRAFT' });
-    expect(state.shopFeedback).toBe(BRIDGE_FEEDBACK.notListed);
-    state = act(state, { type: 'BRIDGE_LIST_TOOLS' });
-    state = act(state, { type: 'BRIDGE_SAVE_DRAFT' });
-    expect(state.shopFeedback).toBe(BRIDGE_FEEDBACK.notListed);
-    state = act(state, { type: 'BRIDGE_LIST_RESOURCES' });
-    state = act(state, { type: 'BRIDGE_LOOKUP' });
-    expect(state.shopFeedback).toBe(BRIDGE_FEEDBACK.wrongGrant);
-    state = limitedGrant(state);
-    expect(grantLimited(state.bridgeQuest)).toBe(true);
-    state = act(state, { type: 'BRIDGE_SAVE_DRAFT' });
-    expect(state.shopFeedback).toBe(BRIDGE_FEEDBACK.saveWithoutLookup);
-    expect(state.bridgeQuest.draftSaved).toBe(false);
-    state = act(state, { type: 'BRIDGE_LOOKUP' });
-    expect(state.bridgeQuest.lookedUp).toBe(true);
-    expect(canAward53(state.bridgeQuest, true)).toBe(false);
-    expect(state.evidence['5.3']).toBeUndefined();
-    state = act(state, { type: 'BRIDGE_SAVE_DRAFT' });
-    expect(state.bridgeQuest.draftSaved).toBe(true);
-    expect(state.bridgeQuest.inspectedDraft).toBe(true);
-    expect(DRAFT_SAVED).toContain(HOUR_SAT);
-    expect(DRAFT_SAVED).toContain(HOUR_SUN);
-    expect(DRAFT_SAVED).toContain(HOUR_WED);
-    expect(canAward53(state.bridgeQuest, true)).toBe(true);
-    expect(state.evidence['5.3']).toBe('demonstrated');
-    expect(state.bridgeQuest.bridgeReady).toBe(false);
-    expect(TOOL_LOOKUP).toBe('lookup_hours');
-    expect(TOOL_SAVE).toBe('save_draft');
-    expect(RESOURCE_WEEK).toBe('hours://neighborhood/week');
-  });
-
-  it('inspect-only, manager-talk, and robot تم do not award 5.3', () => {
-    let state = playToAgentDone(checkpoint());
-    expect(state.storyObjective).toBe(OBJECTIVES.bridgeWork);
-    state = openHost(state);
-    expect(state.bridgeQuest.openedHost).toBe(true);
-    expect(state.evidence['5.3']).toBeUndefined();
-    state = playing(state);
-    state = act(at(state, WORLD_POS.manager.x, WORLD_POS.manager.y, 'workshop'), { type: 'INTERACT' });
-    expect(state.dialogueNode).toBe('manager_agent_thanks');
-    expect(DIALOGUE.manager_agent_thanks.text(state.playerName)).toMatch(
-      /لوحة الحي تعرض الفترات الثلاث/,
-    );
-    expect(state.evidence['5.3']).toBeUndefined();
-    state = act(state, { type: 'ADVANCE_DIALOGUE' });
-    state = openBrowser(state);
-    expect(state.mode).toBe('bridge');
-    expect(state.evidence['5.3']).toBeUndefined();
-    state = playing(state);
-    state = openHost(state);
-    state = act(state, { type: 'BRIDGE_ROBOT_DONE' });
-    expect(state.shopFeedback).toBe(BRIDGE_FEEDBACK.robotDone);
-    expect(state.evidence['5.3']).toBeUndefined();
-    expect(state.bridgeQuest.bridgeReady).toBe(false);
-  });
-});
-
-describe('MCP named connector and browser contrast', () => {
-  it('denies rewrite, misses pay_fees, refuses browser save, then closes the slice', () => {
-    let state = playToAgentDone(checkpoint());
-    state = connectListGrant(state);
-    state = act(state, { type: 'BRIDGE_GRANT', grant: 'all' });
-    expect(state.shopFeedback).toBe(BRIDGE_FEEDBACK.grantAll);
-    expect(state.evidence['5.3']).toBeUndefined();
-    state = act(state, { type: 'BRIDGE_GRANT', grant: 'rewrite' });
-    state = act(state, { type: 'BRIDGE_GRANT', grant: 'payroll' });
-    state = limitedGrant(state);
-    expect(grantLimited(state.bridgeQuest)).toBe(true);
-    state = act(state, { type: 'BRIDGE_LOOKUP_PAYROLL' });
-    expect(state.shopFeedback).toBe(BRIDGE_FEEDBACK.payroll);
-    state = act(state, { type: 'BRIDGE_LOOKUP' });
-    state = act(state, { type: 'BRIDGE_SAVE_DRAFT' });
-    expect(state.evidence['5.3']).toBe('demonstrated');
-    state = act(state, { type: 'BRIDGE_INVOKE_REWRITE' });
-    expect(state.shopFeedback).toBe(BRIDGE_FEEDBACK.deniedRewrite);
-    expect(state.bridgeQuest.deniedRewrite).toBe(true);
-    expect(state.bridgeQuest.draftSaved).toBe(true);
-    state = act(state, { type: 'BRIDGE_INVOKE_PAY' });
-    expect(state.shopFeedback).toBe(BRIDGE_FEEDBACK.missingPay);
-    expect(mcpComplete(state.bridgeQuest)).toBe(true);
-    state = act(state, { type: 'BRIDGE_LOAD_SKILL' });
-    expect(state.shopFeedback).toBe(BRIDGE_FEEDBACK.loadSkill);
-    expect(state.bridgeQuest.bridgeReady).toBe(false);
-    state = playing(state);
-    state = openBrowser(state);
-    expect(state.bridgeQuest.browserSeen).toBe(true);
-    expect(state.evidence['5.3']).toBe('demonstrated');
-    expect(state.bridgeQuest.bridgeReady).toBe(false);
-    state = act(state, { type: 'BRIDGE_BROWSER_SAVE' });
-    expect(state.shopFeedback).toBe(BRIDGE_FEEDBACK.browserSave);
-    expect(state.bridgeQuest.browserSaveFailed).toBe(true);
-    expect(state.bridgeQuest.bridgeReady).toBe(true);
-    expect(state.storyObjective).toBe(OBJECTIVES.skillWork);
+describe('5.5 reusable skill', () => {
+  it('awards only after oneshot invent, correct, standing refuse, five fields, save, and NH-2208', () => {
+    let state = playToBridgeDone(checkpoint());
+    state = openBench(state);
+    expect(state.mode).toBe('skill');
+    expect(state.skillQuest.view).toBe('bench');
+    expect(state.skillQuest.openedBench).toBe(true);
     expect(state.evidence['5.5']).toBeUndefined();
+    expect(state.skillQuest.skillReady).toBe(false);
+    expect(SKILL_CARD_EMPTY).toBe('لا مهارة محفوظة');
+    state = act(state, { type: 'SKILL_ONESHOT' });
+    expect(oneshotText(state.skillQuest)).toBe(ONESHOT_TEXT);
+    expect(ONESHOT_TEXT).toContain('الدقيقة 7');
+    expect(state.evidence['5.5']).toBeUndefined();
+    expect(state.skillQuest.skillSaved).toBe(false);
+    state = act(state, { type: 'SKILL_SAVE' });
+    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.saveBeforeCorrect);
+    state = act(state, { type: 'SKILL_CORRECT' });
+    expect(oneshotText(state.skillQuest)).toBe(BULLETIN_1447);
+    expect(BULLETIN_1447).toContain(HOUR_SAT);
+    expect(BULLETIN_1447).toContain(HOUR_SUN);
+    expect(BULLETIN_1447).toContain(HOUR_WED);
+    state = act(state, { type: 'SKILL_SAVE' });
+    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.missingConfig);
+    state = act(state, { type: 'SKILL_SET_TRIGGER', trigger: 'anytime' });
+    state = act(state, { type: 'SKILL_SET_INPUT', input: 'secret' });
+    state = act(state, { type: 'SKILL_SET_STEPS', steps: 'mix_opinion' });
+    state = act(state, { type: 'SKILL_SET_OUTPUT', output: 'send_now' });
+    state = act(state, { type: 'SKILL_SET_STOP', stop: 'always_invent' });
+    state = act(state, { type: 'SKILL_SAVE' });
+    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.wrongTrigger);
+    state = act(state, { type: 'SKILL_SET_TRIGGER', trigger: 'hours_record' });
+    state = act(state, { type: 'SKILL_SAVE' });
+    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.wrongInput);
+    state = act(state, { type: 'SKILL_SET_INPUT', input: 'record_id' });
+    state = act(state, { type: 'SKILL_SAVE' });
+    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.wrongSteps);
+    state = act(state, { type: 'SKILL_SET_STEPS', steps: 'lookup_format' });
+    state = act(state, { type: 'SKILL_SAVE' });
+    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.wrongOutput);
+    state = act(state, { type: 'SKILL_SET_OUTPUT', output: 'tray_draft' });
+    state = act(state, { type: 'SKILL_SAVE' });
+    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.wrongStop);
+    state = act(state, { type: 'SKILL_SET_STOP', stop: 'unknown_stop' });
+    expect(fiveFieldsCorrect(state.skillQuest)).toBe(true);
+    state = act(state, { type: 'SKILL_STANDING' });
+    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.standing);
+    expect(STANDING_LINE).toBe('العربية المبسطة. لا تخترع أرقاماً.');
+    expect(state.evidence['5.5']).toBeUndefined();
+    state = act(state, { type: 'SKILL_SAVE' });
+    expect(state.skillQuest.skillSaved).toBe(true);
+    expect(state.skillQuest.inspectedCard).toBe(true);
+    expect(SKILL_NAME).toBe('تلخيص ساعات القاعة');
+    expect(TRIGGER_HOURS).toBe('عند ورود سجل ساعات قاعة الحي');
+    expect(INPUT_RECORD).toContain('NH-xxxx');
+    expect(STEPS_LOOKUP).toContain('ابحث');
+    expect(OUTPUT_DRAFT).toContain('الدرج');
+    expect(STOP_UNKNOWN).toContain('غير محددة');
+    expect(JSON.stringify(state.skillQuest)).not.toContain(DEMO_SLOT_KEY);
+    expect(canAward55(state.skillQuest, true)).toBe(false);
+    state = act(state, { type: 'SKILL_TRIAL_SAME' });
+    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.trialSame);
+    expect(state.evidence['5.5']).toBeUndefined();
+    state = act(state, { type: 'SKILL_TRIAL_SECOND' });
+    expect(trialText(state.skillQuest)).toBe(BULLETIN_2208);
+    expect(BULLETIN_2208).toContain(HOUR_FRI);
+    expect(BULLETIN_2208).toContain(HOUR_MON);
+    expect(canAward55(state.skillQuest, true)).toBe(true);
+    expect(state.evidence['5.5']).toBe('demonstrated');
     expect(state.evidence['5.6']).toBeUndefined();
     expect(state.skillQuest.skillReady).toBe(false);
-    expect(state.journalEvents.some((event) => event.id === 'agent_ready')).toBe(true);
-    expect(state.journalEvents.some((event) => event.id === 'bridge_ready')).toBe(true);
-    expect(state.journalEvents.length).toBeLessThanOrEqual(JOURNAL_CAP);
+    expect(state.storyObjective).toBe(OBJECTIVES.skillWork);
+  });
+
+  it('inspect-only, manager-talk, robot تم, standing, connector, and secret do not award 5.5', () => {
+    let state = playToBridgeDone(checkpoint());
+    expect(state.storyObjective).toBe(OBJECTIVES.skillWork);
+    state = openBench(state);
+    expect(state.skillQuest.openedBench).toBe(true);
+    expect(state.evidence['5.5']).toBeUndefined();
     state = playing(state);
     state = act(at(state, WORLD_POS.manager.x, WORLD_POS.manager.y, 'workshop'), { type: 'INTERACT' });
     expect(state.dialogueNode).toBe('manager_bridge_thanks');
     expect(DIALOGUE.manager_bridge_thanks.text(state.playerName)).toMatch(
-      /مسودة ساعات قاعة الحي حُفظت من NH-1447 عبر موصل محدود/,
+      /مسودة ساعات قاعة الحي حُفظت من NH-1447/,
+    );
+    expect(state.evidence['5.5']).toBeUndefined();
+    state = act(state, { type: 'ADVANCE_DIALOGUE' });
+    state = openClock(state);
+    expect(state.mode).toBe('skill');
+    expect(state.evidence['5.5']).toBeUndefined();
+    expect(state.evidence['5.6']).toBeUndefined();
+    state = playing(state);
+    state = openBench(state);
+    state = act(state, { type: 'SKILL_ROBOT_DONE' });
+    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.robotDone);
+    expect(state.evidence['5.5']).toBeUndefined();
+    state = act(state, { type: 'SKILL_STANDING' });
+    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.standing);
+    state = act(state, { type: 'SKILL_LOAD_CONNECTOR' });
+    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.connector);
+    state = act(state, { type: 'SKILL_EMBED_SECRET' });
+    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.secret);
+    expect(state.evidence['5.5']).toBeUndefined();
+    expect(state.skillQuest.skillReady).toBe(false);
+  });
+});
+
+describe('5.6 routine clock', () => {
+  it('awards only after sun-8 fire, pause, and a silent post-pause tick', () => {
+    let state = playToBridgeDone(checkpoint());
+    state = openClock(state);
+    expect(state.mode).toBe('skill');
+    expect(state.skillQuest.view).toBe('clock');
+    expect(state.skillQuest.clockLabel).toBe(CLOCK_START);
+    expect(CLOCK_START).toContain('16:00');
+    expect(state.skillQuest.trayText).toBe(TRAY_EMPTY);
+    expect(RUN_COUNT_LABEL(0)).toBe('تشغيلات الروتين: 0');
+    state = act(state, { type: 'SKILL_ARM' });
+    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.armBeforeSkill);
+    expect(state.evidence['5.6']).toBeUndefined();
+    state = act(state, { type: 'SKILL_SET_SCHEDULE', schedule: 'every_event' });
+    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.eventSchedule);
+    state = act(state, { type: 'SKILL_SET_SCHEDULE', schedule: 'send_dawn' });
+    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.sendSchedule);
+    state = playing(state);
+    state = complete55(state);
+    expect(state.evidence['5.5']).toBe('demonstrated');
+    expect(state.evidence['5.6']).toBeUndefined();
+    state = playing(state);
+    state = openClock(state);
+    state = act(state, { type: 'SKILL_TICK_EMPTY' });
+    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.emptySource);
+    expect(state.skillQuest.trayText).toBe(TRAY_EMPTY);
+    expect(state.skillQuest.runCount).toBe(0);
+    state = act(state, { type: 'SKILL_SET_SCHEDULE', schedule: 'sun8' });
+    state = act(state, { type: 'SKILL_ARM' });
+    expect(state.skillQuest.armed).toBe(true);
+    state = act(state, { type: 'SKILL_TICK_SUN8' });
+    expect(state.skillQuest.fired).toBe(true);
+    expect(state.skillQuest.inspectedFire).toBe(true);
+    expect(state.skillQuest.clockLabel).toBe(CLOCK_SUN8);
+    expect(CLOCK_SUN8).toContain('08:00');
+    expect(state.skillQuest.trayText).toBe(TRAY_SUN);
+    expect(TRAY_SUN).toContain(HOUR_SAT);
+    expect(state.skillQuest.runCount).toBe(1);
+    expect(TRIGGER_LOG).toContain(SKILL_NAME);
+    expect(state.evidence['5.6']).toBeUndefined();
+    expect(state.mode).toBe('skill');
+    state = act(state, { type: 'SKILL_PAUSE' });
+    expect(state.mode).toBe('skill');
+    expect(state.mode).not.toBe('paused');
+    expect(state.skillQuest.paused).toBe(true);
+    expect(state.evidence['5.6']).toBeUndefined();
+    const tray = state.skillQuest.trayText;
+    const count = state.skillQuest.runCount;
+    state = act(state, { type: 'SKILL_TICK_SUN8' });
+    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.paused);
+    expect(state.skillQuest.trayText).toBe(tray);
+    expect(state.skillQuest.runCount).toBe(count);
+    expect(state.skillQuest.silentTick).toBe(true);
+    expect(canAward56(state.skillQuest, true)).toBe(true);
+    expect(state.evidence['5.6']).toBe('demonstrated');
+    expect(state.skillQuest.skillReady).toBe(true);
+    expect(state.storyObjective).toBe(OBJECTIVES.skillReady);
+    expect(state.journalEvents.some((event) => event.id === 'bridge_ready')).toBe(true);
+    expect(state.journalEvents.some((event) => event.id === 'skill_ready')).toBe(true);
+    expect(state.journalEvents.length).toBeLessThanOrEqual(JOURNAL_CAP);
+    expect(JSON.stringify(state)).not.toMatch(/MCP/);
+    expect(JSON.stringify(state)).not.toMatch(/harness/);
+    state = playing(state);
+    state = act(at(state, WORLD_POS.manager.x, WORLD_POS.manager.y, 'workshop'), { type: 'INTERACT' });
+    expect(state.dialogueNode).toBe('manager_skill_thanks');
+    expect(DIALOGUE.manager_skill_thanks.text(state.playerName)).toMatch(
+      /حُفظت مهارة تلخيص ساعات القاعة وجُرّبت على NH-2208، والروتين المجدول توقف بعد الإلبات/,
     );
     state = act(state, { type: 'ADVANCE_DIALOGUE' });
     state = act(at(state, WORLD_POS.robot.x, WORLD_POS.robot.y, 'street'), { type: 'INTERACT' });
-    expect(state.dialogueNode).toBe('companion_after_bridge');
-    expect(DIALOGUE.companion_after_bridge.text(state.playerName)).toMatch(
-      /MCP مهارة تُحمَّل|الربط يفتح كل الأدوات/,
+    expect(state.dialogueNode).toBe('companion_after_skill');
+    expect(DIALOGUE.companion_after_skill.text(state.playerName)).toMatch(
+      /الدستور الدائم مهارة|الروتين المتوقف ما زال يعمل/,
     );
     expect(robotPosition(state).x).toBe(state.position.x - 32);
   });
 
-  it('keeps draft empty on browser-save before connector save, and hydrates missing bridgeQuest', () => {
-    let state = playToAgentDone(checkpoint());
-    expect(DRAFT_EMPTY).toBe('المسودة فارغة');
-    state = openBrowser(state);
-    state = act(state, { type: 'BRIDGE_BROWSER_SAVE' });
-    expect(state.shopFeedback).toBe(BRIDGE_FEEDBACK.browserSave);
-    expect(state.bridgeQuest.draftSaved).toBe(false);
-    expect(state.evidence['5.3']).toBeUndefined();
-    expect(state.bridgeQuest.bridgeReady).toBe(false);
-    const envelope = toEnvelope(playToAgentDone(checkpoint()));
+  it('cancel-without-fire and pause-without-fire do not award, and hydrates missing skillQuest', () => {
+    let state = complete55(playToBridgeDone(checkpoint()));
+    state = playing(state);
+    state = openClock(state);
+    state = act(state, { type: 'SKILL_SET_SCHEDULE', schedule: 'sun8' });
+    state = act(state, { type: 'SKILL_ARM' });
+    state = act(state, { type: 'SKILL_CANCEL' });
+    expect(state.shopFeedback).toBe(SKILL_FEEDBACK.cancelled);
+    state = act(state, { type: 'SKILL_TICK_SUN8' });
+    expect(state.skillQuest.fired).toBe(false);
+    expect(state.evidence['5.6']).toBeUndefined();
+    expect(state.skillQuest.skillReady).toBe(false);
+    state = act(state, { type: 'SKILL_PAUSE' });
+    expect(state.skillQuest.paused).toBe(true);
+    expect(state.skillQuest.fired).toBe(false);
+    expect(state.evidence['5.6']).toBeUndefined();
+    state = complete56(playToBridgeDone(checkpoint()));
+    expect(state.evidence['5.5']).toBe('demonstrated');
+    expect(state.evidence['5.6']).toBe('demonstrated');
+    expect(state.skillQuest.skillReady).toBe(true);
+    const envelope = toEnvelope(playToBridgeDone(checkpoint()));
     expect(envelope.saveVersion).toBe(1);
-    const legacy = { ...envelope, bridgeQuest: undefined };
+    const legacy = { ...envelope, skillQuest: undefined };
     const parsed = validateSave(JSON.stringify(legacy));
     expect(parsed).not.toBeNull();
     const hydrated = hydrateSave(parsed!, 'ok', false);
-    expect(hydrated.bridgeQuest).toEqual(createBridgeQuest());
-    expect(hydrated.bridgeQuest.bridgeReady).toBe(false);
-    expect(hydrated.agentQuest.agentReady).toBe(true);
-    expect(parseBridgeQuest(undefined).phase).toBe('unstarted');
+    expect(hydrated.skillQuest).toEqual(createSkillQuest());
+    expect(hydrated.skillQuest.skillReady).toBe(false);
+    expect(hydrated.bridgeQuest.bridgeReady).toBe(true);
+    expect(hydrated.storyObjective).toBe(OBJECTIVES.skillWork);
+    expect(parseSkillQuest(undefined).phase).toBe('unstarted');
     expect(createLabQuest().labReady).toBe(false);
-    expect(hydrated.storyObjective).toBe(OBJECTIVES.bridgeWork);
   });
 });
-
-

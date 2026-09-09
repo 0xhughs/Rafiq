@@ -49,6 +49,9 @@ export const OBJECTIVES = {
   bridgeWork:
     'موصل السجل مفتوح: اربط تطبيق الروبوت بخادم ساعات الحي، اسمح بأدوات محدودة، ثم احفظ المسودة.',
   bridgeReady: 'حُفظت مسودة من سجل الحي عبر موصل محدود. مدير الورشة شكرك.',
+  skillWork:
+    'منصة المهارة مفتوحة: صحّح الإجراء، احفظه بخطوات، جرّبه على سجل ثانٍ، ثم جدول الروتين وألبثه.',
+  skillReady: 'حُفظت مهارة ساعات القاعة ورُتّب روتين يمكن إيقافه. مدير الورشة شكرك.',
 } as const;
 
 export const SPEAKER = {
@@ -121,6 +124,14 @@ export const JOURNAL_TEXT: Record<JournalEventId, string> = {
   draft_saved: 'حُفظت مسودة إعلان القاعة من سجل الحي.',
   capability_denied: 'رُفضت أداة غير مسموحة في الموصل.',
   bridge_ready: 'حُفظت مسودة من سجل الحي عبر موصل محدود.',
+  skill_opened: 'فتحتَ منصة المهارة وساعة الحي في الورشة.',
+  oneshot_corrected: 'فُصلت ساعات القاعة عن التعليق دون اختراع دقيقة.',
+  skill_saved: 'حُفظت مهارة تلخيص ساعات القاعة بخطواتها الخمس.',
+  second_trial: 'جُرّبت المهارة على سجل ساعات ثانٍ.',
+  clock_armed: 'شُغّل جدول الأحد على ساعة الحي.',
+  routine_fired: 'شُغّلت مهارة تلخيص ساعات القاعة ووُضعت المسودة في الدرج.',
+  routine_paused: 'أُلبث الروتين فلم تُكتب مسودة جديدة.',
+  skill_ready: 'حُفظت مهارة ساعات القاعة ورُتّب روتين يمكن إيقافه.',
 };
 
 export const LOCKED_COPY = {
@@ -803,7 +814,15 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     speaker: 'manager',
     speakerLabel: () => SPEAKER.manager(),
     text: () =>
-      'مسودة ساعات قاعة الحي حُفظت من NH-1447 عبر موصل محدود، والأداة غير المسموحة رُفضت',
+      'مسودة ساعات قاعة الحي حُفظت من NH-1447 عبر موصل محدود، والأداة غير المسموحة رُفضت. منصة المهارة في الورشة تنتظر تصحيحاً ثم حفظ إجراء.',
+    next: null,
+  },
+  manager_skill_thanks: {
+    id: 'manager_skill_thanks',
+    speaker: 'manager',
+    speakerLabel: () => SPEAKER.manager(),
+    text: () =>
+      'حُفظت مهارة تلخيص ساعات القاعة وجُرّبت على NH-2208، والروتين المجدول توقف بعد الإلبات',
     next: null,
   },
   companion_after_workshop: {
@@ -843,6 +862,13 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     text: () => 'MCP مهارة تُحمَّل. الربط يفتح كل الأدوات.',
     next: null,
   },
+  companion_after_skill: {
+    id: 'companion_after_skill',
+    speaker: 'robot',
+    speakerLabel: () => SPEAKER.robot(),
+    text: () => 'الدستور الدائم مهارة. الروتين المتوقف ما زال يعمل.',
+    next: null,
+  },
 };
 
 export function currentLine(node: DialogueNodeId | null): DialogueLine | null {
@@ -879,6 +905,7 @@ export function isNpcNode(node: DialogueNodeId | null): boolean {
     node === 'companion_after_lab' ||
     node === 'companion_after_agent' ||
     node === 'companion_after_bridge' ||
+    node === 'companion_after_skill' ||
     node.startsWith('editor') ||
     node.startsWith('officer') ||
     node.startsWith('manager')

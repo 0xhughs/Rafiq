@@ -119,6 +119,11 @@ export function Hud({ state, onHelp, onDismissRestore }: Props) {
           موصل السجل
         </p>
       ) : null}
+      {state.skillQuest.skillReady ? (
+        <p className="inventory cassette-chip" data-testid="skill-shelf">
+          رف المهارات
+        </p>
+      ) : null}
     </header>
   );
 }

@@ -54,7 +54,7 @@ test('lab-success through bounded agent job with physical actions', async ({ pag
   expect(afterLab.agentQuest.agentReady).toBe(false);
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-lab-ready', 'true');
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-agent-ready', 'false');
-  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '12');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '13');
   await expect(page.getByTestId('hud-objective')).toHaveText(
     'منصة المشغّل مفتوحة: اضبط الهدف والأدوات ومعيار النجاح والتوقف، ثم راقب الحلقة على لوحة الحي.',
   );

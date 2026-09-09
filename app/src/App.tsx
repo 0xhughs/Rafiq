@@ -33,6 +33,7 @@ import { KioskOverlay } from './ui/KioskOverlay';
 import { LabOverlay } from './ui/LabOverlay';
 import { AgentOverlay } from './ui/AgentOverlay';
 import { BridgeOverlay } from './ui/BridgeOverlay';
+import { SkillOverlay } from './ui/SkillOverlay';
 import { evidenceAttr } from './engine/shop';
 
 function reducer(state: GameState, action: GameAction): GameState {
@@ -134,7 +135,7 @@ export default function App() {
       data-dialogue={state.dialogueNode ?? ''}
       data-save={state.saveStatus}
       data-evidence={evidenceAttr(state.evidence)}
-      data-slice="12"
+      data-slice="13"
       data-shop-quest={state.shopQuest.phase}
       data-parcel-quest={state.parcelQuest.phase}
       data-comms-repaired={state.parcelQuest.commsRepaired ? 'true' : 'false'}
@@ -153,6 +154,8 @@ export default function App() {
       data-agent-ready={state.agentQuest.agentReady ? 'true' : 'false'}
       data-bridge-quest={state.bridgeQuest.phase}
       data-bridge-ready={state.bridgeQuest.bridgeReady ? 'true' : 'false'}
+      data-skill-quest={state.skillQuest.phase}
+      data-skill-ready={state.skillQuest.skillReady ? 'true' : 'false'}
       data-context-window={state.libraryQuest.windowSlots.join(',')}
       data-cassette={state.libraryQuest.contextModule ? 'contextModule' : ''}
       data-workshop-lead={state.newsroomQuest.workshopLead ? 'true' : 'false'}
@@ -178,6 +181,7 @@ export default function App() {
         labReady={state.labQuest.labReady}
         agentReady={state.agentQuest.agentReady}
         bridgeReady={state.bridgeQuest.bridgeReady}
+        skillReady={state.skillQuest.skillReady}
       />
       {naming ? (
         <NameEntry
@@ -376,6 +380,32 @@ export default function App() {
           onRefuse={(command) => dispatch({ type: 'LAB_REFUSE', command })}
           onRobotDone={() => dispatch({ type: 'LAB_ROBOT_DONE' })}
           onCmd={(text) => dispatch({ type: 'LAB_CMD', text })}
+          onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+        />
+      ) : null}
+      {state.mode === 'skill' ? (
+        <SkillOverlay
+          state={state}
+          onOneshot={() => dispatch({ type: 'SKILL_ONESHOT' })}
+          onCorrect={() => dispatch({ type: 'SKILL_CORRECT' })}
+          onSave={() => dispatch({ type: 'SKILL_SAVE' })}
+          onStanding={() => dispatch({ type: 'SKILL_STANDING' })}
+          onLoadConnector={() => dispatch({ type: 'SKILL_LOAD_CONNECTOR' })}
+          onEmbedSecret={() => dispatch({ type: 'SKILL_EMBED_SECRET' })}
+          onTrialSecond={() => dispatch({ type: 'SKILL_TRIAL_SECOND' })}
+          onTrialSame={() => dispatch({ type: 'SKILL_TRIAL_SAME' })}
+          onRobotDone={() => dispatch({ type: 'SKILL_ROBOT_DONE' })}
+          onTrigger={(trigger) => dispatch({ type: 'SKILL_SET_TRIGGER', trigger })}
+          onInput={(input) => dispatch({ type: 'SKILL_SET_INPUT', input })}
+          onSteps={(steps) => dispatch({ type: 'SKILL_SET_STEPS', steps })}
+          onOutput={(output) => dispatch({ type: 'SKILL_SET_OUTPUT', output })}
+          onStop={(stop) => dispatch({ type: 'SKILL_SET_STOP', stop })}
+          onSchedule={(schedule) => dispatch({ type: 'SKILL_SET_SCHEDULE', schedule })}
+          onArm={() => dispatch({ type: 'SKILL_ARM' })}
+          onTickSun8={() => dispatch({ type: 'SKILL_TICK_SUN8' })}
+          onTickEmpty={() => dispatch({ type: 'SKILL_TICK_EMPTY' })}
+          onPause={() => dispatch({ type: 'SKILL_PAUSE' })}
+          onCancel={() => dispatch({ type: 'SKILL_CANCEL' })}
           onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
         />
       ) : null}

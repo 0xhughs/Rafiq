@@ -256,7 +256,8 @@ function syncPhase(quest: FestivalQuest): FestivalQuest {
 
 export function festivalObjective(state: GameState): string {
   const quest = state.festivalQuest;
-  if (state.bridgeQuest?.bridgeReady) return OBJECTIVES.bridgeReady;
+  if (state.skillQuest?.skillReady) return OBJECTIVES.skillReady;
+  if (state.bridgeQuest?.bridgeReady) return OBJECTIVES.skillWork;
   if (state.agentQuest?.agentReady) return OBJECTIVES.bridgeWork;
   if (state.labQuest?.labReady) return OBJECTIVES.agentWork;
   if (state.kioskQuest?.kioskReady) return OBJECTIVES.labWork;

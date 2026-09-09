@@ -42,7 +42,7 @@ test('kiosk-success through lab success with physical actions', async ({ page })
   expect(afterKiosk.labQuest.labReady).toBe(false);
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-kiosk-ready', 'true');
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-lab-ready', 'false');
-  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '12');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '13');
 
   await page.waitForTimeout(200);
   await page.screenshot({ path: path.join(evidenceDir, 'interior.png'), fullPage: true });

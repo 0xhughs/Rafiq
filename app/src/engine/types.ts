@@ -48,7 +48,8 @@ export type Mode =
   | 'kiosk'
   | 'lab'
   | 'agent'
-  | 'bridge';
+  | 'bridge'
+  | 'skill';
 
 export type TrashState = 'home' | 'carried' | 'disposed';
 
@@ -96,6 +97,8 @@ export const EVIDENCE_IDS = [
   '5.2',
   '5.3',
   '5.4',
+  '5.5',
+  '5.6',
 ] as const;
 export type EvidenceId = (typeof EVIDENCE_IDS)[number];
 export type EvidenceStatus = 'demonstrated';
@@ -165,7 +168,10 @@ export type ExplainTopic =
   | 'runner_limits'
   | 'connector_roles'
   | 'limited_grant'
-  | 'browser_vs_connector';
+  | 'browser_vs_connector'
+  | 'oneshot_vs_skill'
+  | 'standing_vs_skill'
+  | 'routine_clock';
 export type ContextNoteId = 'constraint' | 'hold' | 'festival' | 'mango';
 export type PackFileId = 'spec' | 'delivery' | 'festival' | 'news_draft';
 export type PackStampId = 'rafiq_repair' | 'festival' | 'unnamed';
@@ -476,6 +482,49 @@ export interface BridgeQuest {
   view: BridgeView;
 }
 
+export const SKILL_PHASES = ['unstarted', 'working', 'ready'] as const;
+export type SkillPhase = (typeof SKILL_PHASES)[number];
+export type SkillView = 'bench' | 'clock';
+export type SkillTrigger = 'hours_record' | 'anytime' | 'every_chat';
+export type SkillInput = 'record_id' | 'secret' | 'all_files';
+export type SkillSteps = 'lookup_format' | 'mix_opinion';
+export type SkillOutput = 'tray_draft' | 'send_now';
+export type SkillStop = 'unknown_stop' | 'always_invent';
+export type SkillSchedule = 'sun8' | 'every_event' | 'send_dawn';
+
+export interface SkillQuest {
+  phase: SkillPhase;
+  openedBench: boolean;
+  openedClock: boolean;
+  oneshotSeen: boolean;
+  corrected: boolean;
+  trigger: SkillTrigger | null;
+  inputKind: SkillInput | null;
+  steps: SkillSteps | null;
+  outputKind: SkillOutput | null;
+  stopRule: SkillStop | null;
+  standingRefused: boolean;
+  secretRefused: boolean;
+  connectorRefused: boolean;
+  skillSaved: boolean;
+  trialSecond: boolean;
+  inspectedCard: boolean;
+  schedule: SkillSchedule | null;
+  armed: boolean;
+  fired: boolean;
+  inspectedFire: boolean;
+  emptyStopped: boolean;
+  paused: boolean;
+  cancelled: boolean;
+  silentTick: boolean;
+  runCount: number;
+  clockLabel: string;
+  trayText: string;
+  skillReady: boolean;
+  pendingExplain: ExplainTopic | null;
+  view: SkillView;
+}
+
 export type ParcelId = 'r17' | 'r19' | 'r71';
 export type ParcelPick = ParcelId | 'gray' | null;
 export type LocationPick = 'west' | 'east' | 'any' | null;
@@ -631,7 +680,15 @@ export type JournalEventId =
   | 'civic_lookup'
   | 'draft_saved'
   | 'capability_denied'
-  | 'bridge_ready';
+  | 'bridge_ready'
+  | 'skill_opened'
+  | 'oneshot_corrected'
+  | 'skill_saved'
+  | 'second_trial'
+  | 'clock_armed'
+  | 'routine_fired'
+  | 'routine_paused'
+  | 'skill_ready';
 
 export interface JournalEvent {
   id: JournalEventId;
@@ -723,11 +780,13 @@ export type DialogueNodeId =
   | 'manager_lab_thanks'
   | 'manager_agent_thanks'
   | 'manager_bridge_thanks'
+  | 'manager_skill_thanks'
   | 'companion_after_workshop'
   | 'companion_after_kiosk'
   | 'companion_after_lab'
   | 'companion_after_agent'
-  | 'companion_after_bridge';
+  | 'companion_after_bridge'
+  | 'companion_after_skill';
 
 export type DialogueChoiceId =
   | 'agree'
@@ -809,7 +868,9 @@ export type InteractableId =
   | 'agent_console'
   | 'agent_board'
   | 'bridge_host'
-  | 'bridge_browser';
+  | 'bridge_browser'
+  | 'skill_bench'
+  | 'skill_clock';
 
 export type PortalId =
   | 'home'
@@ -877,6 +938,7 @@ export interface GameState {
   labQuest: LabQuest;
   agentQuest: AgentQuest;
   bridgeQuest: BridgeQuest;
+  skillQuest: SkillQuest;
   calculator: CalculatorState;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
@@ -990,7 +1052,27 @@ export type GameAction =
   | { type: 'BRIDGE_INVOKE_PAY' }
   | { type: 'BRIDGE_LOAD_SKILL' }
   | { type: 'BRIDGE_ROBOT_DONE' }
-  | { type: 'BRIDGE_BROWSER_SAVE' };
+  | { type: 'BRIDGE_BROWSER_SAVE' }
+  | { type: 'SKILL_ONESHOT' }
+  | { type: 'SKILL_CORRECT' }
+  | { type: 'SKILL_SAVE' }
+  | { type: 'SKILL_STANDING' }
+  | { type: 'SKILL_LOAD_CONNECTOR' }
+  | { type: 'SKILL_EMBED_SECRET' }
+  | { type: 'SKILL_TRIAL_SECOND' }
+  | { type: 'SKILL_TRIAL_SAME' }
+  | { type: 'SKILL_ROBOT_DONE' }
+  | { type: 'SKILL_SET_TRIGGER'; trigger: SkillTrigger }
+  | { type: 'SKILL_SET_INPUT'; input: SkillInput }
+  | { type: 'SKILL_SET_STEPS'; steps: SkillSteps }
+  | { type: 'SKILL_SET_OUTPUT'; output: SkillOutput }
+  | { type: 'SKILL_SET_STOP'; stop: SkillStop }
+  | { type: 'SKILL_SET_SCHEDULE'; schedule: SkillSchedule }
+  | { type: 'SKILL_ARM' }
+  | { type: 'SKILL_TICK_SUN8' }
+  | { type: 'SKILL_TICK_EMPTY' }
+  | { type: 'SKILL_PAUSE' }
+  | { type: 'SKILL_CANCEL' };
 
 export interface DialogueChoice {
   id: DialogueChoiceId;
@@ -1057,6 +1139,7 @@ export interface SerializedTestState {
   labQuest: LabQuest;
   agentQuest: AgentQuest;
   bridgeQuest: BridgeQuest;
+  skillQuest: SkillQuest;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
   robotUnderstood: string | null;
@@ -1094,6 +1177,7 @@ export interface SaveEnvelope {
   labQuest: LabQuest;
   agentQuest: AgentQuest;
   bridgeQuest: BridgeQuest;
+  skillQuest: SkillQuest;
   robot: { companion: boolean };
   endingState: EndingState;
   mapsVisited: MapId[];

@@ -53,7 +53,7 @@ test('agent-success through civic connector with physical actions', async ({ pag
   expect(afterAgent.bridgeQuest.bridgeReady).toBe(false);
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-agent-ready', 'true');
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-bridge-ready', 'false');
-  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '12');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '13');
   await expect(page.getByTestId('hud-objective')).toHaveText(OBJECTIVES.bridgeWork);
   await expect(page.getByTestId('planning-core')).toHaveText('نواة التخطيط');
 
@@ -145,9 +145,13 @@ test('agent-success through civic connector with physical actions', async ({ pag
   const done = await getState(page);
   expect(done.evidence['5.3']).toBe('demonstrated');
   expect(done.bridgeQuest.bridgeReady).toBe(true);
+  expect(done.evidence['5.5']).toBeUndefined();
+  expect(done.evidence['5.6']).toBeUndefined();
+  expect(done.skillQuest.skillReady).toBe(false);
   await expect(page.getByTestId('planning-core')).toHaveText('نواة التخطيط');
   await expect(page.getByTestId('civic-connector')).toHaveText('موصل السجل');
-  await expect(page.getByTestId('hud-objective')).toHaveText(OBJECTIVES.bridgeReady);
+  await expect(page.getByTestId('hud-objective')).toHaveText(OBJECTIVES.skillWork);
+  await expect(page.getByTestId('skill-shelf')).toHaveCount(0);
 
   await interactAt(page, 'workshop', WORLD_POS.manager.x, WORLD_POS.manager.y);
   await expect(page.getByTestId('dialogue-text')).toContainText(

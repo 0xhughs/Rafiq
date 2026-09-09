@@ -148,6 +148,35 @@ import {
   skipBridgeExplain,
 } from './bridge';
 import {
+  closeSkillOverlay,
+  createSkillQuest,
+  isSkillExplain,
+  isSkillOverlay,
+  openSkillBench,
+  openSkillClock,
+  reduceSkillArm,
+  reduceSkillCancel,
+  reduceSkillCorrect,
+  reduceSkillEmbedSecret,
+  reduceSkillLoadConnector,
+  reduceSkillOneshot,
+  reduceSkillPause,
+  reduceSkillRobotDone,
+  reduceSkillSave,
+  reduceSkillSetInput,
+  reduceSkillSetOutput,
+  reduceSkillSetSchedule,
+  reduceSkillSetSteps,
+  reduceSkillSetStop,
+  reduceSkillSetTrigger,
+  reduceSkillStanding,
+  reduceSkillTickEmpty,
+  reduceSkillTickSun8,
+  reduceSkillTrialSame,
+  reduceSkillTrialSecond,
+  skipSkillExplain,
+} from './skill';
+import {
   closeNewsroomDialogue,
   closeNewsroomOverlay,
   createNewsroomQuest,
@@ -243,6 +272,7 @@ export function createInitialState(): GameState {
     labQuest: createLabQuest(),
     agentQuest: createAgentQuest(),
     bridgeQuest: createBridgeQuest(),
+    skillQuest: createSkillQuest(),
     calculator: createCalculator(),
     inspectTarget: null,
     explainTopic: null,
@@ -571,6 +601,7 @@ export function reduce(state: GameState, action: GameAction): GameState {
         labQuest: createLabQuest(),
         agentQuest: createAgentQuest(),
         bridgeQuest: createBridgeQuest(),
+        skillQuest: createSkillQuest(),
         calculator: createCalculator(),
         inspectTarget: null,
         explainTopic: null,
@@ -732,6 +763,10 @@ export function reduce(state: GameState, action: GameAction): GameState {
           return openBridgeHost(state);
         case 'bridge_browser':
           return openBridgeBrowser(state);
+        case 'skill_bench':
+          return openSkillBench(state);
+        case 'skill_clock':
+          return openSkillClock(state);
         default:
           return state;
       }
@@ -752,6 +787,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
     case 'CLOSE_OVERLAY':
       if (state.mode === 'dialogue') return closeDialogue(state);
       if (state.mode === 'paused') return { ...state, mode: 'playing' };
+      if (isSkillOverlay(state.mode)) {
+        return closeSkillOverlay(state);
+      }
       if (isBridgeOverlay(state.mode)) {
         return closeBridgeOverlay(state);
       }
@@ -783,6 +821,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
           }
           if (isLabExplain(state.explainTopic)) {
             return skipLabExplain(state);
+          }
+          if (isSkillExplain(state.explainTopic)) {
+            return skipSkillExplain(state);
           }
           if (isBridgeExplain(state.explainTopic)) {
             return skipBridgeExplain(state);
@@ -863,6 +904,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
       }
       if (isLabExplain(state.explainTopic)) {
         return skipLabExplain(state);
+      }
+      if (isSkillExplain(state.explainTopic)) {
+        return skipSkillExplain(state);
       }
       if (isBridgeExplain(state.explainTopic)) {
         return skipBridgeExplain(state);
@@ -1050,6 +1094,46 @@ export function reduce(state: GameState, action: GameAction): GameState {
       return reduceBridgeRobotDone(state);
     case 'BRIDGE_BROWSER_SAVE':
       return reduceBridgeBrowserSave(state);
+    case 'SKILL_ONESHOT':
+      return reduceSkillOneshot(state);
+    case 'SKILL_CORRECT':
+      return reduceSkillCorrect(state);
+    case 'SKILL_SAVE':
+      return reduceSkillSave(state);
+    case 'SKILL_STANDING':
+      return reduceSkillStanding(state);
+    case 'SKILL_LOAD_CONNECTOR':
+      return reduceSkillLoadConnector(state);
+    case 'SKILL_EMBED_SECRET':
+      return reduceSkillEmbedSecret(state);
+    case 'SKILL_TRIAL_SECOND':
+      return reduceSkillTrialSecond(state);
+    case 'SKILL_TRIAL_SAME':
+      return reduceSkillTrialSame(state);
+    case 'SKILL_ROBOT_DONE':
+      return reduceSkillRobotDone(state);
+    case 'SKILL_SET_TRIGGER':
+      return reduceSkillSetTrigger(state, action.trigger);
+    case 'SKILL_SET_INPUT':
+      return reduceSkillSetInput(state, action.input);
+    case 'SKILL_SET_STEPS':
+      return reduceSkillSetSteps(state, action.steps);
+    case 'SKILL_SET_OUTPUT':
+      return reduceSkillSetOutput(state, action.output);
+    case 'SKILL_SET_STOP':
+      return reduceSkillSetStop(state, action.stop);
+    case 'SKILL_SET_SCHEDULE':
+      return reduceSkillSetSchedule(state, action.schedule);
+    case 'SKILL_ARM':
+      return reduceSkillArm(state);
+    case 'SKILL_TICK_SUN8':
+      return reduceSkillTickSun8(state);
+    case 'SKILL_TICK_EMPTY':
+      return reduceSkillTickEmpty(state);
+    case 'SKILL_PAUSE':
+      return reduceSkillPause(state);
+    case 'SKILL_CANCEL':
+      return reduceSkillCancel(state);
     case 'CONFIRM_NEW_ADVENTURE':
       return createInitialState();
     case 'DISMISS_RESTORE_NOTICE':
@@ -1117,6 +1201,7 @@ export function serializeState(state: GameState): SerializedTestState {
     labQuest: { ...state.labQuest },
     agentQuest: { ...state.agentQuest },
     bridgeQuest: { ...state.bridgeQuest },
+    skillQuest: { ...state.skillQuest },
     inspectTarget: state.inspectTarget,
     explainTopic: state.explainTopic,
     robotUnderstood: state.robotUnderstood,

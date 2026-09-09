@@ -208,7 +208,8 @@ function syncPhase(quest: LabQuest): LabQuest {
 }
 
 export function labObjective(state: GameState): string {
-  if (state.bridgeQuest?.bridgeReady) return OBJECTIVES.bridgeReady;
+  if (state.skillQuest?.skillReady) return OBJECTIVES.skillReady;
+  if (state.bridgeQuest?.bridgeReady) return OBJECTIVES.skillWork;
   if (state.agentQuest?.agentReady) return OBJECTIVES.bridgeWork;
   if (state.labQuest.labReady) return OBJECTIVES.agentWork;
   if (state.kioskQuest.kioskReady) return OBJECTIVES.labWork;

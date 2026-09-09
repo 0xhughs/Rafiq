@@ -102,6 +102,10 @@ function workshopRect(id: InteractableId): { x: number; y: number; w: number; h:
       return room.connector;
     case 'bridge_browser':
       return room.civicBrowser;
+    case 'skill_bench':
+      return room.skillDesk;
+    case 'skill_clock':
+      return room.hallClock;
     default:
       return null;
   }
@@ -607,6 +611,23 @@ export function listInteractables(state: GameState): Actionable[] {
         label: HINT_LABELS.bridgeBrowser,
         x: WORLD_POS.bridgeBrowser.x,
         y: WORLD_POS.bridgeBrowser.y,
+      },
+    );
+  }
+
+  if (state.map === 'workshop' && state.bridgeQuest.bridgeReady) {
+    items.push(
+      {
+        id: 'skill_bench',
+        label: HINT_LABELS.skillBench,
+        x: WORLD_POS.skillBench.x,
+        y: WORLD_POS.skillBench.y,
+      },
+      {
+        id: 'skill_clock',
+        label: HINT_LABELS.skillClock,
+        x: WORLD_POS.skillClock.x,
+        y: WORLD_POS.skillClock.y,
       },
     );
   }
