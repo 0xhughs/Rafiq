@@ -147,7 +147,6 @@ Approved contract: `a609b8b90a350d89b672c4a997de338b496688cb8440d5428e23518b304e
 Approved candidate: `92f284d762df78170e148633ff3eb9e82626225306a9b4807463de7380c89257`
 Implementation approval dispatch: `d-20260908-011-implrev-03`
 
-## Now
 ### 04 The wrong parcel
 Goal: Guide the robot to retrieve the intended repair component through clear, revisable instructions.
 Provides:
@@ -155,9 +154,12 @@ Provides:
 - Player-retained purchase approval and a visible communication repair. Covers 2.1, 2.2, 2.4.
 Depends on: 03
 Target membership: inside
+Archive: `slices/04-the-wrong-parcel.md`
+Approved contract: `14ded8bd2eba6ee19c51093e7a790df7feb1bec1ce8718d1a15d7104d4a4e63d`
+Approved candidate: `7cba3a83b9f8733ca19d79f67624b3b477a53b9819a90e009d2c923ae719695f`
+Implementation approval dispatch: `d-20260908-015-implrev-04`
 
-## Later
-
+## Now
 ### 05 A place for the right memories
 Goal: Carry the relevant information forward without sharing private data.
 Provides:
@@ -165,6 +167,8 @@ Provides:
 - A visible context module and renewed access to a repair specification. Covers 1.4, 1.5, 2.5.
 Depends on: 04
 Target membership: inside
+
+## Later
 
 ### 06 A notice the neighborhood can trust
 Goal: Produce a useful, sourced community notice and repair-request draft.
