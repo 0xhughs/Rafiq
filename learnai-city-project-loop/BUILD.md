@@ -50,17 +50,17 @@ Extend `GameState` / `SerializedTestState` (and the save envelope) with: `MapId`
 Not completed yet.
 
 ## Review
-Pending plan review.
-Plan approval: none
+Plan approved. Implementation not started.
+Plan approval: APPROVE_PLAN by reviewer bc-764a6df7-19d0-5e26-994f-cbc1f3b882a7 on dispatch d-20260908-005-plan-02. Contract `b7f85a536ef8ae535e3892b6636b0a0a7cad70f3bdd2d27ae67590c14fa442d9`. Snapshot `84a55200ef09c2d1ab29df0892a002ef291488986cc14560efa95647d94d0b1d`. Blockers: none.
 Implementation approval: none
 Each result records dispatch ID, reviewer identity, verdict, contract identity, snapshot identity, evidence and criterion-specific blockers.
 
 ## Loop state
 Execution mode / tool adapter: Cursor Cloud Agent coordinator with Task-spawned Builder and Reviewer subagents. Spawn = Task(generalPurpose). Send = Task resume. Wait = blocking Task completion. Stop = subagent completion; coordinator does not start a second writer in this checkout. Reviewer contexts are fresh and do not receive Builder reasoning. Mutating Reviewer checks, if needed, run on an isolated copy.
 Coordinator: cloud agent bc-6380229a-c83f-493f-af1c-47e5f2b00c70 (https://cursor.com/agents/bc-6380229a-c83f-493f-af1c-47e5f2b00c70), role Coordinator, checkout /workspace on branch cursor/rafiq-ai-city-adventure-0c70
-Worker / role / phase: pending launch / Reviewer / plan
-Dispatch ID / launch state / input identity: d-20260908-005-plan-02 / pending launch / contract:b7f85a536ef8ae535e3892b6636b0a0a7cad70f3bdd2d27ae67590c14fa442d9 baseline:84a55200ef09c2d1ab29df0892a002ef291488986cc14560efa95647d94d0b1d
-Pending result / last consumed dispatch: none / d-20260908-004-draft-02
+Worker / role / phase: pending launch / Builder / implementation
+Dispatch ID / launch state / input identity: d-20260908-006-impl-02 / pending launch / contract:b7f85a536ef8ae535e3892b6636b0a0a7cad70f3bdd2d27ae67590c14fa442d9 baseline:84a55200ef09c2d1ab29df0892a002ef291488986cc14560efa95647d94d0b1d
+Pending result / last consumed dispatch: none / d-20260908-005-plan-02
 Snapshot capture and recheck commands / coverage / exclusions: Capture = `python3 .loop/identity.py snapshot --label <label>` from repository root. Recheck = same command; compare `.loop/snapshots/<label>.digest` and the JSON `digest` field. Contract = `python3 .loop/identity.py contract`; identity is `.loop/contract/hashes.json` field `contract`. Combined = `python3 .loop/identity.py both --label <label>`.
 Coverage: `app`, `evidence`, root `package.json`/`package-lock.json`/`pnpm-lock.yaml`/`yarn.lock`, `index.html`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `playwright.config.ts`, `vitest.config.ts`, `README.md`, `public`. Missing paths are skipped. Detect add/delete by regenerating the covered file list.
 Exclusions: `.git`, `.loop`, `learnai-city-project-loop`, `node_modules`, `app/node_modules`, `app/dist`, `dist`, `coverage`, `test-results`, `playwright-report`, `.vite`, `app/.vite`. Protocol files are identified by contract hash, not candidate snapshot.
@@ -71,7 +71,8 @@ Rejection count: 0
 Consecutive no-progress repairs: 0
 Open acceptance gaps / prior failing evidence: none
 Repair awaiting review: false
-Review events: none
+Review events:
+- ev-001 / d-20260908-005-plan-02 / plan / APPROVE_PLAN / contract:b7f85a536ef8ae535e3892b6636b0a0a7cad70f3bdd2d27ae67590c14fa442d9 snapshot:84a55200ef09c2d1ab29df0892a002ef291488986cc14560efa95647d94d0b1d / gaps: none / identities matched / rejection count 0 / no-progress 0
 Budget limit / consumed / measurement: Not configured; no execution budget was supplied.
 Blocker / resume status / resume action / recheck condition / deadline: none
 Advance phase: none
@@ -79,7 +80,7 @@ Next slice ID / draft: none
 Prior shipped receipt: slice 01 archive `slices/01-wake-up-and-meet-the-robot.md`
 
 ## Status
-Proposed
+Building
 
 ## Next
-Independent plan review of slice 02. Do not begin implementation before a matching APPROVE_PLAN.
+Builder implements slice 02 under dispatch d-20260908-006-impl-02. Do not expand Out.
