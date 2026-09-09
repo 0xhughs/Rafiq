@@ -267,7 +267,6 @@ Approved contract: `8a9aea48eb6b70ada4fe0a79f97acd0388af396fd1827e123bbfb8e52250
 Approved candidate: `2c6b74d809f5ef24180183524179624c81d2f05b774bf0c8d79efe5ec44b6881`
 Implementation approval dispatch: `d-20260909-052-implrev-13`
 
-## Now
 ### 14 The decision stays with you
 Goal: Keep consequential choices with a responsible person.
 Provides:
@@ -275,9 +274,12 @@ Provides:
 - Fictional high-stakes case routed to a human; the robot supplies useful context and waits. Covers 5.7, 6.3.
 Depends on: 13
 Target membership: inside
+Archive: `slices/14-the-decision-stays-with-you.md`
+Approved contract: `6156df03218e506f066a3192b50be2cf1d9773ced8391c4781666c856956c2bb`
+Approved candidate: `4d122eda21ed6315dfeeeec5b8f650f13be2f1dce77b88500d4d637b244ac629`
+Implementation approval dispatch: `d-20260909-056-implrev-14`
 
-## Later
-
+## Now
 ### 15 One result, several helpers
 Goal: Coordinate distinct helper roles and accept one verified city output.
 Provides:
@@ -285,6 +287,8 @@ Provides:
 - Conflicting drafts and failed criteria resolved using evidence, not majority agreement. Covers 6.1, 6.2.
 Depends on: 14
 Target membership: inside
+
+## Later
 
 ### 16 Ready for the city
 Goal: Demonstrate the combined learning in a new task and complete the robot's restoration.
