@@ -163,6 +163,7 @@ function playParcelDone(state: GameState): GameState {
   next = act(next, { type: 'ADVANCE_DIALOGUE' });
   next = skipExplain(next);
   expect(next.parcelQuest.commsRepaired).toBe(true);
+  expect(next.storyObjective).toBe(OBJECTIVES.parcelDone);
   expect(next.evidence['1.4']).toBeUndefined();
   expect(next.evidence['1.5']).toBeUndefined();
   expect(next.evidence['2.5']).toBeUndefined();

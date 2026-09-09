@@ -4,6 +4,7 @@ import type { GameAction, MapId, SerializedTestState } from '../src/engine/types
 
 export async function waitForGame(page: Page): Promise<void> {
   await page.waitForFunction(() => Boolean(window.__RAFIQ_TEST__));
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '05');
 }
 
 export async function getState(page: Page): Promise<SerializedTestState> {
@@ -202,11 +203,13 @@ export async function playToParcelDone(page: Page, name = 'علي حسن'): Prom
   await page.getByTestId('dialogue-advance').click();
   await skipExplainIfOpen(page);
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-mode', 'playing');
-  await expect(page.getByTestId('game-root')).toHaveAttribute('data-comms-repaired', 'true');
+  const done = await getState(page);
+  expect(done.parcelQuest.commsRepaired).toBe(true);
 }
 
 export async function enterArchive(page: Page): Promise<void> {
-  await expect(page.getByTestId('game-root')).toHaveAttribute('data-comms-repaired', 'true');
+  const before = await getState(page);
+  expect(before.parcelQuest.commsRepaired).toBe(true);
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-mode', 'playing');
   await interactAt(page, 'library', WORLD_POS.libraryInner.x, WORLD_POS.libraryInner.y);
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-map', 'archive');

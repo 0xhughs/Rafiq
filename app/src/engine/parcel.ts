@@ -265,7 +265,7 @@ export function syncParcelPhase(quest: ParcelQuest): ParcelQuest {
 
 export function parcelObjective(state: GameState): string {
   const quest = state.parcelQuest;
-  if (quest.retrievedParcelId === 'r19' && quest.commsRepaired) return OBJECTIVES.parcelDone;
+  if (quest.commsRepaired && quest.retrievedParcelId) return OBJECTIVES.parcelDone;
   if (quest.failedAttempt && quest.r19Staged) return OBJECTIVES.reviseParcel;
   if (quest.overbroadStopped) return OBJECTIVES.writeInstruction;
   if (quest.delegated) return OBJECTIVES.stopOverbroad;

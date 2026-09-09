@@ -253,6 +253,7 @@ describe('2.2 complete instruction', () => {
     expect(state.parcelQuest.retrievedParcelId).toBe('r17');
     expect(state.inventory).toContain('repair_parcel');
     expect(state.parcelQuest.commsRepaired).toBe(true);
+    expect(state.storyObjective).toBe(OBJECTIVES.parcelDone);
 
     let decoy = stopOverbroad(briefClerk(enterParcel(playShopHelped(checkpoint()))));
     decoy = interactParcel(decoy, WORLD_POS.instructionDesk.x, WORLD_POS.instructionDesk.y);
