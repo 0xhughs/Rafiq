@@ -207,7 +207,6 @@ Approved contract: `efdcb5a71dd206fc5689e409b1f98d364851d495a0831fac1ae6c3cb69f0
 Approved candidate: `a0ea63ff03ad96eb3fd5fb90a6e326ee001e9097334da5caac8fcee2c80eff4d`
 Implementation approval dispatch: `d-20260908-031-implrev-08`
 
-## Now
 ### 09 The kiosk speaks Arabic
 Goal: Make the workshop service usable through a correct interface contract and readable Arabic UI.
 Provides:
@@ -215,9 +214,12 @@ Provides:
 - RTL and mixed-text repair, keyboard/manual checks and a usable city kiosk. Covers 4.3, 4.4.
 Depends on: 08
 Target membership: inside
+Archive: `slices/09-the-kiosk-speaks-arabic.md`
+Approved contract: `45f68f8987d184ba72f15970270aa506737e5bd37ec2b7efdc3123d0bfc57601`
+Approved candidate: `a6c3018582acd8bf0737ff9e684ed063eeb4a9ed32a8d3362184e1af3bc248b6`
+Implementation approval dispatch: `d-20260908-035-implrev-09`
 
-## Later
-
+## Now
 ### 10 Fix the version people actually use
 Goal: Diagnose and repair the kiosk's simulated deployed version within a safe scope.
 Provides:
@@ -225,6 +227,8 @@ Provides:
 - Rejection of an unsafe/out-of-scope command; no real shell or deployment is accessible. Covers 4.5, 4.6, 5.4.
 Depends on: 09
 Target membership: inside
+
+## Later
 
 ### 11 Give the robot a bounded job
 Goal: Turn the robot's plan into supervised action with visible limits.
