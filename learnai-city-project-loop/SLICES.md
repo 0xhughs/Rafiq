@@ -279,7 +279,6 @@ Approved contract: `6156df03218e506f066a3192b50be2cf1d9773ced8391c4781666c856956
 Approved candidate: `4d122eda21ed6315dfeeeec5b8f650f13be2f1dce77b88500d4d637b244ac629`
 Implementation approval dispatch: `d-20260909-056-implrev-14`
 
-## Now
 ### 15 One result, several helpers
 Goal: Coordinate distinct helper roles and accept one verified city output.
 Provides:
@@ -287,9 +286,12 @@ Provides:
 - Conflicting drafts and failed criteria resolved using evidence, not majority agreement. Covers 6.1, 6.2.
 Depends on: 14
 Target membership: inside
+Archive: `slices/15-one-result-several-helpers.md`
+Approved contract: `722db4a4435bff7d87c38da436c28402dbb7df706d06444efaca3f5ebab9bef9`
+Approved candidate: `48a12a7ba2ff1e1f28aaa2f9239618609235bc9cb791e9754deb37ea339e3b7f`
+Implementation approval dispatch: `d-20260909-060-implrev-15`
 
-## Later
-
+## Now
 ### 16 Ready for the city
 Goal: Demonstrate the combined learning in a new task and complete the robot's restoration.
 Provides:
@@ -298,6 +300,8 @@ Provides:
 Depends on: 15
 Target membership: inside
 Out: timed examination and multiple-choice mastery gate.
+
+## Later
 
 ### 17 Your passport
 Goal: Receive and download the earned certificate as the story's ending.
