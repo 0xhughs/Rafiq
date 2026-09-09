@@ -291,7 +291,6 @@ Approved contract: `722db4a4435bff7d87c38da436c28402dbb7df706d06444efaca3f5ebab9
 Approved candidate: `48a12a7ba2ff1e1f28aaa2f9239618609235bc9cb791e9754deb37ea339e3b7f`
 Implementation approval dispatch: `d-20260909-060-implrev-15`
 
-## Now
 ### 16 Ready for the city
 Goal: Demonstrate the combined learning in a new task and complete the robot's restoration.
 Provides:
@@ -300,9 +299,12 @@ Provides:
 Depends on: 15
 Target membership: inside
 Out: timed examination and multiple-choice mastery gate.
+Archive: `slices/16-ready-for-the-city.md`
+Approved contract: `0b9a0c2d6339a2e33b443476d1ac70bf87b3d70c213436748092d7b643461053`
+Approved candidate: `67b49f4efc910e807c33ce974e3b4c08f8fcd1f1d52c6324621cc8250227927e`
+Implementation approval dispatch: `d-20260909-064-implrev-16`
 
-## Later
-
+## Now
 ### 17 Your passport
 Goal: Receive and download the earned certificate as the story's ending.
 Provides:
@@ -311,6 +313,8 @@ Provides:
 Depends on: 16
 Target membership: inside
 Out: public certificate registry or external publication without a separate product decision.
+
+## Later
 
 ### 18 Beyond the AI-city gate
 Goal: Preserve the invitation to new adventures without inventing their curriculum or release date.
