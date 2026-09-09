@@ -89,6 +89,11 @@ export function Hud({ state, onHelp, onDismissRestore }: Props) {
           وحدة السياق
         </p>
       ) : null}
+      {state.festivalQuest.workshopMaterials ? (
+        <p className="inventory cassette-chip" data-testid="workshop-materials">
+          مواد المعاينة
+        </p>
+      ) : null}
     </header>
   );
 }

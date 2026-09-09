@@ -5,6 +5,8 @@ interface Props {
   moduleReady: boolean;
   workshopLead: boolean;
   newsroomStarted: boolean;
+  festivalStarted: boolean;
+  workshopMaterials: boolean;
 }
 
 export function CheckpointNote({
@@ -14,12 +16,19 @@ export function CheckpointNote({
   moduleReady,
   workshopLead,
   newsroomStarted,
+  festivalStarted,
+  workshopMaterials,
 }: Props) {
   if (!visible) return null;
   let text =
     'رفيق أصبح رفيقك في الحي. البقالة عند الزاوية مفتوحة الآن، وبعدها واجهة المكتبة. بقية ألغاز المغامرة ما زالت قيد التطوير.';
-  if (workshopLead) {
-    text = 'المحررة شكرتك. خيط المعاينة يقود إلى ورشة الإصلاح. داخل الورشة لم يُفتح بعد.';
+  if (workshopMaterials) {
+    text = 'وصلت مواد المعاينة. باب الورشة في الجنوب مفتوح للكلام، والداخل لم يُفتح بعد.';
+  } else if (festivalStarted) {
+    text =
+      'مكتب المهرجان: طابق الجدول بالإيصالات، اترك الفناجين غير معروفة، ثم أرسل بيان الصرف المختوم.';
+  } else if (workshopLead) {
+    text = 'المحررة شكرتك. ادخل مكتب المهرجان في الواجهة الجنوبية لتحضير بيان صرف مواد المعاينة للورشة.';
   } else if (newsroomStarted) {
     text =
       'قاعة الأخبار: قارن المصدرين، اتبع القصاصة إلى أصلها، راجع المسودة، طابق صوت المحررة، ثم راجع خطاب المعاينة.';

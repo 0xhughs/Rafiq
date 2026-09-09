@@ -143,6 +143,10 @@ test('archive-success through newsroom success with physical actions', async ({ 
   expect(done.evidence['3.2']).toBe('demonstrated');
   expect(done.evidence['3.3']).toBe('demonstrated');
   expect(done.newsroomQuest.workshopLead).toBe(true);
+  expect(done.evidence['3.4']).toBeUndefined();
+  expect(done.evidence['3.5']).toBeUndefined();
+  expect(done.festivalQuest.workshopMaterials).toBe(false);
+  expect(done.festivalQuest.workshopDoorOpen).toBe(false);
 
   await interactAt(page, 'newsroom', WORLD_POS.editor.x, WORLD_POS.editor.y);
   await expect(page.getByTestId('dialogue-text')).toContainText('شكراً');

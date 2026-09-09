@@ -1,4 +1,12 @@
-export type MapId = 'apartment' | 'street' | 'shop' | 'library' | 'parcel' | 'archive' | 'newsroom';
+export type MapId =
+  | 'apartment'
+  | 'street'
+  | 'shop'
+  | 'library'
+  | 'parcel'
+  | 'archive'
+  | 'newsroom'
+  | 'festival';
 
 export const MAP_IDS: readonly MapId[] = [
   'apartment',
@@ -8,6 +16,7 @@ export const MAP_IDS: readonly MapId[] = [
   'parcel',
   'archive',
   'newsroom',
+  'festival',
 ];
 
 export type Mode =
@@ -29,7 +38,9 @@ export type Mode =
   | 'compare'
   | 'draft'
   | 'voice'
-  | 'letter';
+  | 'letter'
+  | 'reconcile'
+  | 'submit';
 
 export type TrashState = 'home' | 'carried' | 'disposed';
 
@@ -65,6 +76,8 @@ export const EVIDENCE_IDS = [
   '3.1',
   '3.2',
   '3.3',
+  '3.4',
+  '3.5',
 ] as const;
 export type EvidenceId = (typeof EVIDENCE_IDS)[number];
 export type EvidenceStatus = 'demonstrated';
@@ -93,7 +106,11 @@ export type InspectTarget =
   | 'source_b'
   | 'clipping'
   | 'original'
-  | 'editor_sample';
+  | 'editor_sample'
+  | 'festival_table'
+  | 'festival_receipts'
+  | 'festival_policy'
+  | 'festival_cover';
 export type ExplainTopic =
   | 'lookup'
   | 'notice'
@@ -109,7 +126,9 @@ export type ExplainTopic =
   | 'verify'
   | 'review'
   | 'voice'
-  | 'letter';
+  | 'letter'
+  | 'reconcile'
+  | 'policy';
 export type ContextNoteId = 'constraint' | 'hold' | 'festival' | 'mango';
 export type PackFileId = 'spec' | 'delivery' | 'festival' | 'news_draft';
 export type PackStampId = 'rafiq_repair' | 'festival' | 'unnamed';
@@ -197,6 +216,46 @@ export interface NewsroomQuest {
   workshopLead: boolean;
   pendingExplain: ExplainTopic | null;
 }
+
+export const FESTIVAL_PHASES = ['unstarted', 'briefed', 'working', 'supplied'] as const;
+export type FestivalPhase = (typeof FESTIVAL_PHASES)[number];
+
+export type StockLineId = 'flags' | 'cloth' | 'water' | 'cups';
+export type FlagsMark = 'match' | null;
+export type ClothMark = 'match' | null;
+export type WaterMark = 'receipt' | 'table' | null;
+export type CupsMark = 'unknown' | 'table' | 'invent' | null;
+export type SubmitFigures = 'human' | 'robot' | null;
+export type SubmitSender = 'player' | 'officer_robot';
+
+export interface FestivalQuest {
+  phase: FestivalPhase;
+  briefed: boolean;
+  inspectedTable: boolean;
+  inspectedReceipts: boolean;
+  inspectedPolicy: boolean;
+  inspectedCover: boolean;
+  flagsMark: FlagsMark;
+  clothMark: ClothMark;
+  waterMark: WaterMark;
+  cupsMark: CupsMark;
+  summedSupported: boolean;
+  supportedTotal: number | null;
+  usedTableWater: boolean;
+  inventedCups: boolean;
+  usedRobotTotal: boolean;
+  reconciled: boolean;
+  figuresChoice: SubmitFigures;
+  stamped: boolean;
+  sender: SubmitSender | null;
+  submitted: boolean;
+  submittedWithoutStamp: boolean;
+  submittedRobotFigures: boolean;
+  workshopMaterials: boolean;
+  workshopDoorOpen: boolean;
+  pendingExplain: ExplainTopic | null;
+}
+
 export type ParcelId = 'r17' | 'r19' | 'r71';
 export type ParcelPick = ParcelId | 'gray' | null;
 export type LocationPick = 'west' | 'east' | 'any' | null;
@@ -323,7 +382,11 @@ export type JournalEventId =
   | 'notice_corrected'
   | 'voice_matched'
   | 'letter_reviewed'
-  | 'workshop_lead';
+  | 'workshop_lead'
+  | 'festival_visit'
+  | 'stock_reconciled'
+  | 'statement_submitted'
+  | 'workshop_materials';
 
 export interface JournalEvent {
   id: JournalEventId;
@@ -397,7 +460,16 @@ export type DialogueNodeId =
   | 'editor_revisit'
   | 'editor_thanks'
   | 'editor_workshop_lead'
-  | 'companion_after_newsroom';
+  | 'companion_after_newsroom'
+  | 'locked_festival'
+  | 'officer_hello'
+  | 'officer_brief'
+  | 'officer_revisit'
+  | 'officer_thanks'
+  | 'officer_materials'
+  | 'companion_after_festival'
+  | 'locked_workshop'
+  | 'workshop_door_open';
 
 export type DialogueChoiceId =
   | 'agree'
@@ -454,11 +526,20 @@ export type InteractableId =
   | 'original_drawer'
   | 'draft_table'
   | 'voice_desk'
-  | 'letter_desk';
+  | 'letter_desk'
+  | 'festival_door'
+  | 'workshop_door'
+  | 'officer'
+  | 'stock_table'
+  | 'receipts_desk'
+  | 'reconcile_desk'
+  | 'policy_board'
+  | 'robot_cover'
+  | 'submit_desk';
 
-export type PortalId = 'home' | 'shop' | 'library' | 'parcel' | 'archive' | 'newsroom';
+export type PortalId = 'home' | 'shop' | 'library' | 'parcel' | 'archive' | 'newsroom' | 'festival';
 
-export type NpcId = 'robot' | 'neighbor' | 'shopkeeper' | 'clerk' | 'librarian' | 'editor';
+export type NpcId = 'robot' | 'neighbor' | 'shopkeeper' | 'clerk' | 'librarian' | 'editor' | 'officer';
 
 export interface Vec2 {
   x: number;
@@ -492,12 +573,14 @@ export interface GameState {
   clerk: NpcGreeting;
   librarian: NpcGreeting;
   editor: NpcGreeting;
+  officer: NpcGreeting;
   journalEvents: JournalEvent[];
   evidence: EvidenceMap;
   shopQuest: ShopQuest;
   parcelQuest: ParcelQuest;
   libraryQuest: LibraryQuest;
   newsroomQuest: NewsroomQuest;
+  festivalQuest: FestivalQuest;
   calculator: CalculatorState;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
@@ -557,7 +640,12 @@ export type GameAction =
       value: string;
     }
   | { type: 'LETTER_REVIEW' }
-  | { type: 'LETTER_SEND'; signer: LetterSigner };
+  | { type: 'LETTER_SEND'; signer: LetterSigner }
+  | { type: 'RECONCILE_MARK'; line: StockLineId; mark: string }
+  | { type: 'RECONCILE_SUM' }
+  | { type: 'RECONCILE_ROBOT' }
+  | { type: 'SUBMIT_SET'; field: 'figures' | 'stamp'; value: string }
+  | { type: 'SUBMIT_SEND'; sender: SubmitSender };
 
 export interface DialogueChoice {
   id: DialogueChoiceId;
@@ -572,6 +660,7 @@ export type DialogueSpeaker =
   | 'clerk'
   | 'librarian'
   | 'editor'
+  | 'officer'
   | 'notice';
 
 export interface DialogueLine {
@@ -603,6 +692,7 @@ export interface SerializedTestState {
   clerk: NpcGreeting;
   librarian: NpcGreeting;
   editor: NpcGreeting;
+  officer: NpcGreeting;
   journalEvents: JournalEvent[];
   mapsVisited: MapId[];
   saveStatus: SaveStatus;
@@ -614,6 +704,7 @@ export interface SerializedTestState {
   parcelQuest: ParcelQuest;
   libraryQuest: LibraryQuest;
   newsroomQuest: NewsroomQuest;
+  festivalQuest: FestivalQuest;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
   robotUnderstood: string | null;
@@ -637,12 +728,14 @@ export interface SaveEnvelope {
   clerk: NpcGreeting;
   librarian: NpcGreeting;
   editor: NpcGreeting;
+  officer: NpcGreeting;
   journalEvents: JournalEvent[];
   evidence: EvidenceMap;
   shopQuest: ShopQuest;
   parcelQuest: ParcelQuest;
   libraryQuest: LibraryQuest;
   newsroomQuest: NewsroomQuest;
+  festivalQuest: FestivalQuest;
   robot: { companion: boolean };
   endingState: EndingState;
   mapsVisited: MapId[];

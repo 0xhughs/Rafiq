@@ -462,6 +462,10 @@ describe('newsroom success', () => {
     expect(state.evidence['3.3']).toBe('demonstrated');
     expect(state.newsroomQuest.workshopLead).toBe(true);
     expect(state.storyObjective).toBe(OBJECTIVES.workshopLead);
+    expect(state.evidence['3.4']).toBeUndefined();
+    expect(state.evidence['3.5']).toBeUndefined();
+    expect(state.festivalQuest.workshopMaterials).toBe(false);
+    expect(state.festivalQuest.workshopDoorOpen).toBe(false);
     state = act(state, { type: 'CLOSE_OVERLAY' });
     state = skipExplain(state);
     state = act(at(state, WORLD_POS.editor.x, WORLD_POS.editor.y, 'newsroom'), { type: 'INTERACT' });

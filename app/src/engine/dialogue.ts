@@ -29,7 +29,11 @@ export const OBJECTIVES = {
   newsroomLead: 'وحدة السياق جاهزة. ادخل قاعة أخبار الحي بين البقالة والمكتبة.',
   newsroomWork:
     'قاعة الأخبار: قارن المصدرين، اتبع القصاصة إلى أصلها، راجع المسودة، طابق صوت المحررة، ثم راجع خطاب المعاينة.',
-  workshopLead: 'المحررة شكرتك. خيط المعاينة يقود إلى ورشة الإصلاح. داخل الورشة لم يُفتح بعد.',
+  workshopLead: 'المحررة شكرتك. ادخل مكتب المهرجان في الواجهة الجنوبية لتحضير بيان صرف مواد المعاينة للورشة.',
+  festivalWork:
+    'مكتب المهرجان: طابق الجدول بالإيصالات، اترك الفناجين غير معروفة، ثم أرسل بيان الصرف المختوم.',
+  workshopMaterials:
+    'وصلت مواد المعاينة. باب الورشة في الجنوب مفتوح للكلام، والداخل لم يُفتح بعد.',
 } as const;
 
 export const SPEAKER = {
@@ -40,6 +44,7 @@ export const SPEAKER = {
   clerk: () => 'موظف الطرود',
   librarian: () => 'أمينة القاعة',
   editor: () => 'محررة الحي',
+  officer: () => 'موظفة المهرجان',
   notice: () => 'ملاحظة',
 };
 
@@ -71,6 +76,10 @@ export const JOURNAL_TEXT: Record<JournalEventId, string> = {
   voice_matched: 'طابقتَ صوت المحررة دون تبديل الحقائق.',
   letter_reviewed: 'راجعت خطاب موعد المعاينة إلى مدير ورشة الإصلاح.',
   workshop_lead: 'المحررة شكرتك وفتحت خيط ورشة الإصلاح.',
+  festival_visit: 'دخلتَ مكتب المهرجان في الواجهة الجنوبية.',
+  stock_reconciled: 'طابقتَ الجدول بالإيصالات وتركت الفناجين غير معروفة.',
+  statement_submitted: 'أرسلت بيان الصرف المختوم بأرقام الإنسان.',
+  workshop_materials: 'وصلت مواد المعاينة إلى باب الورشة في الجنوب.',
 };
 
 export const LOCKED_COPY = {
@@ -84,6 +93,10 @@ export const LOCKED_COPY = {
     `مكتب طرود الرصيف يفتح بعد أن تساعد البقال. الهدف الحالي: ${objective}`,
   newsroom:
     'قاعة أخبار الحي تُفتح بعد أن تكتمل وحدة السياق في قاعة القراءة.',
+  festival:
+    'مكتب المهرجان يُفتح بعد أن تفتح المحررة خيط المعاينة من قاعة الأخبار.',
+  workshop:
+    'باب الورشة مقفل حتى تصل مواد المعاينة من مكتب المهرجان.',
 } as const;
 
 export const SAVE_STATUS_COPY = {
@@ -609,7 +622,7 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     speaker: 'editor',
     speakerLabel: () => SPEAKER.editor(),
     text: () =>
-      'مدير ورشة الإصلاح ينتظر المعاينة. داخل الورشة لم يُفتح بعد، لكن الخيط صار بيدك.',
+      'مدير ورشة الإصلاح ينتظر المعاينة. ابدأ من مكتب المهرجان في الواجهة الجنوبية؛ داخل الورشة لم يُفتح بعد.',
     next: null,
   },
   companion_after_newsroom: {
@@ -618,6 +631,76 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     speakerLabel: () => SPEAKER.robot(),
     text: () =>
       'ورشة الإصلاح توزّع القطع حسب تعميم ١٤ بعد منتصف الليل. لم أقرأ أي لائحة.',
+    next: null,
+  },
+  locked_festival: {
+    id: 'locked_festival',
+    speaker: 'notice',
+    speakerLabel: () => SPEAKER.notice(),
+    text: () => LOCKED_COPY.festival,
+    next: null,
+  },
+  officer_hello: {
+    id: 'officer_hello',
+    speaker: 'officer',
+    speakerLabel: () => SPEAKER.officer(),
+    text: () =>
+      'أهلاً بك في مكتب المهرجان. جدول المخزون لا يطابق الإيصالات، وفناجين الشاي بلا إيصال.',
+    next: 'officer_brief',
+  },
+  officer_brief: {
+    id: 'officer_brief',
+    speaker: 'officer',
+    speakerLabel: () => SPEAKER.officer(),
+    text: () =>
+      'طابق الأعلام والأقمشة، خذ الماء من الإيصال لا من الجدول، واترك الفناجين غير معروفة. ثم أعد بيان الصرف وفق سياسة العمل والدراسة.',
+    next: null,
+  },
+  officer_revisit: {
+    id: 'officer_revisit',
+    speaker: 'officer',
+    speakerLabel: () => SPEAKER.officer(),
+    text: () =>
+      'ما زلنا نحتاج مطابقة مؤيَّدة وبياناً يحتفظ بأرقامك ويحمل ختم المساعدة إن صاغ الروبوت الغلاف.',
+    next: null,
+  },
+  officer_thanks: {
+    id: 'officer_thanks',
+    speaker: 'officer',
+    speakerLabel: () => SPEAKER.officer(),
+    text: () =>
+      'شكراً. المجموع أربعون من الإيصالات، والفناجين بقيت غير معروفة.',
+    next: 'officer_materials',
+  },
+  officer_materials: {
+    id: 'officer_materials',
+    speaker: 'officer',
+    speakerLabel: () => SPEAKER.officer(),
+    text: () =>
+      'مواد المعاينة وصلت إلى باب الورشة في الجنوب. الداخل لم يُفتح بعد.',
+    next: null,
+  },
+  companion_after_festival: {
+    id: 'companion_after_festival',
+    speaker: 'robot',
+    speakerLabel: () => SPEAKER.robot(),
+    text: () =>
+      'فناجين الشاي عشرة والمجموع ستة وأربعون. لم أقرأ أي إيصال.',
+    next: null,
+  },
+  locked_workshop: {
+    id: 'locked_workshop',
+    speaker: 'notice',
+    speakerLabel: () => SPEAKER.notice(),
+    text: () => LOCKED_COPY.workshop,
+    next: null,
+  },
+  workshop_door_open: {
+    id: 'workshop_door_open',
+    speaker: 'notice',
+    speakerLabel: () => SPEAKER.notice(),
+    text: () =>
+      'وصلت مواد المعاينة. باب الورشة مفتوح للكلام، والداخل لم يُفتح بعد.',
     next: null,
   },
 };
@@ -650,7 +733,9 @@ export function isNpcNode(node: DialogueNodeId | null): boolean {
     node === 'companion_after_parcel' ||
     node === 'companion_after_archive' ||
     node === 'companion_after_newsroom' ||
-    node.startsWith('editor')
+    node === 'companion_after_festival' ||
+    node.startsWith('editor') ||
+    node.startsWith('officer')
   );
 }
 
@@ -660,6 +745,8 @@ export function isLockedNode(node: DialogueNodeId | null): boolean {
     node === 'locked_library' ||
     node === 'locked_parcel' ||
     node === 'library_inner_locked' ||
-    node === 'locked_newsroom'
+    node === 'locked_newsroom' ||
+    node === 'locked_festival' ||
+    node === 'locked_workshop'
   );
 }

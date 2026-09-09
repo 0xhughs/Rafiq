@@ -29,4 +29,4 @@ npm run lint
 
 ## Current slice
 
-Apartment, street, corner-store visit, parcel office, library exterior, the inner reading room, and قاعة أخبار الحي are playable after agreeing to help the robot. After the archive’s context module is ready, the street door between the shop and the library opens into the newsroom: compare two disagreeing papers, follow clipping ق-٢٠٤ to its original, mark and correct an attractive draft, match the editor’s voice, and review a repair-request letter. Success thanks the editor and opens a workshop lead; the workshop interior is not open yet.
+Apartment, street, corner-store visit, parcel office, library exterior, the inner reading room, قاعة أخبار الحي, and مكتب المهرجان are playable after agreeing to help the robot. After the newsroom workshop lead, the south-street festival office opens: reconcile the stock table with receipts, leave cups unknown, and send a permitted statement with the disclosure stamp. Success supplies workshop materials and opens the street workshop door; the workshop interior is not open yet.

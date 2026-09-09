@@ -25,6 +25,8 @@ import { CompareOverlay } from './ui/CompareOverlay';
 import { DraftOverlay } from './ui/DraftOverlay';
 import { VoiceOverlay } from './ui/VoiceOverlay';
 import { LetterOverlay } from './ui/LetterOverlay';
+import { ReconcileOverlay } from './ui/ReconcileOverlay';
+import { SubmitOverlay } from './ui/SubmitOverlay';
 import { evidenceAttr } from './engine/shop';
 
 function reducer(state: GameState, action: GameAction): GameState {
@@ -126,12 +128,15 @@ export default function App() {
       data-dialogue={state.dialogueNode ?? ''}
       data-save={state.saveStatus}
       data-evidence={evidenceAttr(state.evidence)}
-      data-slice="06"
+      data-slice="07"
       data-shop-quest={state.shopQuest.phase}
       data-parcel-quest={state.parcelQuest.phase}
       data-comms-repaired={state.parcelQuest.commsRepaired ? 'true' : 'false'}
       data-library-quest={state.libraryQuest.phase}
       data-newsroom-quest={state.newsroomQuest.phase}
+      data-festival-quest={state.festivalQuest.phase}
+      data-workshop-materials={state.festivalQuest.workshopMaterials ? 'true' : 'false'}
+      data-workshop-door={state.festivalQuest.workshopDoorOpen ? 'open' : 'locked'}
       data-context-window={state.libraryQuest.windowSlots.join(',')}
       data-cassette={state.libraryQuest.contextModule ? 'contextModule' : ''}
       data-workshop-lead={state.newsroomQuest.workshopLead ? 'true' : 'false'}
@@ -149,6 +154,8 @@ export default function App() {
         moduleReady={state.libraryQuest.contextModule}
         workshopLead={state.newsroomQuest.workshopLead}
         newsroomStarted={state.map === 'newsroom' || state.newsroomQuest.briefed}
+        festivalStarted={state.map === 'festival' || state.festivalQuest.briefed}
+        workshopMaterials={state.festivalQuest.workshopMaterials}
       />
       {naming ? (
         <NameEntry
@@ -279,6 +286,23 @@ export default function App() {
           onSet={(field, value) => dispatch({ type: 'LETTER_SET', field, value })}
           onReview={() => dispatch({ type: 'LETTER_REVIEW' })}
           onSend={(signer) => dispatch({ type: 'LETTER_SEND', signer })}
+          onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+        />
+      ) : null}
+      {state.mode === 'reconcile' ? (
+        <ReconcileOverlay
+          state={state}
+          onMark={(line, mark) => dispatch({ type: 'RECONCILE_MARK', line, mark })}
+          onSum={() => dispatch({ type: 'RECONCILE_SUM' })}
+          onRobot={() => dispatch({ type: 'RECONCILE_ROBOT' })}
+          onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+        />
+      ) : null}
+      {state.mode === 'submit' ? (
+        <SubmitOverlay
+          state={state}
+          onSet={(field, value) => dispatch({ type: 'SUBMIT_SET', field, value })}
+          onSend={(sender) => dispatch({ type: 'SUBMIT_SEND', sender })}
           onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
         />
       ) : null}

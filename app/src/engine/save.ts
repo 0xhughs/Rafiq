@@ -8,6 +8,7 @@ import { createCalculator, parseEvidence, parseShopQuest } from './shop';
 import { parseParcelQuest } from './parcel';
 import { parseLibraryQuest } from './library';
 import { parseNewsroomQuest } from './newsroom';
+import { parseFestivalQuest } from './festival';
 import type {
   EndingState,
   Facing,
@@ -89,6 +90,10 @@ const JOURNAL_IDS: readonly JournalEventId[] = [
   'voice_matched',
   'letter_reviewed',
   'workshop_lead',
+  'festival_visit',
+  'stock_reconciled',
+  'statement_submitted',
+  'workshop_materials',
 ];
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -134,12 +139,14 @@ export function toEnvelope(state: GameState): SaveEnvelope {
     clerk: persistableGreeting(state.clerk),
     librarian: persistableGreeting(state.librarian),
     editor: persistableGreeting(state.editor),
+    officer: persistableGreeting(state.officer),
     journalEvents: state.journalEvents.slice(-JOURNAL_CAP),
     evidence: parseEvidence(state.evidence),
     shopQuest: parseShopQuest(state.shopQuest),
     parcelQuest: parseParcelQuest(state.parcelQuest),
     libraryQuest: parseLibraryQuest(state.libraryQuest),
     newsroomQuest: parseNewsroomQuest(state.newsroomQuest),
+    festivalQuest: parseFestivalQuest(state.festivalQuest),
     robot: { companion },
     endingState: 'in_progress',
     mapsVisited: state.mapsVisited.length > 0 ? [...state.mapsVisited] : [state.map],
@@ -231,6 +238,11 @@ export function validateSave(raw: unknown): SaveEnvelope | null {
     typeof editorRaw === 'string' && (GREETINGS as readonly string[]).includes(editorRaw)
       ? persistableGreeting(editorRaw as NpcGreeting)
       : 'unmet';
+  const officerRaw = data.officer;
+  const officer: NpcGreeting =
+    typeof officerRaw === 'string' && (GREETINGS as readonly string[]).includes(officerRaw)
+      ? persistableGreeting(officerRaw as NpcGreeting)
+      : 'unmet';
   const journalEvents = parseJournal(data.journalEvents);
   if (!journalEvents) return null;
   if (!isObject(data.evidence)) return null;
@@ -257,12 +269,14 @@ export function validateSave(raw: unknown): SaveEnvelope | null {
     clerk,
     librarian,
     editor,
+    officer,
     journalEvents,
     evidence: parseEvidence(data.evidence),
     shopQuest: parseShopQuest(data.shopQuest),
     parcelQuest: parseParcelQuest(data.parcelQuest),
     libraryQuest: parseLibraryQuest(data.libraryQuest),
     newsroomQuest: parseNewsroomQuest(data.newsroomQuest),
+    festivalQuest: parseFestivalQuest(data.festivalQuest),
     robot: { companion },
     endingState: 'in_progress' satisfies EndingState,
     mapsVisited: mapsVisited.length > 0 ? mapsVisited : [data.map],
@@ -297,12 +311,14 @@ export function hydrateSave(
     clerk: persistableGreeting(envelope.clerk),
     librarian: persistableGreeting(envelope.librarian ?? 'unmet'),
     editor: persistableGreeting(envelope.editor ?? 'unmet'),
+    officer: persistableGreeting(envelope.officer ?? 'unmet'),
     journalEvents: envelope.journalEvents.slice(-JOURNAL_CAP),
     evidence: parseEvidence(envelope.evidence),
     shopQuest: parseShopQuest(envelope.shopQuest),
     parcelQuest: parseParcelQuest(envelope.parcelQuest),
     libraryQuest: parseLibraryQuest(envelope.libraryQuest),
     newsroomQuest: parseNewsroomQuest(envelope.newsroomQuest),
+    festivalQuest: parseFestivalQuest(envelope.festivalQuest),
     calculator: createCalculator(),
     inspectTarget: null,
     explainTopic: null,
@@ -394,7 +410,9 @@ export function shouldPersist(prev: GameState, next: GameState, action: GameActi
     prev.dialogueNode !== 'locked_library' &&
     prev.dialogueNode !== 'locked_parcel' &&
     prev.dialogueNode !== 'library_inner_locked' &&
-    prev.dialogueNode !== 'locked_newsroom'
+    prev.dialogueNode !== 'locked_newsroom' &&
+    prev.dialogueNode !== 'locked_festival' &&
+    prev.dialogueNode !== 'locked_workshop'
   ) {
     return true;
   }
@@ -403,8 +421,10 @@ export function shouldPersist(prev: GameState, next: GameState, action: GameActi
   if (JSON.stringify(prev.parcelQuest) !== JSON.stringify(next.parcelQuest)) return true;
   if (JSON.stringify(prev.libraryQuest) !== JSON.stringify(next.libraryQuest)) return true;
   if (JSON.stringify(prev.newsroomQuest) !== JSON.stringify(next.newsroomQuest)) return true;
+  if (JSON.stringify(prev.festivalQuest) !== JSON.stringify(next.festivalQuest)) return true;
   if (persistableGreeting(prev.librarian) !== persistableGreeting(next.librarian)) return true;
   if (persistableGreeting(prev.editor) !== persistableGreeting(next.editor)) return true;
+  if (persistableGreeting(prev.officer) !== persistableGreeting(next.officer)) return true;
   return false;
 }
 

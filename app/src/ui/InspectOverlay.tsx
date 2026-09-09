@@ -6,6 +6,12 @@ import {
   SOURCE_A,
   SOURCE_B,
 } from '../engine/newsroom';
+import {
+  POLICY_TEXT,
+  RECEIPTS_TEXT,
+  ROBOT_COVER_TEXT,
+  TABLE_TEXT,
+} from '../engine/festival';
 
 interface Props {
   state: GameState;
@@ -180,6 +186,38 @@ export function InspectOverlay({ state, onClose, onCite, onVerify }: Props) {
         <article className="paper-card" data-testid="editor-sample-card">
           <p className="card-stamp">عيّنة المحررة</p>
           <pre className="notice-body">{EDITOR_SAMPLE}</pre>
+        </article>
+      ) : null}
+      {target === 'festival_table' ? (
+        <article className="paper-card" data-testid="stock-table-card">
+          <p className="card-stamp">جدول مخزون المهرجان</p>
+          <pre className="notice-body" data-testid="stock-table-text">
+            {TABLE_TEXT}
+          </pre>
+        </article>
+      ) : null}
+      {target === 'festival_receipts' ? (
+        <article className="paper-card" data-testid="receipts-card">
+          <p className="card-stamp">إيصالات التوريد</p>
+          <pre className="notice-body" data-testid="receipts-text">
+            {RECEIPTS_TEXT}
+          </pre>
+        </article>
+      ) : null}
+      {target === 'festival_policy' ? (
+        <article className="paper-card" data-testid="policy-card">
+          <p className="card-stamp">سياسة العمل والدراسة</p>
+          <pre className="notice-body" data-testid="policy-text">
+            {POLICY_TEXT}
+          </pre>
+        </article>
+      ) : null}
+      {target === 'festival_cover' ? (
+        <article className="paper-card" data-testid="robot-cover-card">
+          <p className="card-stamp">غلاف الروبوت</p>
+          <pre className="notice-body" data-testid="robot-cover-text">
+            {ROBOT_COVER_TEXT}
+          </pre>
         </article>
       ) : null}
       <div className="button-row card-actions">

@@ -27,7 +27,9 @@ export type CellKind =
   | 'paywindow'
   | 'instruction'
   | 'file'
-  | 'newsroom';
+  | 'newsroom'
+  | 'festival'
+  | 'workshop';
 
 export interface CellRect {
   kind: CellKind;
@@ -62,16 +64,17 @@ export interface PortalEnd {
 
 export interface PortalDef {
   id: PortalId;
-  interactable: 'door' | 'shop_door' | 'library_door' | 'parcel_door' | 'library_inner' | 'newsroom_door';
+  interactable: 'door' | 'shop_door' | 'library_door' | 'parcel_door' | 'library_inner' | 'newsroom_door' | 'festival_door';
   requiresHelp: boolean;
   requiresShopHelped?: boolean;
   requiresCommsRepaired?: boolean;
   requiresArchiveSuccess?: boolean;
-  lockedNode: 'locked_shop' | 'locked_library' | 'locked_parcel' | 'library_inner_locked' | 'locked_newsroom' | null;
+  requiresWorkshopLead?: boolean;
+  lockedNode: 'locked_shop' | 'locked_library' | 'locked_parcel' | 'library_inner_locked' | 'locked_newsroom' | 'locked_festival' | null;
   ends: [PortalEnd, PortalEnd];
 }
 
-const SOLID_LETTERS = new Set(['#', 'B', 'T', 'K', 'M', 'C', 'H', 'L', 'W', 'n', 'p', 'c', 'k', 'Q', 'b', 'y', 's', 'f', 'A', 'u', 'x', 'z', 'm', 'j', 'v', 't']);
+const SOLID_LETTERS = new Set(['#', 'B', 'T', 'K', 'M', 'C', 'H', 'L', 'W', 'n', 'p', 'c', 'k', 'Q', 'b', 'y', 's', 'f', 'A', 'u', 'x', 'z', 'm', 'j', 'v', 't', 'U', 'X']);
 
 const APARTMENT_LEGEND = [
   '################',
@@ -110,6 +113,10 @@ const STREET_LEGEND = [
   eastExtend(`#${'.'.repeat(5)}P${'.'.repeat(7)}E${'.'.repeat(7)}I${'.'.repeat(4)}#`, '..R...'),
   eastExtend(`#${'.'.repeat(11)}N${'.'.repeat(14)}#`, '......'),
   eastExtend(`#${'.'.repeat(26)}#`, '......'),
+  eastExtend(`#${'.'.repeat(26)}#`, '......'),
+  eastExtend(`#${'.'.repeat(5)}G${'.'.repeat(10)}Y${'.'.repeat(9)}#`, '......'),
+  eastExtend(`#${'.'.repeat(3)}UUUUU${'.'.repeat(6)}XXXXX${'.'.repeat(7)}#`, '######'),
+  eastExtend(`#${'.'.repeat(3)}UUUUU${'.'.repeat(6)}XXXXX${'.'.repeat(7)}#`, '######'),
   eastExtend('#'.repeat(28), '######'),
 ];
 
@@ -173,6 +180,19 @@ const NEWSROOM_LEGEND = [
   '#..............#',
   '#u.z......m.j..#',
   '#k.v......t....#',
+  '#.......d......#',
+  '#..............#',
+  '################',
+];
+
+const FESTIVAL_LEGEND = [
+  '################',
+  '#WW....x.....WW#',
+  '#WW..........WW#',
+  '#..HHHHHHHH....#',
+  '#..............#',
+  '#u.z......m.j..#',
+  '#..........t...#',
   '#.......d......#',
   '#..............#',
   '################',
@@ -295,6 +315,11 @@ export const NEWSROOM = parseMap('newsroom', NEWSROOM_LEGEND, {
   entryDir: 'north',
 });
 
+export const FESTIVAL = parseMap('festival', FESTIVAL_LEGEND, {
+  doorLetter: 'd',
+  entryDir: 'north',
+});
+
 export const MAPS: Record<MapId, MapDef> = {
   apartment: APARTMENT,
   street: STREET,
@@ -303,6 +328,7 @@ export const MAPS: Record<MapId, MapDef> = {
   parcel: PARCEL,
   archive: ARCHIVE,
   newsroom: NEWSROOM,
+  festival: FESTIVAL,
 };
 
 export function getMap(id: MapId): MapDef {
@@ -351,6 +377,10 @@ function kindFromLetter(letter: string): CellKind {
       return 'parcel';
     case 'A':
       return 'newsroom';
+    case 'U':
+      return 'festival';
+    case 'X':
+      return 'workshop';
     case 'D':
     case 'd':
     case 'P':
@@ -359,6 +389,8 @@ function kindFromLetter(letter: string): CellKind {
     case 'F':
     case 'R':
     case 'E':
+    case 'G':
+    case 'Y':
       return 'door';
     case 'S':
       return 'spawn';
@@ -424,6 +456,8 @@ export const FURNITURE = {
     library: mergeRects(collectKind(STREET, ['L']))[0],
     parcel: mergeRects(collectKind(STREET, ['Q']))[0],
     newsroom: mergeRects(collectKind(STREET, ['A']))[0],
+    festival: mergeRects(collectKind(STREET, ['U']))[0],
+    workshop: mergeRects(collectKind(STREET, ['X']))[0],
     walls: collectKind(STREET, ['#']),
   },
   shop: {
@@ -474,6 +508,17 @@ export const FURNITURE = {
     voice: mergeRects(collectKind(NEWSROOM, ['v']))[0],
     letter: mergeRects(collectKind(NEWSROOM, ['t']))[0],
     walls: collectKind(NEWSROOM, ['#']),
+  },
+  festival: {
+    shelves: collectKind(FESTIVAL, ['W']),
+    counter: mergeRects(collectKind(FESTIVAL, ['H']))[0],
+    policy: mergeRects(collectKind(FESTIVAL, ['x']))[0],
+    table: mergeRects(collectKind(FESTIVAL, ['u']))[0],
+    receipts: mergeRects(collectKind(FESTIVAL, ['z']))[0],
+    reconcile: mergeRects(collectKind(FESTIVAL, ['m']))[0],
+    cover: mergeRects(collectKind(FESTIVAL, ['j']))[0],
+    submit: mergeRects(collectKind(FESTIVAL, ['t']))[0],
+    walls: collectKind(FESTIVAL, ['#']),
   },
 };
 
@@ -550,6 +595,17 @@ export const PORTALS: PortalDef[] = [
     ends: [
       { map: 'street', letter: 'E', spawnDir: 'south', arriveFacing: 'down' },
       { map: 'newsroom', letter: 'd', spawnDir: 'north', arriveFacing: 'up' },
+    ],
+  },
+  {
+    id: 'festival',
+    interactable: 'festival_door',
+    requiresHelp: true,
+    requiresWorkshopLead: true,
+    lockedNode: 'locked_festival',
+    ends: [
+      { map: 'street', letter: 'G', spawnDir: 'north', arriveFacing: 'up' },
+      { map: 'festival', letter: 'd', spawnDir: 'north', arriveFacing: 'up' },
     ],
   },
 ];
@@ -653,6 +709,19 @@ export const WORLD_POS = {
   letterDesk: letterCenter(NEWSROOM, 't'),
   newsroomTalk: cellCenter(4, 6),
   newsroomWestWallInside: cellCenter(1, 4),
+  festivalDoor: letterCenter(STREET, 'G'),
+  workshopDoor: letterCenter(STREET, 'Y'),
+  festivalExit: letterCenter(FESTIVAL, 'd'),
+  festivalSpawn: FESTIVAL.spawn,
+  officer: cellCenter(6, 4),
+  stockTable: letterCenter(FESTIVAL, 'u'),
+  receiptsDesk: letterCenter(FESTIVAL, 'z'),
+  reconcileDesk: letterCenter(FESTIVAL, 'm'),
+  policyBoard: letterCenter(FESTIVAL, 'x'),
+  robotCover: letterCenter(FESTIVAL, 'j'),
+  submitDesk: letterCenter(FESTIVAL, 't'),
+  festivalTalk: cellCenter(4, 6),
+  festivalWestWallInside: cellCenter(1, 4),
 };
 
 export function doorHint(map: MapId): string {
@@ -677,4 +746,8 @@ export function archiveDoorHint(map: MapId): string {
 
 export function newsroomDoorHint(map: MapId): string {
   return map === 'newsroom' ? HINT_LABELS.newsroomExit : HINT_LABELS.newsroomEnter;
+}
+
+export function festivalDoorHint(map: MapId): string {
+  return map === 'festival' ? HINT_LABELS.festivalExit : HINT_LABELS.festivalEnter;
 }

@@ -5,13 +5,14 @@ import {
   FURNITURE,
   libraryDoorHint,
   newsroomDoorHint,
+  festivalDoorHint,
   parcelDoorHint,
   portalLetterPos,
   portalsOnMap,
   shopDoorHint,
   WORLD_POS,
 } from './maps';
-import { clerkVisible, editorVisible, isCompanion, librarianVisible, neighborVisible, npcPosition, robotVisible, shopkeeperVisible } from './npc';
+import { clerkVisible, editorVisible, officerVisible, isCompanion, librarianVisible, neighborVisible, npcPosition, robotVisible, shopkeeperVisible } from './npc';
 import type { Actionable, GameState, InteractableId } from './types';
 
 function dist(ax: number, ay: number, bx: number, by: number): number {
@@ -62,6 +63,26 @@ function shopRect(id: InteractableId): { x: number; y: number; w: number; h: num
       return shop.calculator;
     case 'crate':
       return shop.crate;
+    default:
+      return null;
+  }
+}
+
+function festivalRect(id: InteractableId): { x: number; y: number; w: number; h: number } | null {
+  const room = FURNITURE.festival;
+  switch (id) {
+    case 'stock_table':
+      return room.table;
+    case 'receipts_desk':
+      return room.receipts;
+    case 'reconcile_desk':
+      return room.reconcile;
+    case 'policy_board':
+      return room.policy;
+    case 'robot_cover':
+      return room.cover;
+    case 'submit_desk':
+      return room.submit;
     default:
       return null;
   }
@@ -146,7 +167,12 @@ function itemDistance(state: GameState, item: Actionable): number {
     const box = FURNITURE.street.dumpster;
     return distToRect(state.position.x, state.position.y, box.x, box.y, box.w, box.h);
   }
-  const rect = shopRect(item.id) ?? parcelRect(item.id) ?? archiveRect(item.id) ?? newsroomRect(item.id);
+  const rect =
+    shopRect(item.id) ??
+    parcelRect(item.id) ??
+    archiveRect(item.id) ??
+    newsroomRect(item.id) ??
+    festivalRect(item.id);
   if (rect) {
     return distToRect(state.position.x, state.position.y, rect.x, rect.y, rect.w, rect.h);
   }
@@ -159,6 +185,7 @@ function portalHint(id: InteractableId, map: GameState['map']): string {
   if (id === 'parcel_door') return parcelDoorHint(map);
   if (id === 'library_inner') return archiveDoorHint(map);
   if (id === 'newsroom_door') return newsroomDoorHint(map);
+  if (id === 'festival_door') return festivalDoorHint(map);
   return libraryDoorHint(map);
 }
 
@@ -250,6 +277,16 @@ export function listInteractables(state: GameState): Actionable[] {
       label: HINT_LABELS.editor,
       x: editor.x,
       y: editor.y,
+    });
+  }
+
+  if (officerVisible(state)) {
+    const officer = npcPosition(state, 'officer');
+    items.push({
+      id: 'officer',
+      label: HINT_LABELS.officer,
+      x: officer.x,
+      y: officer.y,
     });
   }
 
@@ -363,6 +400,56 @@ export function listInteractables(state: GameState): Actionable[] {
         label: HINT_LABELS.letterDesk,
         x: WORLD_POS.letterDesk.x,
         y: WORLD_POS.letterDesk.y,
+      },
+    );
+  }
+
+  if (state.map === 'street') {
+    items.push({
+      id: 'workshop_door',
+      label: HINT_LABELS.workshopDoor,
+      x: WORLD_POS.workshopDoor.x,
+      y: WORLD_POS.workshopDoor.y,
+    });
+  }
+
+  if (state.map === 'festival') {
+    items.push(
+      {
+        id: 'stock_table',
+        label: HINT_LABELS.stockTable,
+        x: WORLD_POS.stockTable.x,
+        y: WORLD_POS.stockTable.y,
+      },
+      {
+        id: 'receipts_desk',
+        label: HINT_LABELS.receiptsDesk,
+        x: WORLD_POS.receiptsDesk.x,
+        y: WORLD_POS.receiptsDesk.y,
+      },
+      {
+        id: 'reconcile_desk',
+        label: HINT_LABELS.reconcileDesk,
+        x: WORLD_POS.reconcileDesk.x,
+        y: WORLD_POS.reconcileDesk.y,
+      },
+      {
+        id: 'policy_board',
+        label: HINT_LABELS.policyBoard,
+        x: WORLD_POS.policyBoard.x,
+        y: WORLD_POS.policyBoard.y,
+      },
+      {
+        id: 'robot_cover',
+        label: HINT_LABELS.robotCover,
+        x: WORLD_POS.robotCover.x,
+        y: WORLD_POS.robotCover.y,
+      },
+      {
+        id: 'submit_desk',
+        label: HINT_LABELS.submitDesk,
+        x: WORLD_POS.submitDesk.x,
+        y: WORLD_POS.submitDesk.y,
       },
     );
   }

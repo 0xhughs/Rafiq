@@ -4,7 +4,7 @@ import type { GameAction, MapId, SerializedTestState } from '../src/engine/types
 
 export async function waitForGame(page: Page): Promise<void> {
   await page.waitForFunction(() => Boolean(window.__RAFIQ_TEST__));
-  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '06');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '07');
 }
 
 export async function getState(page: Page): Promise<SerializedTestState> {
@@ -240,6 +240,65 @@ export async function enterNewsroom(page: Page): Promise<void> {
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-mode', 'playing');
   await interactAt(page, 'street', WORLD_POS.newsroomDoor.x, WORLD_POS.newsroomDoor.y);
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-map', 'newsroom');
+}
+
+export async function playToNewsroomDone(page: Page, name = 'علي حسن'): Promise<void> {
+  await playToArchiveDone(page, name);
+  await enterNewsroom(page);
+  await interactAt(page, 'newsroom', WORLD_POS.sourceBulletin.x, WORLD_POS.sourceBulletin.y);
+  await page.getByTestId('inspect-close').click();
+  await interactAt(page, 'newsroom', WORLD_POS.sourcePoster.x, WORLD_POS.sourcePoster.y);
+  await page.getByTestId('inspect-close').click();
+  await interactAt(page, 'newsroom', WORLD_POS.compareDesk.x, WORLD_POS.compareDesk.y);
+  await page.getByTestId('compare-namedBulletin').click();
+  await page.getByTestId('compare-namedPoster').click();
+  await page.getByTestId('compare-hoursA').click();
+  await page.getByTestId('compare-hoursB').click();
+  await page.getByTestId('compare-accessA').click();
+  await page.getByTestId('compare-accessB').click();
+  await page.getByTestId('compare-submit').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'newsroom', WORLD_POS.clippingBoard.x, WORLD_POS.clippingBoard.y);
+  await page.getByTestId('inspect-close').click();
+  await interactAt(page, 'newsroom', WORLD_POS.originalDrawer.x, WORLD_POS.originalDrawer.y);
+  await page.getByTestId('verify-original').click();
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'newsroom', WORLD_POS.draftTable.x, WORLD_POS.draftTable.y);
+  await page.getByTestId('draft-mark-always_open').click();
+  await page.getByTestId('draft-correct-always_open').click();
+  await page.getByTestId('draft-correct-midnight_hold').click();
+  await page.getByTestId('draft-correct-no_written').click();
+  await page.getByTestId('draft-release').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'newsroom', WORLD_POS.voiceDesk.x, WORLD_POS.voiceDesk.y);
+  await page.getByTestId('voice-editor').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'newsroom', WORLD_POS.letterDesk.x, WORLD_POS.letterDesk.y);
+  await page.getByTestId('letter-recipient-workshop_manager').click();
+  await page.getByTestId('letter-purpose-inspection').click();
+  await page.getByTestId('letter-tone-clear_polite').click();
+  await page.getByTestId('letter-body-ok').click();
+  await page.getByTestId('letter-review').click();
+  await page.getByTestId('letter-send-player').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-workshop-lead', 'true');
+  const done = await getState(page);
+  expect(done.evidence['3.4']).toBeUndefined();
+  expect(done.evidence['3.5']).toBeUndefined();
+  expect(done.festivalQuest.workshopMaterials).toBe(false);
+  expect(done.festivalQuest.workshopDoorOpen).toBe(false);
+}
+
+export async function enterFestival(page: Page): Promise<void> {
+  const before = await getState(page);
+  expect(before.newsroomQuest.workshopLead).toBe(true);
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-mode', 'playing');
+  await interactAt(page, 'street', WORLD_POS.festivalDoor.x, WORLD_POS.festivalDoor.y);
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-map', 'festival');
 }
 
 export async function enterArchive(page: Page): Promise<void> {

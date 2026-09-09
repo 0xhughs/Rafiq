@@ -15,6 +15,7 @@ import type {
   VoiceStyle,
 } from './types';
 import { NEWSROOM_PHASES } from './types';
+import { festivalObjective } from './festival';
 
 export const SOURCE_A_NAME = 'نشرة الورشة';
 export const SOURCE_B_NAME = 'ملصق الرصيف';
@@ -481,6 +482,9 @@ function syncPhase(quest: NewsroomQuest): NewsroomQuest {
 
 export function newsroomObjective(state: GameState): string {
   const quest = state.newsroomQuest;
+  if (state.festivalQuest.workshopMaterials || state.festivalQuest.briefed || state.map === 'festival') {
+    return festivalObjective(state);
+  }
   if (quest.workshopLead) return OBJECTIVES.workshopLead;
   if (state.map === 'newsroom' || quest.briefed) return OBJECTIVES.newsroomWork;
   if (isNewsroomOpen(state)) return OBJECTIVES.newsroomLead;
