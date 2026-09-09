@@ -1,3 +1,5 @@
+import { OBJECTIVES } from '../engine/dialogue';
+
 interface Props {
   visible: boolean;
   shopHelped: boolean;
@@ -11,6 +13,7 @@ interface Props {
   servicePosted: boolean;
   kioskReady: boolean;
   labReady: boolean;
+  agentReady: boolean;
 }
 
 export function CheckpointNote({
@@ -26,12 +29,15 @@ export function CheckpointNote({
   servicePosted,
   kioskReady,
   labReady,
+  agentReady,
 }: Props) {
   if (!visible) return null;
   let text =
     'رفيق أصبح رفيقك في الحي. البقالة عند الزاوية مفتوحة الآن، وبعدها واجهة المكتبة. بقية ألغاز المغامرة ما زالت قيد التطوير.';
-  if (labReady) {
-    text = 'نُشرت نسخة الإنتاج المصلحة. مدير الورشة شكرك.';
+  if (agentReady) {
+    text = OBJECTIVES.agentReady;
+  } else if (labReady) {
+    text = OBJECTIVES.agentWork;
   } else if (kioskReady) {
     text =
       'مختبر النشر مفتوح: أعد إنتاج عطل النسخة المجمّدة، اقرأ السجلات، أصلح المسار، انشر نسخة ثابتة، ثم تحقق.';

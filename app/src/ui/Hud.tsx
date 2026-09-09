@@ -109,6 +109,11 @@ export function Hud({ state, onHelp, onDismissRestore }: Props) {
           إنتاج مُصلح
         </p>
       ) : null}
+      {state.agentQuest.agentReady ? (
+        <p className="inventory cassette-chip" data-testid="planning-core">
+          نواة التخطيط
+        </p>
+      ) : null}
     </header>
   );
 }

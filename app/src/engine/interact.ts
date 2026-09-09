@@ -94,6 +94,10 @@ function workshopRect(id: InteractableId): { x: number; y: number; w: number; h:
       return room.lab;
     case 'lab_prod':
       return room.prod;
+    case 'agent_console':
+      return room.console;
+    case 'agent_board':
+      return room.neighborNotice;
     default:
       return null;
   }
@@ -565,6 +569,23 @@ export function listInteractables(state: GameState): Actionable[] {
         label: HINT_LABELS.labProd,
         x: WORLD_POS.labProd.x,
         y: WORLD_POS.labProd.y,
+      },
+    );
+  }
+
+  if (state.map === 'workshop' && state.labQuest.labReady) {
+    items.push(
+      {
+        id: 'agent_console',
+        label: HINT_LABELS.agentConsole,
+        x: WORLD_POS.agentConsole.x,
+        y: WORLD_POS.agentConsole.y,
+      },
+      {
+        id: 'agent_board',
+        label: HINT_LABELS.agentBoard,
+        x: WORLD_POS.agentBoard.x,
+        y: WORLD_POS.agentBoard.y,
       },
     );
   }

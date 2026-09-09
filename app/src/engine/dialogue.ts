@@ -43,6 +43,9 @@ export const OBJECTIVES = {
   labWork:
     'مختبر النشر مفتوح: أعد إنتاج عطل النسخة المجمّدة، اقرأ السجلات، أصلح المسار، انشر نسخة ثابتة، ثم تحقق.',
   labReady: 'نُشرت نسخة الإنتاج المصلحة. مدير الورشة شكرك.',
+  agentWork:
+    'منصة المشغّل مفتوحة: اضبط الهدف والأدوات ومعيار النجاح والتوقف، ثم راقب الحلقة على لوحة الحي.',
+  agentReady: 'نُفّذت مهمة محدودة تحت المشغّل. مدير الورشة شكرك.',
 } as const;
 
 export const SPEAKER = {
@@ -100,6 +103,13 @@ export const JOURNAL_TEXT: Record<JournalEventId, string> = {
   log_selected: 'اختير سجل الإنتاج ذو الصلة.',
   frozen_published: 'نُشرت نسخة ثابتة من النسخة المصلحة.',
   lab_ready: 'صار الإنتاج على المسار الصحيح بعد النشر والتحقق.',
+  agent_opened: 'فتحتَ منصة المشغّل في الورشة.',
+  chat_plan_seen: 'جرّبتَ تنفيذ الخطة من الدردشة دون أدوات المشغّل.',
+  job_configured: 'ضُبطت مهمة محدودة: هدف وأدوات ومعيار نجاح وشرط توقف.',
+  board_posted: 'كُتبت الفترات الثلاث على لوحة الحي.',
+  missing_stopped: 'توقف المشغّل عند مدخل ناقص بلا رقم رف.',
+  extra_stopped: 'أوقف المشغّل خطوة إضافية بعد حد الخطوات.',
+  agent_ready: 'أُنجزت مهمة محدودة تحت المشغّل.',
 };
 
 export const LOCKED_COPY = {
@@ -765,7 +775,16 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     id: 'manager_lab_thanks',
     speaker: 'manager',
     speakerLabel: () => SPEAKER.manager(),
-    text: () => 'شكراً. النسخة المجمّدة في الإنتاج صارت على المسار الصحيح.',
+    text: () =>
+      'شكراً. النسخة المجمّدة في الإنتاج صارت على المسار الصحيح. لوحة الحي ما زالت تنتظر الفترات الثلاث.',
+    next: null,
+  },
+  manager_agent_thanks: {
+    id: 'manager_agent_thanks',
+    speaker: 'manager',
+    speakerLabel: () => SPEAKER.manager(),
+    text: () =>
+      'شكراً. لوحة الحي تعرض الفترات الثلاث، والمشغّل أوقف الخطوة الزائدة والمدخل الناقص.',
     next: null,
   },
   companion_after_workshop: {
@@ -789,6 +808,13 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     speaker: 'robot',
     speakerLabel: () => SPEAKER.robot(),
     text: () => 'rm -rf يصلح العطل. الجيران يرون المعاينة.',
+    next: null,
+  },
+  companion_after_agent: {
+    id: 'companion_after_agent',
+    speaker: 'robot',
+    speakerLabel: () => SPEAKER.robot(),
+    text: () => 'الدردشة وحدها وكالة. المشغّل اختياري.',
     next: null,
   },
 };
@@ -825,6 +851,7 @@ export function isNpcNode(node: DialogueNodeId | null): boolean {
     node === 'companion_after_workshop' ||
     node === 'companion_after_kiosk' ||
     node === 'companion_after_lab' ||
+    node === 'companion_after_agent' ||
     node.startsWith('editor') ||
     node.startsWith('officer') ||
     node.startsWith('manager')

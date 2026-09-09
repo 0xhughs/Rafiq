@@ -256,7 +256,8 @@ function syncPhase(quest: FestivalQuest): FestivalQuest {
 
 export function festivalObjective(state: GameState): string {
   const quest = state.festivalQuest;
-  if (state.labQuest?.labReady) return OBJECTIVES.labReady;
+  if (state.agentQuest?.agentReady) return OBJECTIVES.agentReady;
+  if (state.labQuest?.labReady) return OBJECTIVES.agentWork;
   if (state.kioskQuest?.kioskReady) return OBJECTIVES.labWork;
   if (state.workshopQuest.servicePosted) return OBJECTIVES.kioskWork;
   if (state.map === 'workshop' || state.workshopQuest.briefed || quest.workshopMaterials) {

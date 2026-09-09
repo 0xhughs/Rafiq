@@ -46,7 +46,8 @@ export type Mode =
   | 'brief'
   | 'board'
   | 'kiosk'
-  | 'lab';
+  | 'lab'
+  | 'agent';
 
 export type TrashState = 'home' | 'carried' | 'disposed';
 
@@ -90,6 +91,8 @@ export const EVIDENCE_IDS = [
   '4.4',
   '4.5',
   '4.6',
+  '5.1',
+  '5.2',
   '5.4',
 ] as const;
 export type EvidenceId = (typeof EVIDENCE_IDS)[number];
@@ -154,7 +157,10 @@ export type ExplainTopic =
   | 'arabic_rtl'
   | 'debug_logs'
   | 'frozen_publish'
-  | 'shell_limits';
+  | 'shell_limits'
+  | 'chat_vs_agent'
+  | 'job_contract'
+  | 'runner_limits';
 export type ContextNoteId = 'constraint' | 'hold' | 'festival' | 'mango';
 export type PackFileId = 'spec' | 'delivery' | 'festival' | 'news_draft';
 export type PackStampId = 'rafiq_repair' | 'festival' | 'unnamed';
@@ -386,6 +392,55 @@ export interface LabQuest {
   view: LabView;
 }
 
+export const AGENT_PHASES = ['unstarted', 'working', 'ready'] as const;
+export type AgentPhase = (typeof AGENT_PHASES)[number];
+export type AgentView = 'console' | 'board';
+export type AgentJob = 'slots' | 'shelf';
+export type AgentGoal = 'post_slots' | 'chat_only' | 'live_hours';
+export type AgentSuccessTest = 'slots_posted' | 'robot_done' | 'click_count';
+export type AgentStopRule = 'budget_3_or_missing' | 'unlimited' | 'budget_1';
+export type AgentToolId = 'read' | 'write' | 'verify' | 'chat' | 'hours';
+export type AgentInvokeTool =
+  | 'live_hours'
+  | 'chat_only'
+  | 'read_slots'
+  | 'write_notice'
+  | 'verify_notice';
+export type AgentTracePhase = 'راقب' | 'نفّذ' | 'تحقق';
+export type AgentTraceTool = 'read_slots' | 'write_notice' | 'verify_notice';
+
+export interface AgentTraceStep {
+  phase: AgentTracePhase;
+  tool: AgentTraceTool;
+  detail: string;
+}
+
+export interface AgentQuest {
+  phase: AgentPhase;
+  openedAgent: boolean;
+  sawChatPlan: boolean;
+  loadedJob: AgentJob | null;
+  goal: AgentGoal | null;
+  toolRead: boolean;
+  toolWrite: boolean;
+  toolVerify: boolean;
+  toolChat: boolean;
+  toolHours: boolean;
+  successTest: AgentSuccessTest | null;
+  stopRule: AgentStopRule | null;
+  boardPosted: boolean;
+  boardPolluted: boolean;
+  inspectedBoard: boolean;
+  successStopped: boolean;
+  missingStopped: boolean;
+  stoppedExtra: boolean;
+  stepsUsed: number;
+  trace: AgentTraceStep[];
+  agentReady: boolean;
+  pendingExplain: ExplainTopic | null;
+  view: AgentView;
+}
+
 export type ParcelId = 'r17' | 'r19' | 'r71';
 export type ParcelPick = ParcelId | 'gray' | null;
 export type LocationPick = 'west' | 'east' | 'any' | null;
@@ -526,7 +581,14 @@ export type JournalEventId =
   | 'prod_reproduced'
   | 'log_selected'
   | 'frozen_published'
-  | 'lab_ready';
+  | 'lab_ready'
+  | 'agent_opened'
+  | 'chat_plan_seen'
+  | 'job_configured'
+  | 'board_posted'
+  | 'missing_stopped'
+  | 'extra_stopped'
+  | 'agent_ready';
 
 export interface JournalEvent {
   id: JournalEventId;
@@ -616,9 +678,11 @@ export type DialogueNodeId =
   | 'manager_thanks'
   | 'manager_kiosk_thanks'
   | 'manager_lab_thanks'
+  | 'manager_agent_thanks'
   | 'companion_after_workshop'
   | 'companion_after_kiosk'
-  | 'companion_after_lab';
+  | 'companion_after_lab'
+  | 'companion_after_agent';
 
 export type DialogueChoiceId =
   | 'agree'
@@ -696,7 +760,9 @@ export type InteractableId =
   | 'kiosk_vault'
   | 'kiosk_face'
   | 'lab_terminal'
-  | 'lab_prod';
+  | 'lab_prod'
+  | 'agent_console'
+  | 'agent_board';
 
 export type PortalId =
   | 'home'
@@ -762,6 +828,7 @@ export interface GameState {
   workshopQuest: WorkshopQuest;
   kioskQuest: KioskQuest;
   labQuest: LabQuest;
+  agentQuest: AgentQuest;
   calculator: CalculatorState;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
@@ -853,7 +920,17 @@ export type GameAction =
   | { type: 'LAB_LOOKUP' }
   | { type: 'LAB_REFUSE'; command: LabRefuseCommand }
   | { type: 'LAB_ROBOT_DONE' }
-  | { type: 'LAB_CMD'; text: string };
+  | { type: 'LAB_CMD'; text: string }
+  | { type: 'AGENT_CHAT_PLAN' }
+  | { type: 'AGENT_RUN' }
+  | { type: 'AGENT_EXTRA_STEP' }
+  | { type: 'AGENT_LOAD_JOB'; job: AgentJob }
+  | { type: 'AGENT_SET_GOAL'; goal: AgentGoal }
+  | { type: 'AGENT_TOGGLE_TOOL'; tool: AgentToolId }
+  | { type: 'AGENT_SET_SUCCESS'; test: AgentSuccessTest }
+  | { type: 'AGENT_SET_STOP'; rule: AgentStopRule }
+  | { type: 'AGENT_ROBOT_DONE' }
+  | { type: 'AGENT_INVOKE'; tool: AgentInvokeTool };
 
 export interface DialogueChoice {
   id: DialogueChoiceId;
@@ -918,6 +995,7 @@ export interface SerializedTestState {
   workshopQuest: WorkshopQuest;
   kioskQuest: KioskQuest;
   labQuest: LabQuest;
+  agentQuest: AgentQuest;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
   robotUnderstood: string | null;
@@ -953,6 +1031,7 @@ export interface SaveEnvelope {
   workshopQuest: WorkshopQuest;
   kioskQuest: KioskQuest;
   labQuest: LabQuest;
+  agentQuest: AgentQuest;
   robot: { companion: boolean };
   endingState: EndingState;
   mapsVisited: MapId[];

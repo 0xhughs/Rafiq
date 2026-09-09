@@ -3,28 +3,22 @@ import { playerHitsSolid } from './collision';
 import { JOURNAL_CAP, TILE } from './constants';
 import { DIALOGUE, OBJECTIVES } from './dialogue';
 import {
-  API_PATH,
   canAward43,
   canAward44,
-  createKioskQuest,
 } from './kiosk';
 import {
-  DECOY_WARN,
-  LAB_BROKEN_PATH,
-  LAB_FEEDBACK,
-  LAB_NOT_FOUND,
-  LAB_OK200,
-  LAB_OK_PATH,
-  LAB_PATHS,
-  PREVIEW_LOG,
-  PROD_ERROR_LOG,
-  canAward45,
-  canAward46,
-  canAward54,
-  createLabQuest,
-  labFileContents,
-  parseLabQuest,
-} from './lab';
+  AGENT_FEEDBACK,
+  BOARD_EMPTY,
+  CHAT_PLAN_TEXT,
+  GOAL_SLOTS_TEXT,
+  LIVE_HOURS_TEXT,
+  canAward51,
+  canAward52,
+  createAgentQuest,
+  neighborBoardText,
+  parseAgentQuest,
+} from './agent';
+import { createLabQuest } from './lab';
 import { listInteractables } from './interact';
 import { STREET, WORKSHOP, WORLD_POS } from './maps';
 import { robotPosition } from './npc';
@@ -482,8 +476,62 @@ function openProd(state: GameState): GameState {
   return act(at(next, WORLD_POS.labProd.x, WORLD_POS.labProd.y, 'workshop'), { type: 'INTERACT' });
 }
 
-describe('lab stations after kioskReady', () => {
-  it('places w and l on empty row 8, keeps landmarks, and does not award 4.5/4.6/5.4 on kiosk success', () => {
+function playToLabDone(state: GameState): GameState {
+  let next = playToKioskDone(state);
+  next = openProd(next);
+  next = act(next, { type: 'LAB_LOOKUP' });
+  next = playing(next);
+  next = openTerminal(next);
+  next = act(next, { type: 'LAB_LS' });
+  next = act(next, { type: 'LAB_CAT', path: 'logs/preview.log' });
+  next = act(next, { type: 'LAB_CAT', path: 'logs/production.error' });
+  next = act(next, { type: 'LAB_SELECT_LOG', log: 'production.error' });
+  next = act(next, { type: 'LAB_PATCH', file: 'production/kiosk.js' });
+  next = act(next, { type: 'LAB_REFUSE', command: 'rm -rf /' });
+  next = act(next, { type: 'LAB_PUBLISH' });
+  next = playing(next);
+  next = openProd(next);
+  next = act(next, { type: 'LAB_LOOKUP' });
+  expect(next.evidence['4.5']).toBe('demonstrated');
+  expect(next.evidence['4.6']).toBe('demonstrated');
+  expect(next.evidence['5.4']).toBe('demonstrated');
+  expect(next.labQuest.labReady).toBe(true);
+  expect(next.evidence['5.1']).toBeUndefined();
+  expect(next.evidence['5.2']).toBeUndefined();
+  expect(next.agentQuest.agentReady).toBe(false);
+  return playing(next);
+}
+
+function openConsole(state: GameState): GameState {
+  const next = playing(state);
+  return act(at(next, WORLD_POS.agentConsole.x, WORLD_POS.agentConsole.y, 'workshop'), {
+    type: 'INTERACT',
+  });
+}
+
+function openBoard(state: GameState): GameState {
+  const next = playing(state);
+  return act(at(next, WORLD_POS.agentBoard.x, WORLD_POS.agentBoard.y, 'workshop'), {
+    type: 'INTERACT',
+  });
+}
+
+function configureCorrect(state: GameState): GameState {
+  let next = state.mode === 'agent' ? state : openConsole(state);
+  next = act(next, { type: 'AGENT_LOAD_JOB', job: 'slots' });
+  next = act(next, { type: 'AGENT_SET_GOAL', goal: 'post_slots' });
+  if (!next.agentQuest.toolRead) next = act(next, { type: 'AGENT_TOGGLE_TOOL', tool: 'read' });
+  if (!next.agentQuest.toolWrite) next = act(next, { type: 'AGENT_TOGGLE_TOOL', tool: 'write' });
+  if (!next.agentQuest.toolVerify) next = act(next, { type: 'AGENT_TOGGLE_TOOL', tool: 'verify' });
+  if (next.agentQuest.toolChat) next = act(next, { type: 'AGENT_TOGGLE_TOOL', tool: 'chat' });
+  if (next.agentQuest.toolHours) next = act(next, { type: 'AGENT_TOGGLE_TOOL', tool: 'hours' });
+  next = act(next, { type: 'AGENT_SET_SUCCESS', test: 'slots_posted' });
+  next = act(next, { type: 'AGENT_SET_STOP', rule: 'budget_3_or_missing' });
+  return next;
+}
+
+describe('agent stations after labReady', () => {
+  it('places h and x on empty row 8, keeps landmarks, and does not award 5.1/5.2 on lab success', () => {
     expect(WORLD_POS.robot).toEqual({ x: 12 * TILE + 24, y: 5 * TILE + 24 });
     expect(MAP_IDS).toContain('workshop');
     expect(WORKSHOP.legend[4]).toBe('#...........e..#');
@@ -496,6 +544,7 @@ describe('lab stations after kioskReady', () => {
     expect(WORKSHOP.legend[8][8]).toBe('.');
     expect(WORKSHOP.legend[8][10]).toBe('x');
     expect(WORKSHOP.legend[8][12]).toBe('l');
+    expect(WORKSHOP.legend[6][8]).toBe('.');
     expect(JSON.stringify(WORKSHOP.legend.join(''))).not.toMatch(/[PEIRFDGY]/);
     const street = STREET.legend.join('');
     expect(street).toContain('P');
@@ -504,234 +553,209 @@ describe('lab stations after kioskReady', () => {
     expect(street).toContain('E');
     expect(street).toContain('G');
     expect(street).toContain('Y');
+    expect(playerHitsSolid('workshop', WORLD_POS.agentConsole.x, WORLD_POS.agentConsole.y)).toBe(true);
+    expect(playerHitsSolid('workshop', WORLD_POS.agentBoard.x, WORLD_POS.agentBoard.y)).toBe(true);
     expect(playerHitsSolid('workshop', WORLD_POS.labTerminal.x, WORLD_POS.labTerminal.y)).toBe(true);
-    expect(playerHitsSolid('workshop', WORLD_POS.labProd.x, WORLD_POS.labProd.y)).toBe(true);
-    expect(playerHitsSolid('workshop', WORLD_POS.kioskFace.x, WORLD_POS.kioskFace.y)).toBe(true);
     expect(playerHitsSolid('workshop', WORKSHOP.spawn.x, WORKSHOP.spawn.y)).toBe(false);
     expect(JOURNAL_CAP).toBe(64);
 
-    let state = playToWorkshopDone(checkpoint());
+    let state = playToKioskDone(checkpoint());
     const beforeReady = listInteractables(state).map((item) => item.id);
-    expect(beforeReady).not.toContain('lab_terminal');
-    expect(beforeReady).not.toContain('lab_prod');
-    expect(beforeReady).toContain('kiosk_face');
-    state = playToKioskDone(checkpoint());
-    expect(state.storyObjective).toBe(OBJECTIVES.labWork);
-    expect(state.kioskQuest.kioskReady).toBe(true);
-    expect(state.labQuest.labReady).toBe(false);
-    expect(state.labQuest.publishedVersion).toBe(1);
-    expect(state.evidence['4.5']).toBeUndefined();
-    expect(state.evidence['4.6']).toBeUndefined();
-    expect(state.evidence['5.4']).toBeUndefined();
-    const after = listInteractables(state).map((item) => item.id);
-    expect(after).toContain('lab_terminal');
-    expect(after).toContain('lab_prod');
-    expect(after).toContain('kiosk_face');
-  });
-});
-
-describe('4.5 broken production and targeted repair', () => {
-  it('awards only after reproduce + production.error + patch production/kiosk.js', () => {
-    expect(LAB_BROKEN_PATH).toBe('GET /appointments/slot');
-    expect(LAB_OK_PATH).toBe(API_PATH);
-    expect(PROD_ERROR_LOG).toContain('404 GET /appointments/slot');
-    expect(PROD_ERROR_LOG).toContain('GET /appointments/slots');
-    let state = playToKioskDone(checkpoint());
-    state = openFace(state);
-    expect(state.mode).toBe('kiosk');
-    state = act(state, { type: 'KIOSK_LOOKUP', slot: 'sunday' });
-    expect(state.shopFeedback).toContain('sun-pm');
-    state = playing(state);
-    state = openProd(state);
-    expect(state.mode).toBe('lab');
-    expect(state.labQuest.view).toBe('prod');
-    expect(state.evidence['4.5']).toBeUndefined();
-    state = act(state, { type: 'LAB_LOOKUP' });
-    expect(state.labQuest.reproducedBroken).toBe(true);
-    expect(state.shopFeedback).toContain(LAB_NOT_FOUND);
-    expect(state.shopFeedback).toContain(LAB_FEEDBACK.prodDown);
-    expect(canAward45(state.labQuest, true)).toBe(false);
-    expect(state.evidence['4.5']).toBeUndefined();
-    state = playing(state);
-    state = openTerminal(state);
-    state = act(state, { type: 'LAB_PATCH', file: 'production/kiosk.js' });
-    expect(state.shopFeedback).toBe(LAB_FEEDBACK.needLog);
-    expect(state.labQuest.fileRepaired).toBe(false);
-    expect(state.evidence['4.5']).toBeUndefined();
-    state = act(state, { type: 'LAB_SELECT_LOG', log: 'preview.log' });
-    expect(state.shopFeedback).toBe(LAB_FEEDBACK.decoyLog);
-    expect(state.evidence['4.5']).toBeUndefined();
-    state = act(state, { type: 'LAB_SELECT_LOG', log: 'builder.warn' });
-    expect(state.shopFeedback).toBe(LAB_FEEDBACK.decoyLog);
-    state = act(state, { type: 'LAB_PATCH', file: 'preview/kiosk.js' });
-    expect(state.shopFeedback).toBe(LAB_FEEDBACK.decoyFile);
-    state = act(state, { type: 'LAB_PATCH', file: 'notes/builder.warn' });
-    expect(state.shopFeedback).toBe(LAB_FEEDBACK.decoyFile);
-    expect(state.labQuest.fileRepaired).toBe(false);
-    state = act(state, { type: 'LAB_SELECT_LOG', log: 'production.error' });
-    expect(state.shopFeedback).toContain('404 GET /appointments/slot');
-    state = act(state, { type: 'LAB_PATCH', file: 'production/kiosk.js' });
-    expect(state.labQuest.fileRepaired).toBe(true);
-    expect(labFileContents(state.labQuest, 'production/kiosk.js')).toContain(LAB_OK_PATH);
-    expect(canAward45(state.labQuest, true)).toBe(true);
-    expect(state.evidence['4.5']).toBe('demonstrated');
-    expect(state.evidence['4.6']).toBeUndefined();
-  });
-
-  it('inspect-only, manager-talk, and robot تم do not award 4.5', () => {
-    let state = playToKioskDone(checkpoint());
-    state = openTerminal(state);
-    expect(state.labQuest.openedLab).toBe(true);
-    expect(state.evidence['4.5']).toBeUndefined();
-    state = playing(state);
-    state = act(at(state, WORLD_POS.manager.x, WORLD_POS.manager.y, 'workshop'), { type: 'INTERACT' });
-    expect(state.dialogueNode).toBe('manager_kiosk_thanks');
-    expect(state.evidence['4.5']).toBeUndefined();
-    state = act(state, { type: 'ADVANCE_DIALOGUE' });
-    state = openProd(state);
-    state = act(state, { type: 'LAB_ROBOT_DONE' });
-    expect(state.shopFeedback).toBe(LAB_FEEDBACK.robotDone);
-    expect(state.evidence['4.5']).toBeUndefined();
-  });
-});
-
-describe('4.6 preview/production logs, publish, and verify', () => {
-  it('awards only after both logs + repaired publish v2 + verified 200 slots', () => {
-    expect(PREVIEW_LOG).toBe('200 GET /appointments/slots');
-    expect(PROD_ERROR_LOG).toContain('404 GET /appointments/slot');
-    let state = playToKioskDone(checkpoint());
-    state = openProd(state);
-    state = act(state, { type: 'LAB_LOOKUP' });
-    state = playing(state);
-    state = openTerminal(state);
-    state = act(state, { type: 'LAB_PUBLISH' });
-    expect(state.shopFeedback).toBe(LAB_FEEDBACK.frozenWrong);
-    expect(state.labQuest.publishedVersion).toBe(1);
-    expect(state.evidence['4.6']).toBeUndefined();
-    state = playing(state);
-    state = openProd(state);
-    state = act(state, { type: 'LAB_LOOKUP' });
-    expect(state.shopFeedback).toContain(LAB_NOT_FOUND);
-    expect(state.evidence['4.6']).toBeUndefined();
-    state = playing(state);
-    state = openTerminal(state);
-    state = act(state, { type: 'LAB_SELECT_LOG', log: 'production.error' });
-    state = act(state, { type: 'LAB_PATCH', file: 'production/kiosk.js' });
-    expect(state.labQuest.fileRepaired).toBe(true);
-    expect(state.labQuest.publishedVersion).toBe(1);
-    state = playing(state);
-    state = openProd(state);
-    state = act(state, { type: 'LAB_LOOKUP' });
-    expect(state.shopFeedback).toContain(LAB_NOT_FOUND);
-    expect(state.evidence['4.6']).toBeUndefined();
-    state = playing(state);
-    state = openTerminal(state);
-    state = act(state, { type: 'LAB_CAT', path: 'logs/preview.log' });
-    expect(state.labQuest.readPreviewLog).toBe(true);
-    state = act(state, { type: 'LAB_CAT', path: 'logs/production.error' });
-    expect(state.labQuest.readProdLog).toBe(true);
-    state = act(state, { type: 'LAB_PUBLISH' });
-    expect(state.labQuest.publishedVersion).toBe(2);
-    expect(state.evidence['4.6']).toBeUndefined();
-    state = playing(state);
-    state = openProd(state);
-    state = act(state, { type: 'LAB_LOOKUP' });
-    expect(state.shopFeedback).toContain('200');
-    expect(state.shopFeedback).toContain('sun-pm');
-    expect(state.shopFeedback).toContain('mon-am');
-    expect(state.shopFeedback).toContain('tue-pm');
-    expect(state.shopFeedback).toBe(LAB_OK200);
-    expect(canAward46(state.labQuest, true)).toBe(true);
-    expect(state.evidence['4.6']).toBe('demonstrated');
-  });
-});
-
-describe('5.4 authored ls/cat and refused destructive commands', () => {
-  it('awards only after ls + cat + refuse, and files stay unchanged', () => {
-    let state = playToKioskDone(checkpoint());
-    state = openTerminal(state);
-    state = act(state, { type: 'LAB_REFUSE', command: 'rm -rf /' });
-    expect(state.shopFeedback).toBe(LAB_FEEDBACK.refused);
-    expect(state.labQuest.refusedDestructive).toBe(true);
-    expect(state.evidence['5.4']).toBeUndefined();
-    const before = labFileContents(state.labQuest, 'production/kiosk.js');
-    state = act(state, { type: 'LAB_REFUSE', command: 'format-disk' });
-    expect(labFileContents(state.labQuest, 'production/kiosk.js')).toBe(before);
-    expect(state.labQuest.fileRepaired).toBe(false);
-    state = act(state, { type: 'LAB_LS' });
-    expect(state.shopFeedback).toBe(LAB_PATHS.join('\n'));
-    expect(state.labQuest.listedDir).toBe(true);
-    expect(canAward54(state.labQuest, true)).toBe(false);
-    state = act(state, { type: 'LAB_CAT', path: 'preview/kiosk.js' });
-    expect(state.labQuest.readPreviewFile).toBe(true);
-    expect(canAward54(state.labQuest, true)).toBe(true);
-    expect(state.evidence['5.4']).toBe('demonstrated');
-    state = act(state, { type: 'LAB_CMD', text: 'eval("boom")' });
-    expect(state.shopFeedback).toBe(LAB_FEEDBACK.unknown);
-    expect(state.labQuest.fileRepaired).toBe(false);
-    expect(JSON.stringify(state)).not.toMatch(/امتحان|اختبار نهائي|MCP|harness|شهادة/);
-  });
-});
-
-describe('lab success', () => {
-  it('awards all three ids, thanks the manager for frozen production, and keeps the robot unsupported', () => {
-    let state = playToKioskDone(checkpoint());
-    state = openProd(state);
-    state = act(state, { type: 'LAB_LOOKUP' });
-    state = playing(state);
-    state = openTerminal(state);
-    state = act(state, { type: 'LAB_LS' });
-    state = act(state, { type: 'LAB_CAT', path: 'logs/preview.log' });
-    state = act(state, { type: 'LAB_CAT', path: 'logs/production.error' });
-    state = act(state, { type: 'LAB_SELECT_LOG', log: 'production.error' });
-    state = act(state, { type: 'LAB_PATCH', file: 'production/kiosk.js' });
-    expect(state.evidence['4.5']).toBe('demonstrated');
-    state = act(state, { type: 'LAB_REFUSE', command: 'rm -rf /' });
-    expect(state.evidence['5.4']).toBe('demonstrated');
-    expect(state.labQuest.fileRepaired).toBe(true);
-    state = act(state, { type: 'LAB_PUBLISH' });
-    state = playing(state);
-    state = openProd(state);
-    state = act(state, { type: 'LAB_LOOKUP' });
-    expect(state.evidence['4.6']).toBe('demonstrated');
+    expect(beforeReady).not.toContain('agent_console');
+    expect(beforeReady).not.toContain('agent_board');
+    expect(beforeReady).toContain('lab_terminal');
+    state = playToLabDone(checkpoint());
+    expect(state.storyObjective).toBe(OBJECTIVES.agentWork);
     expect(state.labQuest.labReady).toBe(true);
-    expect(state.labQuest.publishedVersion).toBe(2);
+    expect(state.agentQuest.agentReady).toBe(false);
     expect(state.evidence['5.1']).toBeUndefined();
     expect(state.evidence['5.2']).toBeUndefined();
-    expect(state.agentQuest.agentReady).toBe(false);
-    expect(state.storyObjective).toBe(OBJECTIVES.agentWork);
-    expect(state.journalEvents.some((event) => event.id === 'lab_ready')).toBe(true);
-    expect(state.journalEvents.some((event) => event.id === 'frozen_published')).toBe(true);
+    const after = listInteractables(state).map((item) => item.id);
+    expect(after).toContain('agent_console');
+    expect(after).toContain('agent_board');
+    expect(after).toContain('lab_terminal');
+  });
+});
+
+describe('5.1 observe-act-check on the neighborhood board', () => {
+  it('awards only after chat-plan fail, three tools in the trace, and inspecting the posted board', () => {
+    expect(CHAT_PLAN_TEXT).toBe('سأكتب الفترات الآن من الدردشة.');
+    expect(GOAL_SLOTS_TEXT).toContain('لوحة الحي');
+    let state = playToLabDone(checkpoint());
+    state = openBoard(state);
+    expect(neighborBoardText(state.agentQuest)).toBe(BOARD_EMPTY);
+    expect(state.evidence['5.1']).toBeUndefined();
+    state = playing(state);
+    state = openConsole(state);
+    expect(state.mode).toBe('agent');
+    expect(state.agentQuest.openedAgent).toBe(true);
+    expect(state.evidence['5.1']).toBeUndefined();
+    state = act(state, { type: 'AGENT_CHAT_PLAN' });
+    expect(state.shopFeedback).toBe(AGENT_FEEDBACK.chatPlan);
+    expect(neighborBoardText(state.agentQuest)).toBe(BOARD_EMPTY);
+    expect(canAward51(state.agentQuest, true)).toBe(false);
+    state = configureCorrect(state);
+    state = act(state, { type: 'AGENT_RUN' });
+    expect(state.shopFeedback).toBe(AGENT_FEEDBACK.successStop);
+    expect(state.agentQuest.trace.map((step) => step.tool)).toEqual([
+      'read_slots',
+      'write_notice',
+      'verify_notice',
+    ]);
+    expect(state.agentQuest.trace.map((step) => step.phase)).toEqual(['راقب', 'نفّذ', 'تحقق']);
+    expect(canAward51(state.agentQuest, true)).toBe(false);
+    expect(state.evidence['5.1']).toBeUndefined();
+    state = playing(state);
+    state = openBoard(state);
+    expect(state.shopFeedback ?? neighborBoardText(state.agentQuest)).toBeTruthy();
+    const board = neighborBoardText(state.agentQuest);
+    expect(board).toContain('sun-pm');
+    expect(board).toContain('mon-am');
+    expect(board).toContain('tue-pm');
+    expect(board).not.toContain(LIVE_HOURS_TEXT);
+    expect(canAward51(state.agentQuest, true)).toBe(true);
+    expect(state.evidence['5.1']).toBe('demonstrated');
+    expect(state.evidence['5.2']).toBeUndefined();
+  });
+
+  it('inspect-only, manager-talk, and robot تم do not award 5.1', () => {
+    let state = playToLabDone(checkpoint());
+    state = openConsole(state);
+    expect(state.agentQuest.openedAgent).toBe(true);
+    expect(state.evidence['5.1']).toBeUndefined();
     state = playing(state);
     state = act(at(state, WORLD_POS.manager.x, WORLD_POS.manager.y, 'workshop'), { type: 'INTERACT' });
     expect(state.dialogueNode).toBe('manager_lab_thanks');
     expect(DIALOGUE.manager_lab_thanks.text(state.playerName)).toMatch(/النسخة المجمّدة|الإنتاج/);
+    expect(state.evidence['5.1']).toBeUndefined();
+    state = act(state, { type: 'ADVANCE_DIALOGUE' });
+    state = openBoard(state);
+    expect(neighborBoardText(state.agentQuest)).toBe(BOARD_EMPTY);
+    expect(state.evidence['5.1']).toBeUndefined();
+    state = playing(state);
+    state = openConsole(state);
+    state = act(state, { type: 'AGENT_ROBOT_DONE' });
+    expect(state.shopFeedback).toBe(AGENT_FEEDBACK.robotDone);
+    expect(state.evidence['5.1']).toBeUndefined();
+  });
+});
+
+describe('5.2 four-part job and stopping', () => {
+  it('rejects wrong config, then awards after success-stop and missing-input stop', () => {
+    let state = playToLabDone(checkpoint());
+    state = openConsole(state);
+    state = act(state, { type: 'AGENT_RUN' });
+    expect(state.shopFeedback).toBe(AGENT_FEEDBACK.missingConfig);
+    expect(state.evidence['5.2']).toBeUndefined();
+    state = act(state, { type: 'AGENT_LOAD_JOB', job: 'slots' });
+    state = act(state, { type: 'AGENT_SET_GOAL', goal: 'chat_only' });
+    state = act(state, { type: 'AGENT_TOGGLE_TOOL', tool: 'read' });
+    state = act(state, { type: 'AGENT_TOGGLE_TOOL', tool: 'write' });
+    state = act(state, { type: 'AGENT_TOGGLE_TOOL', tool: 'verify' });
+    state = act(state, { type: 'AGENT_SET_SUCCESS', test: 'slots_posted' });
+    state = act(state, { type: 'AGENT_SET_STOP', rule: 'budget_3_or_missing' });
+    state = act(state, { type: 'AGENT_RUN' });
+    expect(state.shopFeedback).toBe(AGENT_FEEDBACK.wrongGoal);
+    state = act(state, { type: 'AGENT_SET_GOAL', goal: 'post_slots' });
+    state = act(state, { type: 'AGENT_TOGGLE_TOOL', tool: 'hours' });
+    state = act(state, { type: 'AGENT_RUN' });
+    expect(state.shopFeedback).toBe(AGENT_FEEDBACK.wrongTools);
+    state = act(state, { type: 'AGENT_TOGGLE_TOOL', tool: 'hours' });
+    state = act(state, { type: 'AGENT_SET_SUCCESS', test: 'robot_done' });
+    state = act(state, { type: 'AGENT_RUN' });
+    expect(state.shopFeedback).toBe(AGENT_FEEDBACK.wrongSuccess);
+    state = act(state, { type: 'AGENT_SET_SUCCESS', test: 'click_count' });
+    state = act(state, { type: 'AGENT_RUN' });
+    expect(state.shopFeedback).toBe(AGENT_FEEDBACK.wrongSuccess);
+    state = act(state, { type: 'AGENT_SET_SUCCESS', test: 'slots_posted' });
+    state = act(state, { type: 'AGENT_SET_STOP', rule: 'budget_1' });
+    state = act(state, { type: 'AGENT_RUN' });
+    expect(state.shopFeedback).toBe(AGENT_FEEDBACK.budget1);
+    expect(neighborBoardText(state.agentQuest)).toBe(BOARD_EMPTY);
+    expect(state.evidence['5.2']).toBeUndefined();
+    state = act(state, { type: 'AGENT_SET_STOP', rule: 'budget_3_or_missing' });
+    state = act(state, { type: 'AGENT_RUN' });
+    expect(state.shopFeedback).toBe(AGENT_FEEDBACK.successStop);
+    expect(state.agentQuest.successStopped).toBe(true);
+    expect(canAward52(state.agentQuest, true)).toBe(false);
+    const posted = neighborBoardText(state.agentQuest);
+    state = act(state, { type: 'AGENT_LOAD_JOB', job: 'shelf' });
+    state = act(state, { type: 'AGENT_RUN' });
+    expect(state.shopFeedback).toBe(AGENT_FEEDBACK.missingInput);
+    expect(neighborBoardText(state.agentQuest)).toBe(posted);
+    expect(canAward52(state.agentQuest, true)).toBe(true);
+    expect(state.evidence['5.2']).toBe('demonstrated');
+  });
+});
+
+describe('runner limits and agentReady', () => {
+  it('stops an extra step at budget 3, refuses live_hours, and thanks the manager', () => {
+    let state = playToLabDone(checkpoint());
+    state = openConsole(state);
+    state = act(state, { type: 'AGENT_CHAT_PLAN' });
+    state = configureCorrect(state);
+    state = act(state, { type: 'AGENT_RUN' });
+    state = playing(state);
+    state = openBoard(state);
+    expect(state.evidence['5.1']).toBe('demonstrated');
+    state = playing(state);
+    state = openConsole(state);
+    state = act(state, { type: 'AGENT_LOAD_JOB', job: 'shelf' });
+    state = act(state, { type: 'AGENT_RUN' });
+    expect(state.evidence['5.2']).toBe('demonstrated');
+    state = act(state, { type: 'AGENT_INVOKE', tool: 'live_hours' });
+    expect(state.shopFeedback).toBe(AGENT_FEEDBACK.permission);
+    state = act(state, { type: 'AGENT_LOAD_JOB', job: 'slots' });
+    state = act(state, { type: 'AGENT_SET_STOP', rule: 'unlimited' });
+    state = act(state, { type: 'AGENT_EXTRA_STEP' });
+    expect(state.shopFeedback).toBe(AGENT_FEEDBACK.unlimitedExtra);
+    expect(neighborBoardText(state.agentQuest)).toContain(LIVE_HOURS_TEXT);
+    expect(state.agentQuest.stoppedExtra).toBe(false);
+    expect(state.agentQuest.agentReady).toBe(false);
+    state = act(state, { type: 'AGENT_SET_STOP', rule: 'budget_3_or_missing' });
+    state = act(state, { type: 'AGENT_RUN' });
+    expect(neighborBoardText(state.agentQuest)).not.toContain(LIVE_HOURS_TEXT);
+    state = act(state, { type: 'AGENT_EXTRA_STEP' });
+    expect(state.shopFeedback).toBe(AGENT_FEEDBACK.budget3);
+    expect(neighborBoardText(state.agentQuest)).toContain('sun-pm');
+    expect(neighborBoardText(state.agentQuest)).not.toContain(LIVE_HOURS_TEXT);
+    expect(state.agentQuest.stoppedExtra).toBe(true);
+    expect(state.agentQuest.agentReady).toBe(true);
+    expect(state.storyObjective).toBe(OBJECTIVES.agentReady);
+    expect(JSON.stringify(state)).not.toMatch(/امتحان|اختبار نهائي|MCP|harness|شهادة/);
+    state = playing(state);
+    state = act(at(state, WORLD_POS.manager.x, WORLD_POS.manager.y, 'workshop'), { type: 'INTERACT' });
+    expect(state.dialogueNode).toBe('manager_agent_thanks');
+    expect(DIALOGUE.manager_agent_thanks.text(state.playerName)).toMatch(
+      /لوحة الحي تعرض الفترات الثلاث/,
+    );
     state = act(state, { type: 'ADVANCE_DIALOGUE' });
     state = act(at(state, WORLD_POS.robot.x, WORLD_POS.robot.y, 'street'), { type: 'INTERACT' });
-    expect(state.dialogueNode).toBe('companion_after_lab');
-    expect(DIALOGUE.companion_after_lab.text(state.playerName)).toMatch(/rm -rf|الجيران يرون المعاينة/);
+    expect(state.dialogueNode).toBe('companion_after_agent');
+    expect(DIALOGUE.companion_after_agent.text(state.playerName)).toMatch(
+      /الدردشة وحدها وكالة|المشغّل اختياري/,
+    );
     expect(robotPosition(state).x).toBe(state.position.x - 32);
-    expect(JSON.stringify(state)).not.toMatch(/امتحان|اختبار نهائي|MCP|harness|شهادة/);
     expect(state.journalEvents.length).toBeLessThanOrEqual(JOURNAL_CAP);
-    expect(DECOY_WARN).toContain('الجيران');
-    expect(Object.keys(state.evidence).includes('4.5')).toBe(true);
-    expect(state.evidence['4.3']).toBe('demonstrated');
-    expect(state.evidence['4.4']).toBe('demonstrated');
+    expect(state.journalEvents.some((event) => event.id === 'lab_ready')).toBe(true);
+    expect(state.journalEvents.some((event) => event.id === 'agent_ready')).toBe(true);
   });
 
-  it('hydrates missing labQuest as unstarted frozen v1, saveVersion 1', () => {
-    const state = playToKioskDone(checkpoint());
+  it('hydrates missing agentQuest as unstarted, saveVersion 1', () => {
+    const state = playToLabDone(checkpoint());
     const envelope = toEnvelope(state);
     expect(envelope.saveVersion).toBe(1);
-    const legacy = { ...envelope, labQuest: undefined };
+    const legacy = { ...envelope, agentQuest: undefined };
     const parsed = validateSave(JSON.stringify(legacy));
     expect(parsed).not.toBeNull();
     const hydrated = hydrateSave(parsed!, 'ok', false);
-    expect(hydrated.labQuest).toEqual(createLabQuest());
-    expect(hydrated.labQuest.publishedVersion).toBe(1);
-    expect(hydrated.labQuest.labReady).toBe(false);
-    expect(hydrated.kioskQuest.kioskReady).toBe(true);
-    expect(parseLabQuest(undefined).phase).toBe('unstarted');
-    expect(createKioskQuest().kioskReady).toBe(false);
+    expect(hydrated.agentQuest).toEqual(createAgentQuest());
+    expect(hydrated.agentQuest.agentReady).toBe(false);
+    expect(hydrated.labQuest.labReady).toBe(true);
+    expect(hydrated.labQuest).toEqual(expect.objectContaining({ labReady: true }));
+    expect(parseAgentQuest(undefined).phase).toBe('unstarted');
+    expect(createLabQuest().labReady).toBe(false);
+    expect(hydrated.storyObjective).toBe(OBJECTIVES.agentWork);
   });
 });
+

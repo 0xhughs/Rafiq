@@ -728,6 +728,14 @@ function drawWorkshop(ctx: CanvasRenderingContext2D): void {
   fillRound(ctx, prod.x + 4, prod.y + 6, prod.w - 8, prod.h - 10, 4, '#f3d0c4');
   ctx.fillStyle = '#7a241c';
   ctx.fillText('إنتاج', prod.x + prod.w / 2, prod.y + 28);
+  const agentConsole = FURNITURE.workshop.console;
+  fillRound(ctx, agentConsole.x + 4, agentConsole.y + 6, agentConsole.w - 8, agentConsole.h - 10, 4, '#dce8f4');
+  ctx.fillStyle = '#163238';
+  ctx.fillText('مشغّل', agentConsole.x + agentConsole.w / 2, agentConsole.y + 28);
+  const notice = FURNITURE.workshop.neighborNotice;
+  fillRound(ctx, notice.x + 4, notice.y + 6, notice.w - 8, notice.h - 10, 4, '#efe6d0');
+  ctx.fillStyle = '#2a2118';
+  ctx.fillText('حي', notice.x + notice.w / 2, notice.y + 28);
   const counter = FURNITURE.workshop.counter;
   fillRound(ctx, counter.x + 2, counter.y + 6, counter.w - 4, counter.h - 10, 6, PALETTE.workshop);
   ctx.fillStyle = '#ead9c0';
@@ -744,6 +752,7 @@ function drawRobot(
   companion: boolean,
   commsRepaired: boolean,
   contextModule: boolean,
+  planningCore: boolean,
 ): void {
   ctx.fillStyle = PALETTE.shadow;
   ctx.beginPath();
@@ -784,6 +793,18 @@ function drawRobot(
     fillRound(ctx, x - 18, y - 6, 12, 10, 2, '#1c3b40');
     ctx.fillStyle = '#7fdbda';
     ctx.fillRect(x - 16, y - 3, 8, 4);
+  }
+  if (planningCore) {
+    ctx.fillStyle = '#f4e4c4';
+    ctx.beginPath();
+    ctx.moveTo(x, y - 28);
+    ctx.lineTo(x + 6, y - 18);
+    ctx.lineTo(x - 6, y - 18);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#2f5d62';
+    ctx.lineWidth = 1;
+    ctx.stroke();
   }
   if (companion) {
     ctx.strokeStyle = 'rgba(127, 219, 218, 0.6)';
@@ -843,6 +864,7 @@ export function drawWorld(ctx: CanvasRenderingContext2D, state: GameState, time:
       state.encounter === 'help_accepted',
       state.parcelQuest.commsRepaired,
       state.libraryQuest.contextModule,
+      state.agentQuest.agentReady,
     );
   }
   drawPlayer(ctx, state.position.x, state.position.y, state.facing);

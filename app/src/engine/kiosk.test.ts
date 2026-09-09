@@ -476,7 +476,7 @@ describe('kiosk stations after servicePosted', () => {
     expect(after).toContain('kiosk_docs');
     expect(after).toContain('kiosk_vault');
     expect(after).toContain('kiosk_face');
-    expect(JOURNAL_CAP).toBe(56);
+    expect(JOURNAL_CAP).toBe(64);
   });
 });
 

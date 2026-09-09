@@ -31,6 +31,7 @@ import { BriefOverlay } from './ui/BriefOverlay';
 import { BoardOverlay } from './ui/BoardOverlay';
 import { KioskOverlay } from './ui/KioskOverlay';
 import { LabOverlay } from './ui/LabOverlay';
+import { AgentOverlay } from './ui/AgentOverlay';
 import { evidenceAttr } from './engine/shop';
 
 function reducer(state: GameState, action: GameAction): GameState {
@@ -132,7 +133,7 @@ export default function App() {
       data-dialogue={state.dialogueNode ?? ''}
       data-save={state.saveStatus}
       data-evidence={evidenceAttr(state.evidence)}
-      data-slice="10"
+      data-slice="11"
       data-shop-quest={state.shopQuest.phase}
       data-parcel-quest={state.parcelQuest.phase}
       data-comms-repaired={state.parcelQuest.commsRepaired ? 'true' : 'false'}
@@ -147,6 +148,8 @@ export default function App() {
       data-kiosk-ready={state.kioskQuest.kioskReady ? 'true' : 'false'}
       data-lab-quest={state.labQuest.phase}
       data-lab-ready={state.labQuest.labReady ? 'true' : 'false'}
+      data-agent-quest={state.agentQuest.phase}
+      data-agent-ready={state.agentQuest.agentReady ? 'true' : 'false'}
       data-context-window={state.libraryQuest.windowSlots.join(',')}
       data-cassette={state.libraryQuest.contextModule ? 'contextModule' : ''}
       data-workshop-lead={state.newsroomQuest.workshopLead ? 'true' : 'false'}
@@ -170,6 +173,7 @@ export default function App() {
         servicePosted={state.workshopQuest.servicePosted}
         kioskReady={state.kioskQuest.kioskReady}
         labReady={state.labQuest.labReady}
+        agentReady={state.agentQuest.agentReady}
       />
       {naming ? (
         <NameEntry
@@ -368,6 +372,22 @@ export default function App() {
           onRefuse={(command) => dispatch({ type: 'LAB_REFUSE', command })}
           onRobotDone={() => dispatch({ type: 'LAB_ROBOT_DONE' })}
           onCmd={(text) => dispatch({ type: 'LAB_CMD', text })}
+          onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+        />
+      ) : null}
+      {state.mode === 'agent' ? (
+        <AgentOverlay
+          state={state}
+          onChatPlan={() => dispatch({ type: 'AGENT_CHAT_PLAN' })}
+          onRun={() => dispatch({ type: 'AGENT_RUN' })}
+          onExtra={() => dispatch({ type: 'AGENT_EXTRA_STEP' })}
+          onLoadJob={(job) => dispatch({ type: 'AGENT_LOAD_JOB', job })}
+          onGoal={(goal) => dispatch({ type: 'AGENT_SET_GOAL', goal })}
+          onTool={(tool) => dispatch({ type: 'AGENT_TOGGLE_TOOL', tool })}
+          onSuccess={(test) => dispatch({ type: 'AGENT_SET_SUCCESS', test })}
+          onStop={(rule) => dispatch({ type: 'AGENT_SET_STOP', rule })}
+          onRobotDone={() => dispatch({ type: 'AGENT_ROBOT_DONE' })}
+          onInvokeHours={() => dispatch({ type: 'AGENT_INVOKE', tool: 'live_hours' })}
           onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
         />
       ) : null}

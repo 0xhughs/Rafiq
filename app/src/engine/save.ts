@@ -12,6 +12,7 @@ import { parseFestivalQuest } from './festival';
 import { parseWorkshopQuest } from './workshop';
 import { parseKioskQuest } from './kiosk';
 import { parseLabQuest } from './lab';
+import { parseAgentQuest } from './agent';
 import type {
   EndingState,
   Facing,
@@ -107,6 +108,13 @@ const JOURNAL_IDS: readonly JournalEventId[] = [
   'log_selected',
   'frozen_published',
   'lab_ready',
+  'agent_opened',
+  'chat_plan_seen',
+  'job_configured',
+  'board_posted',
+  'missing_stopped',
+  'extra_stopped',
+  'agent_ready',
 ];
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -164,6 +172,7 @@ export function toEnvelope(state: GameState): SaveEnvelope {
     workshopQuest: parseWorkshopQuest(state.workshopQuest),
     kioskQuest: parseKioskQuest(state.kioskQuest),
     labQuest: parseLabQuest(state.labQuest),
+    agentQuest: parseAgentQuest(state.agentQuest),
     robot: { companion },
     endingState: 'in_progress',
     mapsVisited: state.mapsVisited.length > 0 ? [...state.mapsVisited] : [state.map],
@@ -303,6 +312,7 @@ export function validateSave(raw: unknown): SaveEnvelope | null {
     workshopQuest: parseWorkshopQuest(data.workshopQuest),
     kioskQuest: parseKioskQuest(data.kioskQuest),
     labQuest: parseLabQuest(data.labQuest),
+    agentQuest: parseAgentQuest(data.agentQuest),
     robot: { companion },
     endingState: 'in_progress' satisfies EndingState,
     mapsVisited: mapsVisited.length > 0 ? mapsVisited : [data.map],
@@ -317,6 +327,12 @@ export function hydrateSave(
   const map = envelope.map;
   const position = snapIfUnsafe(map, envelope.position);
   const companion = envelope.robot.companion || envelope.encounter === 'help_accepted';
+  const labQuest = parseLabQuest(envelope.labQuest);
+  const agentQuest = parseAgentQuest(envelope.agentQuest);
+  let storyObjective =
+    envelope.storyObjective || (companion ? OBJECTIVES.cornerStore : OBJECTIVES.takeTrash);
+  if (agentQuest.agentReady) storyObjective = OBJECTIVES.agentReady;
+  else if (labQuest.labReady) storyObjective = OBJECTIVES.agentWork;
   return {
     playerName: envelope.playerName,
     nameDraft: envelope.playerName,
@@ -329,7 +345,7 @@ export function hydrateSave(
     encounter: companion ? 'help_accepted' : envelope.encounter === 'talking' ? 'available' : envelope.encounter,
     dialogueNode: null,
     conversationSeen: envelope.conversationSeen,
-    storyObjective: envelope.storyObjective || (companion ? OBJECTIVES.cornerStore : OBJECTIVES.takeTrash),
+    storyObjective,
     checkpointReached: companion || envelope.checkpointReached,
     inventory: syncInventory(envelope.inventory, envelope.trash),
     neighbor: persistableGreeting(envelope.neighbor),
@@ -348,7 +364,8 @@ export function hydrateSave(
     festivalQuest: parseFestivalQuest(envelope.festivalQuest),
     workshopQuest: parseWorkshopQuest(envelope.workshopQuest),
     kioskQuest: parseKioskQuest(envelope.kioskQuest),
-    labQuest: parseLabQuest(envelope.labQuest),
+    labQuest,
+    agentQuest,
     calculator: createCalculator(),
     inspectTarget: null,
     explainTopic: null,
@@ -455,6 +472,7 @@ export function shouldPersist(prev: GameState, next: GameState, action: GameActi
   if (JSON.stringify(prev.workshopQuest) !== JSON.stringify(next.workshopQuest)) return true;
   if (JSON.stringify(prev.kioskQuest) !== JSON.stringify(next.kioskQuest)) return true;
   if (JSON.stringify(prev.labQuest) !== JSON.stringify(next.labQuest)) return true;
+  if (JSON.stringify(prev.agentQuest) !== JSON.stringify(next.agentQuest)) return true;
   if (persistableGreeting(prev.librarian) !== persistableGreeting(next.librarian)) return true;
   if (persistableGreeting(prev.editor) !== persistableGreeting(next.editor)) return true;
   if (persistableGreeting(prev.officer) !== persistableGreeting(next.officer)) return true;

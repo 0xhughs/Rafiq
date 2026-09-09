@@ -4,7 +4,7 @@ import type { GameAction, MapId, SerializedTestState } from '../src/engine/types
 
 export async function waitForGame(page: Page): Promise<void> {
   await page.waitForFunction(() => Boolean(window.__RAFIQ_TEST__));
-  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '10');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '11');
 }
 
 export async function getState(page: Page): Promise<SerializedTestState> {
@@ -477,4 +477,34 @@ export async function playToKioskDone(page: Page, name = 'علي حسن'): Promi
   expect(done.evidence['4.6']).toBeUndefined();
   expect(done.evidence['5.4']).toBeUndefined();
   expect(done.labQuest.labReady).toBe(false);
+}
+
+export async function playToLabDone(page: Page, name = 'علي حسن'): Promise<void> {
+  await playToKioskDone(page, name);
+  await interactAt(page, 'workshop', WORLD_POS.labProd.x, WORLD_POS.labProd.y);
+  await page.getByTestId('lab-lookup').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'workshop', WORLD_POS.labTerminal.x, WORLD_POS.labTerminal.y);
+  await page.getByTestId('lab-ls').click();
+  await page.getByTestId('lab-cat-preview-log').click();
+  await page.getByTestId('lab-cat-prod-log').click();
+  await page.getByTestId('lab-select-prod-log').click();
+  await page.getByTestId('lab-patch-prod').click();
+  await page.getByTestId('lab-rm').click();
+  await page.getByTestId('lab-publish').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'workshop', WORLD_POS.labProd.x, WORLD_POS.labProd.y);
+  await page.getByTestId('lab-lookup').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  const done = await getState(page);
+  expect(done.evidence['4.5']).toBe('demonstrated');
+  expect(done.evidence['4.6']).toBe('demonstrated');
+  expect(done.evidence['5.4']).toBe('demonstrated');
+  expect(done.labQuest.labReady).toBe(true);
+  expect(done.evidence['5.1']).toBeUndefined();
+  expect(done.evidence['5.2']).toBeUndefined();
+  expect(done.agentQuest.agentReady).toBe(false);
 }
