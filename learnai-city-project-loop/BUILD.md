@@ -33,7 +33,13 @@ No new `MapId`. Evidence union adds `'5.5' | '5.6'`. Interactables: `skill_bench
 - T05 — typecheck, lint, test, build; `evidence/13/project-checks.txt`.
 - T06 — Keep **01–12** e2e; bridge success must **not** award 5.5 or 5.6 or set `skillReady`. Entering the bench / opening the clock must not itself award. Update 12 assertions that treat `OBJECTIVES.bridgeReady` as the terminal HUD string (it becomes `OBJECTIVES.skillWork`). Keep `bridge.spec.ts` manager `/مسودة ساعات قاعة الحي حُفظت من NH-1447/` and companion `/MCP مهارة تُحمَّل|الربط يفتح كل الأدوات/` while `!skillReady`. Keep `agent.spec.ts` `body` ↛ `MCP` on the agent-success path. Reviewer maps AC01–AC06 and verifies snapshot.
 ## Proof
-Not completed yet.
+Builder claims for d-20260909-051-impl-13 (not independently accepted):
+- Candidate (coordinator recomputed): `2c6b74d809f5ef24180183524179624c81d2f05b774bf0c8d79efe5ec44b6881` (259 files).
+- Contract unchanged: `8a9aea48eb6b70ada4fe0a79f97acd0388af396fd1827e123bbfb8e522506d04`.
+- Claimed checks: tsc/lint/build exit 0; vitest 121; Playwright 54/54 on preview :4410 and Vite :5410.
+- Claimed artifacts: `evidence/13/` per T02 plus overlays.png, state-tests.txt, project-checks.txt, browser-checks.md.
+- Claimed: bridge success does not award 5.5/5.6; persistable GameState has no MCP/harness; clock is authored ticks.
+Reviewer must re-run checks in an isolated copy and map AC01–AC06.
 
 ## Review
 Plan approved. Implementation not started.
@@ -44,15 +50,15 @@ Each result records dispatch ID, reviewer identity, verdict, contract identity, 
 ## Loop state
 Execution mode / tool adapter: Cursor Cloud Agent coordinator with Task-spawned Builder and Reviewer subagents. Spawn = Task(generalPurpose). Send = Task resume. Wait = blocking Task completion. Stop = subagent completion; coordinator does not start a second writer in this checkout. Reviewer contexts are fresh and do not receive Builder reasoning. Mutating Reviewer checks, if needed, run on an isolated copy.
 Coordinator: cloud agent bc-6380229a-c83f-493f-af1c-47e5f2b00c70 (https://cursor.com/agents/bc-6380229a-c83f-493f-af1c-47e5f2b00c70), role Coordinator, checkout /workspace on branch cursor/rafiq-continue-slices-0c70
-Worker / role / phase: pending launch / Builder / implementation
-Dispatch ID / launch state / input identity: d-20260909-051-impl-13 / pending launch / contract:8a9aea48eb6b70ada4fe0a79f97acd0388af396fd1827e123bbfb8e522506d04 baseline:bcf132db68e8047cc451af252f2fc3ec4ce4c881e5a202d41b2aaa13317cae5b
-Pending result / last consumed dispatch: none / d-20260909-050-plan-13
+Worker / role / phase: pending launch / Reviewer / implementation
+Dispatch ID / launch state / input identity: d-20260909-052-implrev-13 / pending launch / contract:8a9aea48eb6b70ada4fe0a79f97acd0388af396fd1827e123bbfb8e522506d04 candidate:2c6b74d809f5ef24180183524179624c81d2f05b774bf0c8d79efe5ec44b6881
+Pending result / last consumed dispatch: none / d-20260909-051-impl-13
 Snapshot capture and recheck commands / coverage / exclusions: Capture = `python3 .loop/identity.py snapshot --label <label>` from repository root. Recheck = same command; compare `.loop/snapshots/<label>.digest` and the JSON `digest` field. Contract = `python3 .loop/identity.py contract`; identity is `.loop/contract/hashes.json` field `contract`. Combined = `python3 .loop/identity.py both --label <label>`.
 Coverage: `app`, `evidence`, root `package.json`/`package-lock.json`/`pnpm-lock.yaml`/`yarn.lock`, `index.html`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `playwright.config.ts`, `vitest.config.ts`, `README.md`, `public`. Missing paths are skipped. Detect add/delete by regenerating the covered file list.
 Exclusions: `.git`, `.loop`, `learnai-city-project-loop`, `node_modules`, `app/node_modules`, `app/dist`, `dist`, `coverage`, `test-results`, `playwright-report`, `.vite`, `app/.vite`. Protocol files are identified by contract hash, not candidate snapshot.
 Baseline snapshot: shipped slice 12 `bcf132db68e8047cc451af252f2fc3ec4ce4c881e5a202d41b2aaa13317cae5b` (242 covered files)
 Contract identity: `8a9aea48eb6b70ada4fe0a79f97acd0388af396fd1827e123bbfb8e522506d04` (`.loop/contract/hashes.json`)
-Candidate snapshot: none
+Candidate snapshot: `2c6b74d809f5ef24180183524179624c81d2f05b774bf0c8d79efe5ec44b6881` (259 files)
 Rejection count: 0
 Consecutive no-progress repairs: 0
 Open acceptance gaps / prior failing evidence: none
@@ -66,7 +72,7 @@ Next slice ID / draft: none
 Prior shipped receipt: slice 12 archive `slices/12-the-bridge-between-systems.md`
 
 ## Status
-Building
+Ready for review
 
 ## Next
-Builder implements slice 13 under dispatch d-20260909-051-impl-13. Do not edit protocol files.
+Independent implementation review of slice 13 under dispatch d-20260909-052-implrev-13.
