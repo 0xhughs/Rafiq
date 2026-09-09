@@ -213,15 +213,17 @@ export function awardEvidence(state: GameState): GameState {
   const quest = syncShopPhase(state.shopQuest);
   const evidence: EvidenceMap = { ...state.evidence };
   if (lookupReady(quest)) evidence['1.1'] = 'demonstrated';
-  if (
-    quest.noticePosted &&
-    quest.hasExactTotal &&
-    quest.noticeTotalFixed &&
-    (quest.noticeDatesFixed || quest.noticeWaterFixed)
-  ) {
+  if (quest.noticePosted && postedNoticeValid(quest)) {
     evidence['1.2'] = 'demonstrated';
   }
-  if (quest.refusedRobotPrice && quest.correctedPrice && quest.rejectedSecondClaim) {
+  if (
+    quest.refusedRobotPrice &&
+    quest.inspectedDatesAfterRefuse &&
+    quest.correctedPrice &&
+    quest.heardSecondClaim &&
+    quest.inspectedAfterSecondClaim &&
+    quest.rejectedSecondClaim
+  ) {
     evidence['1.3'] = 'demonstrated';
   }
   if (toolsReady(quest)) evidence['1.6'] = 'demonstrated';
@@ -316,9 +318,12 @@ export function noticeBody(quest: ShopQuest): string {
 }
 
 export function postedNoticeValid(quest: ShopQuest): boolean {
-  if (!quest.hasExactTotal || !quest.noticeTotalFixed) return false;
-  if (!quest.noticeDatesFixed && !quest.noticeWaterFixed) return false;
-  return true;
+  return (
+    quest.hasExactTotal &&
+    quest.noticeTotalFixed &&
+    quest.noticeDatesFixed &&
+    quest.noticeWaterFixed
+  );
 }
 
 export function inspectShop(state: GameState, target: InspectTarget): GameState {

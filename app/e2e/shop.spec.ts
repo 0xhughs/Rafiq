@@ -82,6 +82,7 @@ test('help-accepted through shop success with physical actions', async ({ page }
   await interactAt(page, 'shop', WORLD_POS.noticeBoard.x, WORLD_POS.noticeBoard.y);
   await expect(page.getByTestId('notice-posted')).toContainText('١٧');
   await expect(page.getByTestId('notice-posted')).not.toContainText('٢٠');
+  await expect(page.getByTestId('notice-posted')).not.toContainText('١٨');
   await expect(page.getByTestId('notice-posted')).not.toContainText('نفد');
   await page.waitForTimeout(200);
   await page.screenshot({ path: path.join(evidenceDir, 'notice.png'), fullPage: true });
@@ -156,8 +157,6 @@ test('shop overlays stay inside 1366 and 1920 viewports', async ({ page }) => {
     expect(box.x + box.width).toBeLessThanOrEqual(1367);
     expect(box.y + box.height).toBeLessThanOrEqual(769);
   }
-  await page.waitForTimeout(200);
-  await page.screenshot({ path: path.join(evidenceDir, 'overlays.png'), fullPage: true });
   await page.getByTestId('inspect-close').click();
 
   await page.setViewportSize({ width: 1920, height: 1080 });
@@ -167,9 +166,13 @@ test('shop overlays stay inside 1366 and 1920 viewports', async ({ page }) => {
   const calcBox = await calc.locator('.calculator-body').boundingBox();
   expect(calcBox).not.toBeNull();
   if (calcBox) {
+    expect(calcBox.x).toBeGreaterThanOrEqual(0);
+    expect(calcBox.y).toBeGreaterThanOrEqual(0);
     expect(calcBox.x + calcBox.width).toBeLessThanOrEqual(1921);
     expect(calcBox.y + calcBox.height).toBeLessThanOrEqual(1081);
   }
+  await page.waitForTimeout(200);
+  await page.screenshot({ path: path.join(evidenceDir, 'overlays.png'), fullPage: true });
   await dispatch(page, { type: 'CLOSE_OVERLAY' });
   await assertNoLessonUi(page);
 });

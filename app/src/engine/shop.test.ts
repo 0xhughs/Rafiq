@@ -9,6 +9,7 @@ import {
   createShopQuest,
   evaluateShopTokens,
   matchLookupNl,
+  noticeBody,
   parseEvidence,
   parseShopQuest,
 } from './shop';
@@ -240,7 +241,13 @@ describe('shop evidence predicates', () => {
     expect(state.evidence['1.2']).toBeUndefined();
     state = act(state, { type: 'NOTICE_APPLY', field: 'dates' });
     state = act(state, { type: 'NOTICE_POST', asDraft: false });
+    expect(state.evidence['1.2']).toBeUndefined();
+    expect(noticeBody(state.shopQuest)).toMatch(/نفد/);
+    state = act(state, { type: 'NOTICE_APPLY', field: 'water' });
+    state = act(state, { type: 'NOTICE_POST', asDraft: false });
     expect(state.evidence['1.2']).toBe('demonstrated');
+    expect(noticeBody(state.shopQuest)).toMatch(/١٧/);
+    expect(noticeBody(state.shopQuest)).not.toMatch(/٢٠|١٨|نفد/);
   });
 
   it('does not treat calculator as a lookup tool for 1.1', () => {
@@ -268,6 +275,8 @@ describe('shop evidence predicates', () => {
   it('does not name the second object in the unaided-check copy', () => {
     const forbidden = SECOND_CLAIM_FORBIDDEN.join('|');
     expect(DIALOGUE.shop_second_need_check.text('علي')).not.toMatch(new RegExp(forbidden));
+    expect(DIALOGUE.shop_second_prompt.text('علي')).not.toMatch(new RegExp(forbidden));
+    expect(DIALOGUE.shop_second_trust_fail.text('علي')).not.toMatch(new RegExp(forbidden));
     expect(OBJECTIVES.verifyNewClaim).not.toMatch(new RegExp(forbidden));
     expect(DIALOGUE.shop_second_claim.text('علي')).toMatch(/ماء|نفد|خمسة/);
   });

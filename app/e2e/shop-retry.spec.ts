@@ -29,6 +29,7 @@ async function completeLookupAndNotice(page: import('@playwright/test').Page): P
   await interactAt(page, 'shop', WORLD_POS.noticeBoard.x, WORLD_POS.noticeBoard.y);
   await page.getByTestId('notice-use-total').click();
   await page.getByTestId('notice-use-dates').click();
+  await page.getByTestId('notice-use-water').click();
   await page.getByTestId('notice-post').click();
   await skipExplainIfOpen(page);
 }

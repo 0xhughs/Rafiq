@@ -35,7 +35,7 @@ export function NoticeOverlay({ state, onApply, onPost, onClose }: Props) {
                 data-testid="notice-use-total"
                 onClick={() => onApply('total')}
               >
-                ضع مجموع الآلة (١٧)
+                ضع مجموع الآلة
               </button>
               <button
                 type="button"
@@ -43,7 +43,7 @@ export function NoticeOverlay({ state, onApply, onPost, onClose }: Props) {
                 data-testid="notice-use-dates"
                 onClick={() => onApply('dates')}
               >
-                تمر من السجل (٩)
+                تمر من السجل
               </button>
               <button
                 type="button"
@@ -51,7 +51,7 @@ export function NoticeOverlay({ state, onApply, onPost, onClose }: Props) {
                 data-testid="notice-use-water"
                 onClick={() => onApply('water')}
               >
-                الماء من السجل (متوفر)
+                الماء من السجل
               </button>
             </div>
             <div className="button-row">
