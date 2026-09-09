@@ -34,7 +34,13 @@ No new `MapId`. Evidence union adds `'4.5' | '4.6' | '5.4'`. Interactables: `lab
 - T06 — Keep **01–09** e2e; kiosk success must **not** award 4.5/4.6/5.4 or set `labReady`. Entering the lab / opening the terminal must not itself award. Reviewer maps AC01–AC06 and verifies snapshot.
 
 ## Proof
-Not completed yet.
+Builder claims for d-20260908-038-impl-10 (not independently accepted):
+- Candidate (coordinator recomputed): `d545ac5454cb3765daf9123b717a7f9c0cd912b73ed66a448430f0550b8e992d` (207 files).
+- Contract unchanged: `0e6d7f4d7cc607b401b35ab541646c8ae3ca5cf9bf271461fcc1b604d3ad61c5`.
+- Claimed checks: tsc/lint/build exit 0; vitest 105; Playwright 45/45 on preview :4188 and Vite :5192.
+- Claimed artifacts: `evidence/10/` per T02 plus overlays.png, state-tests.txt, project-checks.txt, browser-checks.md.
+- Claimed: kiosk success does not award 4.5/4.6/5.4; WORLD_POS.robot unchanged; no real shell/fetch.
+Reviewer must re-run checks in an isolated copy and map AC01–AC06.
 
 ## Review
 Plan approved. Implementation not started.
@@ -45,15 +51,15 @@ Each result records dispatch ID, reviewer identity, verdict, contract identity, 
 ## Loop state
 Execution mode / tool adapter: Cursor Cloud Agent coordinator with Task-spawned Builder and Reviewer subagents. Spawn = Task(generalPurpose). Send = Task resume. Wait = blocking Task completion. Stop = subagent completion; coordinator does not start a second writer in this checkout. Reviewer contexts are fresh and do not receive Builder reasoning. Mutating Reviewer checks, if needed, run on an isolated copy.
 Coordinator: cloud agent bc-6380229a-c83f-493f-af1c-47e5f2b00c70 (https://cursor.com/agents/bc-6380229a-c83f-493f-af1c-47e5f2b00c70), role Coordinator, checkout /workspace on branch cursor/rafiq-ai-city-adventure-0c70
-Worker / role / phase: pending launch / Builder / implementation
-Dispatch ID / launch state / input identity: d-20260908-038-impl-10 / pending launch / contract:0e6d7f4d7cc607b401b35ab541646c8ae3ca5cf9bf271461fcc1b604d3ad61c5 baseline:a6c3018582acd8bf0737ff9e684ed063eeb4a9ed32a8d3362184e1af3bc248b6
-Pending result / last consumed dispatch: none / d-20260908-037-plan-10
+Worker / role / phase: pending launch / Reviewer / implementation
+Dispatch ID / launch state / input identity: d-20260908-039-implrev-10 / pending launch / contract:0e6d7f4d7cc607b401b35ab541646c8ae3ca5cf9bf271461fcc1b604d3ad61c5 candidate:d545ac5454cb3765daf9123b717a7f9c0cd912b73ed66a448430f0550b8e992d
+Pending result / last consumed dispatch: none / d-20260908-038-impl-10
 Snapshot capture and recheck commands / coverage / exclusions: Capture = `python3 .loop/identity.py snapshot --label <label>` from repository root. Recheck = same command; compare `.loop/snapshots/<label>.digest` and the JSON `digest` field. Contract = `python3 .loop/identity.py contract`; identity is `.loop/contract/hashes.json` field `contract`. Combined = `python3 .loop/identity.py both --label <label>`.
 Coverage: `app`, `evidence`, root `package.json`/`package-lock.json`/`pnpm-lock.yaml`/`yarn.lock`, `index.html`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `playwright.config.ts`, `vitest.config.ts`, `README.md`, `public`. Missing paths are skipped. Detect add/delete by regenerating the covered file list.
 Exclusions: `.git`, `.loop`, `learnai-city-project-loop`, `node_modules`, `app/node_modules`, `app/dist`, `dist`, `coverage`, `test-results`, `playwright-report`, `.vite`, `app/.vite`. Protocol files are identified by contract hash, not candidate snapshot.
 Baseline snapshot: shipped slice 09 `a6c3018582acd8bf0737ff9e684ed063eeb4a9ed32a8d3362184e1af3bc248b6` (187 covered files)
 Contract identity: `0e6d7f4d7cc607b401b35ab541646c8ae3ca5cf9bf271461fcc1b604d3ad61c5` (`.loop/contract/hashes.json`)
-Candidate snapshot: none
+Candidate snapshot: `d545ac5454cb3765daf9123b717a7f9c0cd912b73ed66a448430f0550b8e992d` (207 files)
 Rejection count: 0
 Consecutive no-progress repairs: 0
 Open acceptance gaps / prior failing evidence: none
@@ -67,7 +73,7 @@ Next slice ID / draft: none
 Prior shipped receipt: slice 09 archive `slices/09-the-kiosk-speaks-arabic.md`
 
 ## Status
-Building
+Ready for review
 
 ## Next
-Builder implements slice 10 under dispatch d-20260908-038-impl-10.
+Independent implementation review of slice 10 under dispatch d-20260908-039-implrev-10.
