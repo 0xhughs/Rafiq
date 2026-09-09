@@ -1,0 +1,76 @@
+T05 project checks — Rafiq slice 12
+cwd: /workspace/app
+date: 2026-09-09T15:37:34Z
+node: v22.14.0
+npm: 10.9.7
+chrome: Google Chrome 148.0.7778.96    (/usr/bin/google-chrome)
+
+Note: this Cloud Agent environment had Vite already listening on 5173 (another
+checkout) and preview 4173. Playwright preview used free port 4304
+(`env -u BASE_URL PREVIEW_PORT=4304`). Dev e2e used a fresh Vite on
+5304 with BASE_URL=http://127.0.0.1:5304 and no reuseExistingServer.
+Stray BASE_URL was unset for the preview run (`env -u BASE_URL`).
+`grep fetch app/src/engine/bridge.ts` matched nothing.
+
+===== typecheck (npx tsc --noEmit) =====
+
+tsc_root_exit: 0
+
+===== typecheck (npx tsc --noEmit -p tsconfig.app.json) =====
+
+tsc_app_exit: 0
+
+===== lint (eslint .) =====
+
+
+> app@0.0.0 lint
+> eslint .
+
+
+lint exit: 0
+
+===== unit tests (npx vitest run) =====
+
+
+ RUN  v5.0.0 /workspace/app
+
+
+ Test Files  12 passed (12)
+      Tests  116 passed (116)
+   Start at  15:27:36
+   Duration  873ms (transform 56%, import 24%, tests 19%, worker 2%)
+
+
+test exit: 0
+
+===== production build (tsc -b && vite build) =====
+
+
+> app@0.0.0 build
+> tsc -b && vite build
+
+vite v6.4.3 building for production...
+transforming...
+✓ 85 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                                      0.64 kB │ gzip:   0.39 kB
+dist/assets/index-DAArEcJf.css                                      20.74 kB │ gzip:   4.51 kB
+dist/assets/index-BwqjHIaZ.js                                      524.12 kB │ gzip: 138.93 kB
+✓ built in 846ms
+
+build exit: 0
+
+===== playwright vs preview =====
+
+$ env -u BASE_URL PREVIEW_PORT=4304 npx playwright test
+webServer: npx vite preview --host 127.0.0.1 --port 4304 --strictPort
+51 passed (4.0m)
+exit: 0
+
+===== playwright vs vite dev =====
+
+$ npx vite --host 127.0.0.1 --port 5304
+$ BASE_URL=http://127.0.0.1:5304 npx playwright test
+51 passed (4.1m)
+exit: 0
