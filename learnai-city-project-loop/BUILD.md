@@ -35,10 +35,16 @@ No new `MapId`. Evidence union **unchanged** (still 34 ids; 17 issues a passport
 - T06 — Keep **01–16** e2e; `playToPathDone` / 16 success / first `companion_after_restore` + advance must **not** mount `certificate`, must **not** download, must **not** set `issued`. Keep `path.spec.ts` `OBJECTIVES.restored` after 16 close, `JSON.stringify` ↛ `/شهادة/` after 16 success, and `certificate` count 0 after first robot talk. Keep `path.spec.ts` manager `/سُهرة القراءة نُشرت بعد سند NH-3301 وخطة محدودة وحزمة سياق ومهارة وموافقة بشرية، والروبوت صار جاهزاً تحت إشراف/` and companion `/الترميم يلغي الهلوسة|الامتحان الموقوت يكفي/` on first talk. Keep `crew.spec.ts` manager `/عُيّن باحث وبنّاء ومراجع بمالك واحد، وحُسم خلاف المسودة بدليل السجل لا بالأغلبية، ثم أُصلحت الدقة وقُبلت نشرة القاعة/` and companion `/أغلبية الطاقم تقرر الحقيقة|معيار فاشل يُقبل/` while `!restored`. Keep `approve.spec.ts` manager `/رُفض إرسال خاطئ ثم وُوفق على نشرة القاعة إلى أمينة القاعة، وقرار عيادة ليان بقي عند إنسان/` and companion `/الموافقة الآلية تكفي|أغلبية الجيران تقرر/` while `!crewReady`. Keep `skill.spec.ts` manager `/حُفظت مهارة تلخيص ساعات القاعة وجُرّبت على NH-2208، والروتين المجدول توقف بعد الإلبات/` and companion `/الدستور الدائم مهارة|الروتين المتوقف ما زال يعمل/` while `!approvalReady`. Keep `bridge.spec.ts` manager `/مسودة ساعات قاعة الحي حُفظت من NH-1447/` and companion `/MCP مهارة تُحمَّل|الربط يفتح كل الأدوات/` while `!skillReady`. Keep `agent.spec.ts` `body` ↛ `MCP` on the agent-success path. Bump `data-slice` expects `16` → `17` in `helpers.ts` `waitForGame` plus `path.spec.ts` / `crew.spec.ts` / `approve.spec.ts` / `skill.spec.ts` / `lab.spec.ts` / `bridge.spec.ts` / `agent.spec.ts`. Update unit tests that pin `JOURNAL_CAP === 104` to cap `112` without moving workshop letters. Reviewer maps AC01–AC06 and verifies snapshot.
 
 ## Proof
-Not completed yet.
+Builder claims for d-20260909-067-impl-17 (not independently accepted):
+- Candidate (coordinator recomputed): `b680867179a7973832bbe4e06a99a3f77a8cde3ede5a507902af9eee879e07c0` (326 files).
+- Contract unchanged: `b760de08209f685da8d8418cebe7d8bf6536e8c722ec1b4a583809ae75849a2e`.
+- Claimed checks: tsc/lint/build exit 0; vitest 140; Playwright 67/67 on preview :4830 and Vite :4831.
+- Claimed artifacts: `evidence/17/` per T02 plus overlays.png, state-tests.txt, project-checks.txt, browser-checks.md, rafiq-passport.png/pdf.
+- Claimed: 16 success / first robot thanks does not issue; persistable GameState has no MCP/harness/شهادة; no public registry; no certificate on playToPathDone.
+Reviewer must re-run checks in an isolated copy and map AC01–AC06.
 
 ## Review
-Plan approved. Implementation not started.
+Plan approved. Implementation ready for independent review.
 Plan approval: APPROVE_PLAN by reviewer bc-6cb24d4b-829d-5383-8f9e-747c84e6ed38 on dispatch d-20260909-066-plan-17. Contract `b760de08209f685da8d8418cebe7d8bf6536e8c722ec1b4a583809ae75849a2e`. Snapshot `67b49f4efc910e807c33ce974e3b4c08f8fcd1f1d52c6324621cc8250227927e`. Blockers: none.
 Implementation approval: none
 Each result records dispatch ID, reviewer identity, verdict, contract identity, snapshot identity, evidence and criterion-specific blockers.
@@ -46,15 +52,15 @@ Each result records dispatch ID, reviewer identity, verdict, contract identity, 
 ## Loop state
 Execution mode / tool adapter: Cursor Cloud Agent coordinator with Task-spawned Builder and Reviewer subagents. Spawn = Task(generalPurpose). Send = Task resume. Wait = blocking Task completion. Stop = subagent completion; coordinator does not start a second writer in this checkout. Reviewer contexts are fresh and do not receive Builder reasoning. Mutating Reviewer checks, if needed, run on an isolated copy.
 Coordinator: cloud agent bc-6380229a-c83f-493f-af1c-47e5f2b00c70 (https://cursor.com/agents/bc-6380229a-c83f-493f-af1c-47e5f2b00c70), role Coordinator, checkout /workspace on branch cursor/rafiq-continue-slices-0c70
-Worker / role / phase: pending launch / Builder / implementation
-Dispatch ID / launch state / input identity: d-20260909-067-impl-17 / pending launch / contract:b760de08209f685da8d8418cebe7d8bf6536e8c722ec1b4a583809ae75849a2e baseline:67b49f4efc910e807c33ce974e3b4c08f8fcd1f1d52c6324621cc8250227927e
-Pending result / last consumed dispatch: none / d-20260909-066-plan-17
+Worker / role / phase: pending launch / Reviewer / implementation
+Dispatch ID / launch state / input identity: d-20260909-068-implrev-17 / pending launch / contract:b760de08209f685da8d8418cebe7d8bf6536e8c722ec1b4a583809ae75849a2e candidate:b680867179a7973832bbe4e06a99a3f77a8cde3ede5a507902af9eee879e07c0
+Pending result / last consumed dispatch: none / d-20260909-067-impl-17
 Snapshot capture and recheck commands / coverage / exclusions: Capture = `python3 .loop/identity.py snapshot --label <label>` from repository root. Recheck = same command; compare `.loop/snapshots/<label>.digest` and the JSON `digest` field. Contract = `python3 .loop/identity.py contract`; identity is `.loop/contract/hashes.json` field `contract`. Combined = `python3 .loop/identity.py both --label <label>`.
 Coverage: `app`, `evidence`, root `package.json`/`package-lock.json`/`pnpm-lock.yaml`/`yarn.lock`, `index.html`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `playwright.config.ts`, `vitest.config.ts`, `README.md`, `public`. Missing paths are skipped. Detect add/delete by regenerating the covered file list.
 Exclusions: `.git`, `.loop`, `learnai-city-project-loop`, `node_modules`, `app/node_modules`, `app/dist`, `dist`, `coverage`, `test-results`, `playwright-report`, `.vite`, `app/.vite`. Protocol files are identified by contract hash, not candidate snapshot.
 Baseline snapshot: shipped slice 16 `67b49f4efc910e807c33ce974e3b4c08f8fcd1f1d52c6324621cc8250227927e` (306 covered files)
 Contract identity: `b760de08209f685da8d8418cebe7d8bf6536e8c722ec1b4a583809ae75849a2e` (`.loop/contract/hashes.json`)
-Candidate snapshot: none
+Candidate snapshot: `b680867179a7973832bbe4e06a99a3f77a8cde3ede5a507902af9eee879e07c0` (326 files)
 Rejection count: 0
 Consecutive no-progress repairs: 0
 Open acceptance gaps / prior failing evidence: none
@@ -68,7 +74,7 @@ Next slice ID / draft: none
 Prior shipped receipt: slice 16 archive `slices/16-ready-for-the-city.md`
 
 ## Status
-Building
+Ready for review
 
 ## Next
-Builder implements slice 17 under dispatch d-20260909-067-impl-17. Do not edit protocol files.
+Independent implementation review of slice 17 under dispatch d-20260909-068-implrev-17. Isolated copy only.
