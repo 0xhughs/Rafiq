@@ -1,4 +1,5 @@
 import { COMPANION_OFFSET } from './constants';
+import { shopkeeperNode } from './shop';
 import type { DialogueNodeId, GameState, NpcId } from './types';
 import { WORLD_POS } from './maps';
 
@@ -36,13 +37,15 @@ export function npcPosition(state: GameState, id: NpcId): { x: number; y: number
 export function openingNode(state: GameState, id: NpcId): DialogueNodeId | null {
   if (id === 'robot') {
     if (state.encounter === 'unseen') return null;
-    if (state.encounter === 'help_accepted') return 'companion_revisit';
+    if (state.encounter === 'help_accepted') {
+      return state.shopQuest.phase === 'helped' ? 'companion_after_shop' : 'companion_revisit';
+    }
     return state.conversationSeen ? 'ask_help' : 'discover';
   }
   if (id === 'neighbor') {
     return state.neighbor === 'greeted' ? 'neighbor_revisit' : 'neighbor_hello';
   }
-  return state.shopkeeper === 'greeted' ? 'shopkeeper_revisit' : 'shopkeeper_hello';
+  return shopkeeperNode(state);
 }
 
 export function openNpc(state: GameState, id: NpcId): GameState {

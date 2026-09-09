@@ -156,6 +156,138 @@ input {
   width: min(680px, 92vw);
 }
 
+.paper-card {
+  width: min(520px, 90vw);
+  background:
+    linear-gradient(180deg, #fffaf0 0%, #f3e4c8 100%);
+  color: var(--ink);
+  border-radius: 6px 18px 12px 8px;
+  padding: 22px 24px 18px;
+  box-shadow:
+    4px 18px 40px rgba(42, 33, 24, 0.28),
+    inset 0 0 0 1px rgba(120, 80, 40, 0.18);
+  transform: rotate(-0.6deg);
+  position: relative;
+}
+
+.paper-card::before {
+  content: '';
+  position: absolute;
+  inset: 10px 12px auto auto;
+  width: 54px;
+  height: 18px;
+  background: rgba(196, 92, 38, 0.18);
+  transform: rotate(8deg);
+}
+
+.card-stamp {
+  margin: 0 0 6px;
+  color: var(--terracotta);
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.paper-card h2 {
+  margin: 0 0 12px;
+  font-size: 1.2rem;
+}
+
+.stock-list {
+  margin: 0 0 12px;
+  padding-inline-start: 1.2rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.card-note,
+.card-hours {
+  margin: 0 0 8px;
+  color: var(--ink-soft);
+}
+
+.card-hours {
+  font-weight: 800;
+  color: var(--teal-dark);
+}
+
+.card-actions {
+  margin-top: 16px;
+  justify-content: center;
+}
+
+.calculator-body {
+  width: min(360px, 90vw);
+  background: #3a3f3c;
+  color: #e7f4ee;
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+
+.calc-screen,
+.calc-result {
+  margin: 0 0 8px;
+  background: #1b2420;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-variant-numeric: tabular-nums;
+  min-height: 1.6em;
+}
+
+.calc-result {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #8fd3c4;
+}
+
+.calc-keys {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.calc-key {
+  border: 0;
+  border-radius: 10px;
+  padding: 12px 0;
+  background: #5b6560;
+  color: #f4f7f4;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.notice-body {
+  white-space: pre-wrap;
+  font-family: 'Noto Naskh Arabic', 'Cairo', serif;
+  background: rgba(255, 250, 240, 0.7);
+  padding: 12px;
+  border-radius: 8px;
+  line-height: 1.8;
+}
+
+.notice-working {
+  border: 1px dashed rgba(47, 93, 98, 0.35);
+}
+
+.nl-form {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.robot-understood {
+  background: #e7efd6;
+  color: #2a3b1c;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.crate-card {
+  transform: rotate(0.4deg);
+}
+
 
 .stage {
   position: absolute;

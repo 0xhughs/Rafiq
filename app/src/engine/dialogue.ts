@@ -13,6 +13,12 @@ export const OBJECTIVES = {
   inspectRobot: 'اقترب من الروبوت المعطوب وتحدّث إليه.',
   talkRobot: 'أكمل الحديث مع الروبوت بجانب الحاوية.',
   cornerStore: 'لنبدأ بالمتجر عند الزاوية: ادخل بقالة الزاوية، ثم سر إلى واجهة المكتبة.',
+  helpShop: 'ساعد البقال: قارن كلام الروبوت ببطاقات الرفوف ثم أخبره بما رأيت.',
+  postNotice: 'صحّح إعلان اليوم: المجموع من آلة الحساب، والخبر الحالي من السجل.',
+  correctPrice: 'لا تعتمد سعر التمر من الروبوت قبل أن تراجع السجل.',
+  verifyNewClaim: 'تحقّق من الادّعاء الجديد بنفسك. لا تعتمد الكلام الواثق.',
+  decideCrate: 'صندوق بلا بطاقة: القرار للبقال لا للروبوت.',
+  repairLead: 'البقال أعطاك خيط طرد الإصلاح. باب المكتبة الداخلي ما زال مقفلاً.',
 } as const;
 
 export const SPEAKER = {
@@ -30,6 +36,10 @@ export const JOURNAL_TEXT: Record<JournalEventId, string> = {
   neighbor_greeting: 'سلّمت على الجارة، ودلّتك على البقالة والمكتبة.',
   shop_visit: 'دخلتَ بقالة الزاوية.',
   library_visit: 'وصلتَ إلى واجهة المكتبة.',
+  shop_shelf_checked: 'راجعتُ بطاقة الرف وأخبرت البقال أنه لا يوجد مانجو.',
+  shop_notice_posted: 'علّقت إعلاناً بمجموع سبعة عشر وخبراً من السجل.',
+  shop_price_corrected: 'رفضت سعر التمر المختلق وصحّحته من السجل، ثم تحققت من ادّعاء آخر.',
+  shop_helped: 'شكرك البقال وأعطاك خيط طرد قطعة الإصلاح.',
 };
 
 export const LOCKED_COPY = {
@@ -171,19 +181,200 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     text: () => 'أهلاً من جديد. البقالة هناك، والمكتبة أبعد قليلاً في الشارع.',
     next: null,
   },
+  companion_after_shop: {
+    id: 'companion_after_shop',
+    speaker: 'robot',
+    speakerLabel: () => SPEAKER.robot(),
+    text: () =>
+      'قطعة الإصلاح؟ سمعتها تُوزَّع مجاناً عند المكتبة قبل الفجر. لم أقرأ أي ورقة.',
+    next: null,
+  },
   shopkeeper_hello: {
     id: 'shopkeeper_hello',
     speaker: 'shopkeeper',
     speakerLabel: () => SPEAKER.shopkeeper(),
     text: () =>
-      'أهلاً بك في بقالة الزاوية. الرفوف ما زالت تُرتَّب، فتفضّل انظر ثم اخرج إلى الشارع.',
-    next: null,
+      'أهلاً بك في بقالة الزاوية. الرفوف مرتّبة، لكن رفيقك يبدو واثقاً جداً من بضاعة لم أطلبها.',
+    next: 'shop_robot_mango',
   },
-  shopkeeper_revisit: {
-    id: 'shopkeeper_revisit',
+  shop_robot_mango: {
+    id: 'shop_robot_mango',
+    speaker: 'robot',
+    speakerLabel: () => SPEAKER.robot(),
+    text: () => 'عصير المانجو على الرف الأيسر، سعره اثنا عشر ريالاً.',
+    next: 'shop_ask_records',
+  },
+  shop_ask_records: {
+    id: 'shop_ask_records',
     speaker: 'shopkeeper',
     speakerLabel: () => SPEAKER.shopkeeper(),
-    text: () => 'ما زلنا نرتّب الرفوف. تجوّل كما تشاء، والحساب ليس جاهزاً بعد.',
+    text: () =>
+      'لم أطلب مانجو. انظر إلى بطاقات الرفوف وقائمة الأسعار، ثم أخبرني بما هو مكتوب لا بما يُقال بثقة.',
+    next: null,
+  },
+  shop_lookup_prompt: {
+    id: 'shop_lookup_prompt',
+    speaker: 'shopkeeper',
+    speakerLabel: () => SPEAKER.shopkeeper(),
+    text: () => 'هل وجدت في السجل ما يخالف كلام الروبوت؟',
+    next: null,
+    choices: [
+      { id: 'tell_no_mango', label: 'نظرت إلى بطاقة الرف: لا يوجد مانجو.' },
+      { id: 'trust_mango', label: 'الروبوت محق: المانجو باثني عشر على الرف الأيسر.' },
+    ],
+  },
+  shop_lookup_need_source: {
+    id: 'shop_lookup_need_source',
+    speaker: 'shopkeeper',
+    speakerLabel: () => SPEAKER.shopkeeper(),
+    text: () => 'انظر إلى بطاقة رف أو قائمة الأسعار أولاً، ثم أخبرني بما رأيت.',
+    next: null,
+  },
+  shop_lookup_trust_fail: {
+    id: 'shop_lookup_trust_fail',
+    speaker: 'shopkeeper',
+    speakerLabel: () => SPEAKER.shopkeeper(),
+    text: () => 'هذا الرقم لم يظهر في أي سجل هنا. تحقق ثم عد. المتجر ما زال مفتوحاً.',
+    next: null,
+  },
+  shop_lookup_ok: {
+    id: 'shop_lookup_ok',
+    speaker: 'shopkeeper',
+    speakerLabel: () => SPEAKER.shopkeeper(),
+    text: () => 'صحيح. لا مانجو على الرف. لوحة الإعلان بجانب الرفوف تحتاج صياغة أمينة بعد ذلك.',
+    next: null,
+  },
+  shop_notice_hint: {
+    id: 'shop_notice_hint',
+    speaker: 'shopkeeper',
+    speakerLabel: () => SPEAKER.shopkeeper(),
+    text: () =>
+      'الروبوت كتب مسودة للإعلان: مجموع خاطئ وخبر عن الماء والتمر لا يطابق اليوم. الآلة على الطاولة للمجموع، والسجل للخبر الحالي.',
+    next: null,
+  },
+  shop_transact_intro: {
+    id: 'shop_transact_intro',
+    speaker: 'shopkeeper',
+    speakerLabel: () => SPEAKER.shopkeeper(),
+    text: () => 'زبون يسأل عن تمر الخلاص. ماذا يقول رفيقك؟',
+    next: 'shop_robot_dates',
+  },
+  shop_robot_dates: {
+    id: 'shop_robot_dates',
+    speaker: 'robot',
+    speakerLabel: () => SPEAKER.robot(),
+    text: () => 'تمر الخلاص بثمانية عشر ريالاً. أنا متأكد.',
+    next: null,
+    choices: [
+      { id: 'refuse_dates', label: 'لا تعتمد هذا الرقم. سأراجع السجل.' },
+      { id: 'trust_dates', label: 'حسناً، ثمانية عشر.' },
+    ],
+  },
+  shop_trust_18_fail: {
+    id: 'shop_trust_18_fail',
+    speaker: 'shopkeeper',
+    speakerLabel: () => SPEAKER.shopkeeper(),
+    text: () => 'لا أبيع بهذا الرقم قبل أن يُراجع. تحقق ثم عد. لم يُغلق المتجر.',
+    next: null,
+  },
+  shop_need_date_source: {
+    id: 'shop_need_date_source',
+    speaker: 'shopkeeper',
+    speakerLabel: () => SPEAKER.shopkeeper(),
+    text: () => 'راجع السجل المعروض ثم قل لي السعر المكتوب.',
+    next: null,
+  },
+  shop_price_ok: {
+    id: 'shop_price_ok',
+    speaker: 'shopkeeper',
+    speakerLabel: () => SPEAKER.shopkeeper(),
+    text: () => 'ماذا يقول السجل عن التمر؟',
+    next: null,
+    choices: [{ id: 'correct_dates', label: 'السعر تسعة، كما في السجل.' }],
+  },
+  shop_second_claim: {
+    id: 'shop_second_claim',
+    speaker: 'robot',
+    speakerLabel: () => SPEAKER.robot(),
+    text: () => 'والماء؟ أظن سعره خمسة ريالات، أو ربما نفد.',
+    next: null,
+    choices: [
+      { id: 'verify_later', label: 'سأتذكر هذا وأتحقق بنفسي.' },
+      { id: 'trust_water', label: 'صدّقته: خمسة أو نفد.' },
+    ],
+  },
+  shop_second_prompt: {
+    id: 'shop_second_prompt',
+    speaker: 'shopkeeper',
+    speakerLabel: () => SPEAKER.shopkeeper(),
+    text: () => 'ماذا وجدت في السجل عن ذلك الادّعاء؟',
+    next: null,
+    choices: [{ id: 'reject_water', label: 'راجعت السجل: هذا الادّعاء غير صحيح.' }],
+  },
+  shop_second_need_check: {
+    id: 'shop_second_need_check',
+    speaker: 'shopkeeper',
+    speakerLabel: () => SPEAKER.shopkeeper(),
+    text: () => 'لا تسألني أين يُكتب. انظر حولك في المتجر ثم عد بما رأيته.',
+    next: null,
+  },
+  shop_second_trust_fail: {
+    id: 'shop_second_trust_fail',
+    speaker: 'shopkeeper',
+    speakerLabel: () => SPEAKER.shopkeeper(),
+    text: () => 'لا أبيع بوهم. تحقق بنفسك ثم عد. الباب ما زال مفتوحاً.',
+    next: null,
+  },
+  shop_second_ok: {
+    id: 'shop_second_ok',
+    speaker: 'shopkeeper',
+    speakerLabel: () => SPEAKER.shopkeeper(),
+    text: () => 'صحيح. الماء متوفر بسعره المكتوب. ذلك الصندوق بلا بطاقة، والقرار ليس للآلة.',
+    next: null,
+  },
+  shop_crate_hint: {
+    id: 'shop_crate_hint',
+    speaker: 'shopkeeper',
+    speakerLabel: () => SPEAKER.shopkeeper(),
+    text: () => 'الصندوق عند الجدار بلا قائمة. لا تدع الروبوت يقرر محتواه.',
+    next: null,
+  },
+  shop_crate_robot_fail: {
+    id: 'shop_crate_robot_fail',
+    speaker: 'shopkeeper',
+    speakerLabel: () => SPEAKER.shopkeeper(),
+    text: () => 'الروبوت لا يقرر عن صاحب المتجر. اسألني أنا.',
+    next: null,
+  },
+  shop_success_thanks: {
+    id: 'shop_success_thanks',
+    speaker: 'shopkeeper',
+    speakerLabel: () => SPEAKER.shopkeeper(),
+    text: () =>
+      'شكراً. لم أكن لأثق بالكلام الواثق دون سجل. أخذت كل أداة في موضعها: البحث والكتابة والحساب وقراري أنا.',
+    next: 'shop_repair_lead',
+  },
+  shop_repair_lead: {
+    id: 'shop_repair_lead',
+    speaker: 'shopkeeper',
+    speakerLabel: () => SPEAKER.shopkeeper(),
+    text: () =>
+      'خذ هذا الخيط: طرد فيه قطعة قد تفيد رفيقك، عند الرصيف الخلفي. استلامه يحتاج تعليمات أوضح لاحقاً.',
+    next: 'shop_robot_unsupported',
+  },
+  shop_robot_unsupported: {
+    id: 'shop_robot_unsupported',
+    speaker: 'robot',
+    speakerLabel: () => SPEAKER.robot(),
+    text: () =>
+      'قطعة الإصلاح؟ سمعتها تُوزَّع مجاناً عند المكتبة قبل الفجر. لم أقرأ أي ورقة.',
+    next: null,
+  },
+  shopkeeper_helped_revisit: {
+    id: 'shopkeeper_helped_revisit',
+    speaker: 'shopkeeper',
+    speakerLabel: () => SPEAKER.shopkeeper(),
+    text: () => 'ما زلت أشكرك. طرد الإصلاح ينتظر تعليمات أوضح، وباب المكتبة الداخلي مقفل.',
     next: null,
   },
   locked_shop: {
@@ -225,14 +416,12 @@ export function visitMap(visited: MapId[], id: MapId): MapId[] {
 }
 
 export function isNpcNode(node: DialogueNodeId | null): boolean {
+  if (!node) return false;
   return (
-    node === 'neighbor_hello' ||
-    node === 'neighbor_reply' ||
-    node === 'neighbor_pointer' ||
-    node === 'neighbor_thanks' ||
-    node === 'neighbor_revisit' ||
-    node === 'shopkeeper_hello' ||
-    node === 'shopkeeper_revisit'
+    node.startsWith('neighbor') ||
+    node.startsWith('shop') ||
+    node === 'companion_revisit' ||
+    node === 'companion_after_shop'
   );
 }
 

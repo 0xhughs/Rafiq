@@ -1,6 +1,6 @@
 import { expect, type Page } from '@playwright/test';
 import { WORLD_POS } from '../src/engine/maps';
-import type { MapId, SerializedTestState } from '../src/engine/types';
+import type { GameAction, MapId, SerializedTestState } from '../src/engine/types';
 
 export async function waitForGame(page: Page): Promise<void> {
   await page.waitForFunction(() => Boolean(window.__RAFIQ_TEST__));
@@ -109,6 +109,52 @@ export function collectPageErrors(page: Page): string[] {
     }
   });
   return errors;
+}
+
+export async function dispatch(page: Page, action: GameAction): Promise<void> {
+  await page.evaluate((next) => {
+    const api = window.__RAFIQ_TEST__;
+    if (!api) throw new Error('missing __RAFIQ_TEST__');
+    api.dispatch(next);
+  }, action);
+  await page.waitForTimeout(30);
+}
+
+export async function closeOverlay(page: Page): Promise<void> {
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+}
+
+export async function skipExplainIfOpen(page: Page): Promise<void> {
+  const skip = page.getByTestId('explain-skip');
+  if (await skip.isVisible().catch(() => false)) {
+    await skip.click();
+  }
+}
+
+export async function enterShop(page: Page): Promise<void> {
+  await interactAt(page, 'street', WORLD_POS.shopDoor.x, WORLD_POS.shopDoor.y);
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-map', 'shop');
+}
+
+export async function advanceDialogue(page: Page): Promise<void> {
+  const advance = page.getByTestId('dialogue-advance');
+  await expect(advance).toBeVisible();
+  await advance.click();
+}
+
+export async function clickChoice(page: Page, testId: string): Promise<void> {
+  await page.getByTestId(testId).click();
+}
+
+export async function hearShopMango(page: Page): Promise<void> {
+  await interactAt(page, 'shop', WORLD_POS.shopkeeper.x, WORLD_POS.shopkeeper.y);
+  await expect(page.getByTestId('dialogue-text')).toBeVisible();
+  await advanceDialogue(page);
+  await expect(page.getByTestId('dialogue-text')).toContainText('عصير المانجو على الرف الأيسر');
+  await advanceDialogue(page);
+  await expect(page.getByTestId('dialogue-text')).toContainText('بطاقات الرفوف');
+  await advanceDialogue(page);
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-shop-quest', 'lookup');
 }
 
 export function collectConsoleText(page: Page): string[] {

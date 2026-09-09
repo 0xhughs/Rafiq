@@ -1,6 +1,6 @@
 # رفيق — جواز إلى مدينة الذكاء الاصطناعي
 
-Arabic-first desktop browser adventure. After the opening, the player can walk the connected street into the corner shop and library facade, restore a versioned local save, and keep a readable Arabic journal.
+Arabic-first desktop browser adventure. After the opening, the player can walk the connected street into the corner shop, check invented product claims against shelf records, and keep a readable Arabic journal.
 
 ## Run the game
 
@@ -29,4 +29,4 @@ npm run lint
 
 ## Current slice
 
-Apartment, street, corner-store interior shell, and library exterior are playable after agreeing to help the robot. The shop does not yet include the price-verification puzzle.
+Apartment, street, corner-store visit, and library exterior are playable after agreeing to help the robot. The shop visit covers checking the robot's invented mango claim, posting a sourced notice with a calculated total, correcting a false date price, and leaving the unlabeled crate to the shopkeeper.

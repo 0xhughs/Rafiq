@@ -74,6 +74,11 @@ export function Hud({ state, onHelp, onDismissRestore }: Props) {
       ) : (
         <p className="interact-hint is-hidden" data-testid="interact-hint-empty" />
       )}
+      {state.shopFeedback && state.mode === 'playing' ? (
+        <p className="banner restore" data-testid="shop-feedback" role="status">
+          {state.shopFeedback}
+        </p>
+      ) : null}
     </header>
   );
 }

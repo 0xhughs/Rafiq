@@ -25,6 +25,12 @@ export const HINT_LABELS = {
   neighbor: 'E / مسافة — التحدث مع الجارة',
   shopkeeper: 'E / مسافة — التحدث مع البقال',
   libraryInner: 'E / مسافة — باب المكتبة',
+  shelfWest: 'E / مسافة — بطاقة الرف الغربي',
+  shelfEast: 'E / مسافة — بطاقة الرف الشرقي',
+  priceList: 'E / مسافة — قائمة الأسعار',
+  noticeBoard: 'E / مسافة — لوحة الإعلان',
+  calculator: 'E / مسافة — آلة الحساب',
+  crate: 'E / مسافة — الصندوق',
 } as const;
 
 export const STORAGE_WARNING =

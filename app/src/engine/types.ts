@@ -7,7 +7,12 @@ export type Mode =
   | 'confirm_name'
   | 'playing'
   | 'dialogue'
-  | 'paused';
+  | 'paused'
+  | 'inspect'
+  | 'calculator'
+  | 'notice'
+  | 'crate'
+  | 'explain';
 
 export type TrashState = 'home' | 'carried' | 'disposed';
 
@@ -27,13 +32,67 @@ export type SaveStatus = 'absent' | 'ok' | 'unavailable' | 'recovered';
 
 export type EndingState = 'in_progress';
 
+export const EVIDENCE_IDS = ['1.1', '1.2', '1.3', '1.6'] as const;
+export type EvidenceId = (typeof EVIDENCE_IDS)[number];
+export type EvidenceStatus = 'demonstrated';
+export type EvidenceMap = Partial<Record<EvidenceId, EvidenceStatus>>;
+
+export const SHOP_PHASES = [
+  'unstarted',
+  'lookup',
+  'notice',
+  'transaction',
+  'crate',
+  'helped',
+] as const;
+export type ShopPhase = (typeof SHOP_PHASES)[number];
+
+export type InspectTarget = 'west' | 'east' | 'price';
+export type ExplainTopic = 'lookup' | 'notice' | 'price' | 'tools';
+export type CalcOp = 'add' | 'mul';
+export type CalcToken = number | CalcOp;
+
+export interface CalculatorState {
+  entry: string;
+  tokens: CalcToken[];
+  result: number | null;
+}
+
+export interface ShopQuest {
+  phase: ShopPhase;
+  heardMango: boolean;
+  inspectedWest: boolean;
+  inspectedEast: boolean;
+  inspectedPriceList: boolean;
+  inspectedNotice: boolean;
+  hasExactTotal: boolean;
+  toldSourcedLookup: boolean;
+  heardDraft: boolean;
+  noticeTotalFixed: boolean;
+  noticeDatesFixed: boolean;
+  noticeWaterFixed: boolean;
+  noticePosted: boolean;
+  refusedRobotPrice: boolean;
+  inspectedDatesAfterRefuse: boolean;
+  correctedPrice: boolean;
+  heardSecondClaim: boolean;
+  inspectedAfterSecondClaim: boolean;
+  rejectedSecondClaim: boolean;
+  crateShopkeeper: boolean;
+  crateRobotAttempted: boolean;
+}
+
 export type JournalEventId =
   | 'pickup'
   | 'disposal'
   | 'help_accepted'
   | 'neighbor_greeting'
   | 'shop_visit'
-  | 'library_visit';
+  | 'library_visit'
+  | 'shop_shelf_checked'
+  | 'shop_notice_posted'
+  | 'shop_price_corrected'
+  | 'shop_helped';
 
 export interface JournalEvent {
   id: JournalEventId;
@@ -52,18 +111,53 @@ export type DialogueNodeId =
   | 'agree'
   | 'lead'
   | 'companion_revisit'
+  | 'companion_after_shop'
   | 'neighbor_hello'
   | 'neighbor_reply'
   | 'neighbor_pointer'
   | 'neighbor_thanks'
   | 'neighbor_revisit'
   | 'shopkeeper_hello'
-  | 'shopkeeper_revisit'
+  | 'shop_robot_mango'
+  | 'shop_ask_records'
+  | 'shop_lookup_prompt'
+  | 'shop_lookup_need_source'
+  | 'shop_lookup_trust_fail'
+  | 'shop_lookup_ok'
+  | 'shop_notice_hint'
+  | 'shop_transact_intro'
+  | 'shop_robot_dates'
+  | 'shop_trust_18_fail'
+  | 'shop_need_date_source'
+  | 'shop_price_ok'
+  | 'shop_second_claim'
+  | 'shop_second_prompt'
+  | 'shop_second_need_check'
+  | 'shop_second_trust_fail'
+  | 'shop_second_ok'
+  | 'shop_crate_hint'
+  | 'shop_crate_robot_fail'
+  | 'shop_success_thanks'
+  | 'shop_repair_lead'
+  | 'shop_robot_unsupported'
+  | 'shopkeeper_helped_revisit'
   | 'locked_shop'
   | 'locked_library'
   | 'library_inner_locked';
 
-export type DialogueChoiceId = 'agree' | 'postpone' | 'npc_thanks' | 'npc_postpone';
+export type DialogueChoiceId =
+  | 'agree'
+  | 'postpone'
+  | 'npc_thanks'
+  | 'npc_postpone'
+  | 'tell_no_mango'
+  | 'trust_mango'
+  | 'refuse_dates'
+  | 'trust_dates'
+  | 'correct_dates'
+  | 'reject_water'
+  | 'trust_water'
+  | 'verify_later';
 
 export type InteractableId =
   | 'trash'
@@ -74,7 +168,13 @@ export type InteractableId =
   | 'library_door'
   | 'neighbor'
   | 'shopkeeper'
-  | 'library_inner';
+  | 'library_inner'
+  | 'shelf_west'
+  | 'shelf_east'
+  | 'price_list'
+  | 'notice_board'
+  | 'calculator'
+  | 'crate';
 
 export type PortalId = 'home' | 'shop' | 'library';
 
@@ -110,7 +210,13 @@ export interface GameState {
   neighbor: NpcGreeting;
   shopkeeper: NpcGreeting;
   journalEvents: JournalEvent[];
-  evidence: Record<string, never>;
+  evidence: EvidenceMap;
+  shopQuest: ShopQuest;
+  calculator: CalculatorState;
+  inspectTarget: InspectTarget | null;
+  explainTopic: ExplainTopic | null;
+  robotUnderstood: string | null;
+  shopFeedback: string | null;
   endingState: EndingState;
   mapsVisited: MapId[];
   saveStatus: SaveStatus;
@@ -131,7 +237,13 @@ export type GameAction =
   | { type: 'CLOSE_OVERLAY' }
   | { type: 'CONFIRM_NEW_ADVENTURE' }
   | { type: 'DISMISS_RESTORE_NOTICE' }
-  | { type: 'DEBUG_TELEPORT'; map?: MapId; x: number; y: number };
+  | { type: 'DEBUG_TELEPORT'; map?: MapId; x: number; y: number }
+  | { type: 'CALCULATOR_KEY'; key: string }
+  | { type: 'NOTICE_APPLY'; field: 'total' | 'dates' | 'water' }
+  | { type: 'NOTICE_POST'; asDraft: boolean }
+  | { type: 'CRATE_DECIDE'; who: 'shopkeeper' | 'robot' }
+  | { type: 'SKIP_EXPLAIN' }
+  | { type: 'SUBMIT_NL'; text: string };
 
 export interface DialogueChoice {
   id: DialogueChoiceId;
@@ -172,6 +284,12 @@ export interface SerializedTestState {
   restoreNotice: boolean;
   endingState: EndingState;
   companion: boolean;
+  evidence: EvidenceMap;
+  shopQuest: ShopQuest;
+  inspectTarget: InspectTarget | null;
+  explainTopic: ExplainTopic | null;
+  robotUnderstood: string | null;
+  calculatorResult: number | null;
 }
 
 export interface SaveEnvelope {
@@ -189,7 +307,8 @@ export interface SaveEnvelope {
   neighbor: NpcGreeting;
   shopkeeper: NpcGreeting;
   journalEvents: JournalEvent[];
-  evidence: Record<string, never>;
+  evidence: EvidenceMap;
+  shopQuest: ShopQuest;
   robot: { companion: boolean };
   endingState: EndingState;
   mapsVisited: MapId[];

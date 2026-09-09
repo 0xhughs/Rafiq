@@ -12,6 +12,21 @@ import { APARTMENT, destinationOf, PORTALS } from './maps';
 import { validateName } from './names';
 import { openNpc } from './npc';
 import { clearRafiqKeys, loadAdventure, persistAdventure, shouldPersist } from './save';
+import {
+  applyCalculatorKey,
+  closeShopDialogue,
+  createCalculator,
+  createShopQuest,
+  emptyEvidence,
+  inspectShop,
+  isShopOverlay,
+  reduceCrateDecide,
+  reduceLookupNl,
+  reduceNoticeApply,
+  reduceNoticePost,
+  reduceShopChoice,
+  skipExplain,
+} from './shop';
 import type {
   DialogueChoiceId,
   GameAction,
@@ -40,7 +55,13 @@ export function createInitialState(): GameState {
     neighbor: 'unmet',
     shopkeeper: 'unmet',
     journalEvents: [],
-    evidence: {},
+    evidence: emptyEvidence(),
+    shopQuest: createShopQuest(),
+    calculator: createCalculator(),
+    inspectTarget: null,
+    explainTopic: null,
+    robotUnderstood: null,
+    shopFeedback: null,
     endingState: 'in_progress',
     mapsVisited: [],
     saveStatus: 'absent',
@@ -122,6 +143,8 @@ function closeDialogue(state: GameState): GameState {
   if (state.dialogueNode === 'pickup_leaving' || isLockedNode(state.dialogueNode)) {
     return { ...state, mode: 'playing', dialogueNode: null };
   }
+  const shopClosed = closeShopDialogue(state);
+  if (shopClosed) return shopClosed;
   if (state.dialogueNode === 'neighbor_thanks') {
     return {
       ...state,
@@ -129,17 +152,6 @@ function closeDialogue(state: GameState): GameState {
       dialogueNode: null,
       neighbor: 'greeted',
       journalEvents: recordEvent(state.journalEvents, 'neighbor_greeting'),
-    };
-  }
-  if (
-    state.dialogueNode === 'shopkeeper_hello' ||
-    state.dialogueNode === 'shopkeeper_revisit'
-  ) {
-    return {
-      ...state,
-      mode: 'playing',
-      dialogueNode: null,
-      shopkeeper: 'greeted',
     };
   }
   if (state.dialogueNode?.startsWith('neighbor')) {
@@ -151,7 +163,8 @@ function closeDialogue(state: GameState): GameState {
       mode: 'playing',
       dialogueNode: null,
       checkpointReached: true,
-      storyObjective: OBJECTIVES.cornerStore,
+      storyObjective:
+        state.shopQuest.phase === 'helped' ? OBJECTIVES.repairLead : state.storyObjective,
       journalEvents: recordEvent(state.journalEvents, 'help_accepted'),
     };
   }
@@ -232,7 +245,7 @@ function choose(state: GameState, choice: DialogueChoiceId): GameState {
       };
     }
   }
-  return state;
+  return reduceShopChoice(state, choice);
 }
 
 export function reduce(state: GameState, action: GameAction): GameState {
@@ -276,7 +289,13 @@ export function reduce(state: GameState, action: GameAction): GameState {
         neighbor: 'unmet',
         shopkeeper: 'unmet',
         journalEvents: [],
-        evidence: {},
+        evidence: emptyEvidence(),
+        shopQuest: createShopQuest(),
+        calculator: createCalculator(),
+        inspectTarget: null,
+        explainTopic: null,
+        robotUnderstood: null,
+        shopFeedback: null,
         endingState: 'in_progress',
         mapsVisited: ['apartment'],
         restoreNotice: false,
@@ -320,6 +339,23 @@ export function reduce(state: GameState, action: GameAction): GameState {
           return openNpc(state, 'shopkeeper');
         case 'library_inner':
           return { ...state, mode: 'dialogue', dialogueNode: 'library_inner_locked' };
+        case 'shelf_west':
+          return inspectShop(state, 'west');
+        case 'shelf_east':
+          return inspectShop(state, 'east');
+        case 'price_list':
+          return inspectShop(state, 'price');
+        case 'notice_board':
+          return {
+            ...state,
+            mode: 'notice',
+            shopQuest: { ...state.shopQuest, inspectedNotice: true, heardDraft: true },
+            shopFeedback: null,
+          };
+        case 'calculator':
+          return { ...state, mode: 'calculator', shopFeedback: null };
+        case 'crate':
+          return { ...state, mode: 'crate', shopFeedback: null };
         default:
           return state;
       }
@@ -340,8 +376,43 @@ export function reduce(state: GameState, action: GameAction): GameState {
     case 'CLOSE_OVERLAY':
       if (state.mode === 'dialogue') return closeDialogue(state);
       if (state.mode === 'paused') return { ...state, mode: 'playing' };
+      if (isShopOverlay(state.mode)) {
+        if (state.mode === 'explain') return skipExplain(state);
+        return {
+          ...state,
+          mode: 'playing',
+          inspectTarget: null,
+          explainTopic: null,
+          shopFeedback: null,
+        };
+      }
       if (state.mode === 'playing') return { ...state, mode: 'paused' };
       return state;
+    case 'CALCULATOR_KEY': {
+      if (state.mode !== 'calculator') return state;
+      const calculator = applyCalculatorKey(state.calculator, action.key);
+      const hasExactTotal = calculator.result === 17 ? true : state.shopQuest.hasExactTotal;
+      return {
+        ...state,
+        calculator,
+        shopQuest: { ...state.shopQuest, hasExactTotal },
+      };
+    }
+    case 'NOTICE_APPLY':
+      if (state.mode !== 'notice') return state;
+      return reduceNoticeApply(state, action.field);
+    case 'NOTICE_POST':
+      if (state.mode !== 'notice') return state;
+      return reduceNoticePost(state, action.asDraft);
+    case 'CRATE_DECIDE':
+      if (state.mode !== 'crate') return state;
+      return reduceCrateDecide(state, action.who);
+    case 'SKIP_EXPLAIN':
+      if (state.mode !== 'explain') return state;
+      return skipExplain(state);
+    case 'SUBMIT_NL':
+      if (state.mode !== 'dialogue' || state.dialogueNode !== 'shop_lookup_prompt') return state;
+      return reduceLookupNl(state, action.text);
     case 'CONFIRM_NEW_ADVENTURE':
       return createInitialState();
     case 'DISMISS_RESTORE_NOTICE':
@@ -393,6 +464,12 @@ export function serializeState(state: GameState): SerializedTestState {
     restoreNotice: state.restoreNotice,
     endingState: state.endingState,
     companion: state.encounter === 'help_accepted',
+    evidence: { ...state.evidence },
+    shopQuest: { ...state.shopQuest },
+    inspectTarget: state.inspectTarget,
+    explainTopic: state.explainTopic,
+    robotUnderstood: state.robotUnderstood,
+    calculatorResult: state.calculator.result,
   };
 }
 

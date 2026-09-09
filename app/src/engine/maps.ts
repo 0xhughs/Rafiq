@@ -17,7 +17,11 @@ export type CellKind =
   | 'counter'
   | 'shelf'
   | 'library'
-  | 'neighbor';
+  | 'neighbor'
+  | 'notice'
+  | 'pricelist'
+  | 'calculator'
+  | 'crate';
 
 export interface CellRect {
   kind: CellKind;
@@ -58,7 +62,7 @@ export interface PortalDef {
   ends: [PortalEnd, PortalEnd];
 }
 
-const SOLID_LETTERS = new Set(['#', 'B', 'T', 'K', 'M', 'C', 'H', 'L', 'W']);
+const SOLID_LETTERS = new Set(['#', 'B', 'T', 'K', 'M', 'C', 'H', 'L', 'W', 'n', 'p', 'c', 'k']);
 
 const APARTMENT_LEGEND = [
   '################',
@@ -91,14 +95,16 @@ const STREET_LEGEND = [
 ];
 
 const SHOP_LEGEND = [
-  '############',
-  '#WW......WW#',
-  '#..HHHHHH..#',
-  '#WW......WW#',
-  '#..........#',
-  '#.....d....#',
-  '#..........#',
-  '############',
+  '################',
+  '#WW....n.p...WW#',
+  '#WW..........WW#',
+  '#..HHHHHHHHc...#',
+  '#..............#',
+  '#k.............#',
+  '#..............#',
+  '#.......d......#',
+  '#..............#',
+  '################',
 ];
 
 const LIBRARY_LEGEND = [
@@ -282,6 +288,14 @@ function kindFromLetter(letter: string): CellKind {
       return 'counter';
     case 'W':
       return 'shelf';
+    case 'n':
+      return 'notice';
+    case 'p':
+      return 'pricelist';
+    case 'c':
+      return 'calculator';
+    case 'k':
+      return 'crate';
     case 'N':
       return 'neighbor';
     default:
@@ -313,8 +327,14 @@ export const FURNITURE = {
     walls: collectKind(STREET, ['#']),
   },
   shop: {
-    counter: mergeRects(collectKind(SHOP, ['H']))[0],
+    counter: mergeRects(collectKind(SHOP, ['H', 'c']))[0],
     shelves: collectKind(SHOP, ['W']),
+    westShelves: collectKind(SHOP, ['W']).filter((cell) => cell.col < 4),
+    eastShelves: collectKind(SHOP, ['W']).filter((cell) => cell.col > 8),
+    notice: mergeRects(collectKind(SHOP, ['n']))[0],
+    priceList: mergeRects(collectKind(SHOP, ['p']))[0],
+    calculator: mergeRects(collectKind(SHOP, ['c']))[0],
+    crate: mergeRects(collectKind(SHOP, ['k']))[0],
     walls: collectKind(SHOP, ['#']),
   },
   library: {
@@ -422,10 +442,16 @@ export const WORLD_POS = {
   shopSpawn: SHOP.spawn,
   librarySpawn: LIBRARY.spawn,
   neighbor: letterCenter(STREET, 'N'),
-  shopkeeper: cellCenter(6, 3),
+  shopkeeper: cellCenter(6, 4),
   libraryInner: letterCenter(LIBRARY, 'F'),
   shopWestWallInside: cellCenter(1, 4),
   libraryWestWallInside: cellCenter(1, 5),
+  shelfWest: cellCenter(3, 2),
+  shelfEast: cellCenter(12, 2),
+  noticeBoard: cellCenter(7, 2),
+  priceList: cellCenter(9, 2),
+  calculator: cellCenter(11, 4),
+  crate: cellCenter(2, 5),
 };
 
 export function doorHint(map: MapId): string {

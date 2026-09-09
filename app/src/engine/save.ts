@@ -4,6 +4,11 @@ import { OBJECTIVES } from './dialogue';
 import { syncInventory } from './inventory';
 import { getMap, MAPS } from './maps';
 import { validateName } from './names';
+import {
+  createCalculator,
+  parseEvidence,
+  parseShopQuest,
+} from './shop';
 import type {
   EndingState,
   Facing,
@@ -64,6 +69,10 @@ const JOURNAL_IDS: readonly JournalEventId[] = [
   'neighbor_greeting',
   'shop_visit',
   'library_visit',
+  'shop_shelf_checked',
+  'shop_notice_posted',
+  'shop_price_corrected',
+  'shop_helped',
 ];
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -107,7 +116,8 @@ export function toEnvelope(state: GameState): SaveEnvelope {
     neighbor: persistableGreeting(state.neighbor),
     shopkeeper: persistableGreeting(state.shopkeeper),
     journalEvents: state.journalEvents.slice(-12),
-    evidence: {},
+    evidence: parseEvidence(state.evidence),
+    shopQuest: parseShopQuest(state.shopQuest),
     robot: { companion },
     endingState: 'in_progress',
     mapsVisited: state.mapsVisited.length > 0 ? [...state.mapsVisited] : [state.map],
@@ -208,7 +218,8 @@ export function validateSave(raw: unknown): SaveEnvelope | null {
     neighbor: persistableGreeting(data.neighbor as NpcGreeting),
     shopkeeper: persistableGreeting(data.shopkeeper as NpcGreeting),
     journalEvents,
-    evidence: {},
+    evidence: parseEvidence(data.evidence),
+    shopQuest: parseShopQuest(data.shopQuest),
     robot: { companion },
     endingState: 'in_progress' satisfies EndingState,
     mapsVisited: mapsVisited.length > 0 ? mapsVisited : [data.map],
@@ -241,7 +252,13 @@ export function hydrateSave(
     neighbor: persistableGreeting(envelope.neighbor),
     shopkeeper: persistableGreeting(envelope.shopkeeper),
     journalEvents: envelope.journalEvents.slice(-12),
-    evidence: {},
+    evidence: parseEvidence(envelope.evidence),
+    shopQuest: parseShopQuest(envelope.shopQuest),
+    calculator: createCalculator(),
+    inspectTarget: null,
+    explainTopic: null,
+    robotUnderstood: null,
+    shopFeedback: null,
     endingState: 'in_progress',
     mapsVisited: envelope.mapsVisited.length > 0 ? envelope.mapsVisited : [map],
     saveStatus,
@@ -329,5 +346,11 @@ export function shouldPersist(prev: GameState, next: GameState, action: GameActi
   ) {
     return true;
   }
+  if (JSON.stringify(prev.evidence) !== JSON.stringify(next.evidence)) return true;
+  if (shopQuestPersisted(prev.shopQuest) !== shopQuestPersisted(next.shopQuest)) return true;
   return false;
+}
+
+function shopQuestPersisted(quest: GameState['shopQuest']): string {
+  return JSON.stringify(quest);
 }

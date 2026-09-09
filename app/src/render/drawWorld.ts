@@ -232,19 +232,57 @@ function drawShopInterior(ctx: CanvasRenderingContext2D): void {
   const map = SHOP;
   drawChecker(ctx, map.cols, map.rows, '#f0e0c8', '#e7d4b6');
   drawWalls(ctx, FURNITURE.shop.walls);
-  for (const shelf of FURNITURE.shop.shelves) {
-    fillRound(ctx, shelf.x + 4, shelf.y + 4, shelf.w - 8, shelf.h - 8, 4, PALETTE.shelf);
-    ctx.fillStyle = '#d9c4a4';
-    ctx.fillRect(shelf.x + 10, shelf.y + 12, shelf.w - 20, 6);
-    ctx.fillRect(shelf.x + 10, shelf.y + 24, shelf.w - 20, 6);
-  }
-  const counter = FURNITURE.shop.counter;
-  fillRound(ctx, counter.x + 2, counter.y + 6, counter.w - 4, counter.h - 10, 6, PALETTE.counter);
-  ctx.fillStyle = '#2a2118';
   ctx.font = '11px "Noto Naskh Arabic", "Cairo", sans-serif';
   ctx.direction = 'rtl';
   ctx.textAlign = 'center';
-  ctx.fillText('البقالة', counter.x + counter.w / 2, counter.y + 20);
+  for (const shelf of FURNITURE.shop.westShelves) {
+    fillRound(ctx, shelf.x + 4, shelf.y + 4, shelf.w - 8, shelf.h - 8, 4, PALETTE.shelf);
+    ctx.fillStyle = '#f4e4c4';
+    ctx.fillRect(shelf.x + 10, shelf.y + 12, shelf.w - 20, 6);
+    ctx.fillRect(shelf.x + 10, shelf.y + 24, shelf.w - 20, 6);
+    ctx.fillStyle = '#d9b48c';
+    ctx.fillRect(shelf.x + 12, shelf.y + 28, 10, 12);
+    ctx.fillStyle = '#e8f0f4';
+    ctx.fillRect(shelf.x + 26, shelf.y + 26, 8, 14);
+  }
+  for (const shelf of FURNITURE.shop.eastShelves) {
+    fillRound(ctx, shelf.x + 4, shelf.y + 4, shelf.w - 8, shelf.h - 8, 4, '#6a3424');
+    ctx.fillStyle = '#c47a3a';
+    ctx.fillRect(shelf.x + 12, shelf.y + 14, shelf.w - 24, 16);
+  }
+  const west = FURNITURE.shop.westShelves[0];
+  const east = FURNITURE.shop.eastShelves[0];
+  ctx.fillStyle = '#f7efe4';
+  if (west) ctx.fillText('خبز / لبن / ماء', west.x + 48, west.y - 4);
+  if (east) ctx.fillText('تمر الخلاص', east.x + 24, east.y - 4);
+
+  const notice = FURNITURE.shop.notice;
+  fillRound(ctx, notice.x + 4, notice.y + 2, notice.w - 8, notice.h - 6, 4, '#efe0b8');
+  ctx.fillStyle = '#5a3218';
+  ctx.fillText('إعلان', notice.x + notice.w / 2, notice.y + 28);
+
+  const price = FURNITURE.shop.priceList;
+  fillRound(ctx, price.x + 4, price.y + 2, price.w - 8, price.h - 6, 4, '#f3d9a4');
+  ctx.fillStyle = '#3a2414';
+  ctx.fillText('أسعار', price.x + price.w / 2, price.y + 28);
+
+  const counter = FURNITURE.shop.counter;
+  fillRound(ctx, counter.x + 2, counter.y + 6, counter.w - 4, counter.h - 10, 6, PALETTE.counter);
+  ctx.fillStyle = '#2a2118';
+  ctx.fillText('البقالة', counter.x + counter.w / 2 - 20, counter.y + 22);
+
+  const calc = FURNITURE.shop.calculator;
+  fillRound(ctx, calc.x + 6, calc.y + 10, calc.w - 12, calc.h - 18, 3, '#2d3330');
+  ctx.fillStyle = '#8fd3c4';
+  ctx.fillRect(calc.x + 10, calc.y + 14, calc.w - 20, 10);
+
+  const crate = FURNITURE.shop.crate;
+  fillRound(ctx, crate.x + 6, crate.y + 8, crate.w - 12, crate.h - 12, 4, '#8a5a2b');
+  ctx.strokeStyle = '#4a3014';
+  ctx.strokeRect(crate.x + 10, crate.y + 12, crate.w - 20, crate.h - 20);
+  ctx.fillStyle = '#f7efe4';
+  ctx.fillText('صندوق', crate.x + crate.w / 2, crate.y + crate.h - 4);
+
   const door = map.door;
   fillRound(ctx, door.x - 10, door.y - 22, 20, 44, 4, '#8a4b2a');
 }

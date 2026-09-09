@@ -8,7 +8,7 @@ import {
   shopDoorHint,
   WORLD_POS,
 } from './maps';
-import { neighborVisible, npcPosition, robotVisible, shopkeeperVisible } from './npc';
+import { isCompanion, neighborVisible, npcPosition, robotVisible, shopkeeperVisible } from './npc';
 import type { Actionable, GameState, InteractableId } from './types';
 
 function dist(ax: number, ay: number, bx: number, by: number): number {
@@ -30,10 +30,48 @@ function distToRect(
 
 export { robotPosition, robotVisible, isCompanion } from './npc';
 
+function shopRect(id: InteractableId): { x: number; y: number; w: number; h: number } | null {
+  const shop = FURNITURE.shop;
+  switch (id) {
+    case 'shelf_west': {
+      const cells = shop.westShelves;
+      if (cells.length === 0) return null;
+      const minX = Math.min(...cells.map((c) => c.x));
+      const minY = Math.min(...cells.map((c) => c.y));
+      const maxX = Math.max(...cells.map((c) => c.x + c.w));
+      const maxY = Math.max(...cells.map((c) => c.y + c.h));
+      return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+    }
+    case 'shelf_east': {
+      const cells = shop.eastShelves;
+      if (cells.length === 0) return null;
+      const minX = Math.min(...cells.map((c) => c.x));
+      const minY = Math.min(...cells.map((c) => c.y));
+      const maxX = Math.max(...cells.map((c) => c.x + c.w));
+      const maxY = Math.max(...cells.map((c) => c.y + c.h));
+      return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+    }
+    case 'notice_board':
+      return shop.notice;
+    case 'price_list':
+      return shop.priceList;
+    case 'calculator':
+      return shop.calculator;
+    case 'crate':
+      return shop.crate;
+    default:
+      return null;
+  }
+}
+
 function itemDistance(state: GameState, item: Actionable): number {
   if (item.id === 'dumpster') {
     const box = FURNITURE.street.dumpster;
     return distToRect(state.position.x, state.position.y, box.x, box.y, box.w, box.h);
+  }
+  const rect = shopRect(item.id);
+  if (rect) {
+    return distToRect(state.position.x, state.position.y, rect.x, rect.y, rect.w, rect.h);
   }
   return dist(state.position.x, state.position.y, item.x, item.y);
 }
@@ -105,6 +143,17 @@ export function listInteractables(state: GameState): Actionable[] {
     });
   }
 
+  if (state.map === 'shop' && state.encounter === 'help_accepted') {
+    items.push(
+      { id: 'shelf_west', label: HINT_LABELS.shelfWest, x: WORLD_POS.shelfWest.x, y: WORLD_POS.shelfWest.y },
+      { id: 'shelf_east', label: HINT_LABELS.shelfEast, x: WORLD_POS.shelfEast.x, y: WORLD_POS.shelfEast.y },
+      { id: 'price_list', label: HINT_LABELS.priceList, x: WORLD_POS.priceList.x, y: WORLD_POS.priceList.y },
+      { id: 'notice_board', label: HINT_LABELS.noticeBoard, x: WORLD_POS.noticeBoard.x, y: WORLD_POS.noticeBoard.y },
+      { id: 'calculator', label: HINT_LABELS.calculator, x: WORLD_POS.calculator.x, y: WORLD_POS.calculator.y },
+      { id: 'crate', label: HINT_LABELS.crate, x: WORLD_POS.crate.x, y: WORLD_POS.crate.y },
+    );
+  }
+
   if (state.map === 'library') {
     items.push({
       id: 'library_inner',
@@ -123,7 +172,9 @@ export function getActionable(state: GameState): Actionable | null {
   let bestDist = INTERACT_RANGE;
   for (const item of listInteractables(state)) {
     const d = itemDistance(state, item);
-    if (d <= bestDist) {
+    if (d > bestDist) continue;
+    if (best && item.id === 'robot' && isCompanion(state) && best.id !== 'robot') continue;
+    if (!best || d < bestDist || (best.id === 'robot' && item.id !== 'robot')) {
       best = item;
       bestDist = d;
     }

@@ -66,6 +66,7 @@ test('happy path: name, trash, street, dumpster, robot, agree', async ({ page })
   await page.getByTestId('dialogue-advance').click();
   await expect(page.getByTestId('slice-checkpoint')).toBeVisible();
   await expect(page.getByTestId('hud-objective')).toContainText('المتجر عند الزاوية');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-evidence', '');
   await assertNoLessonUi(page);
   await page.waitForTimeout(250);
   await page.screenshot({ path: path.join(evidenceDir, 'robot-checkpoint.png'), fullPage: true });

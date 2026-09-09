@@ -8,9 +8,15 @@ import type { GameAction, GameState } from './engine/types';
 import { WorldCanvas } from './render/WorldCanvas';
 import { CheckpointNote } from './ui/CheckpointNote';
 import { DialogueOverlay } from './ui/DialogueOverlay';
+import { ExplainOverlay } from './ui/ExplainOverlay';
 import { Hud } from './ui/Hud';
+import { InspectOverlay } from './ui/InspectOverlay';
 import { NameEntry } from './ui/NameEntry';
+import { NoticeOverlay } from './ui/NoticeOverlay';
 import { PauseHelp } from './ui/PauseHelp';
+import { CalculatorOverlay } from './ui/CalculatorOverlay';
+import { CrateOverlay } from './ui/CrateOverlay';
+import { evidenceAttr } from './engine/shop';
 
 function reducer(state: GameState, action: GameAction): GameState {
   return stepGame(browserStore, state, action);
@@ -110,6 +116,8 @@ export default function App() {
       data-encounter={state.encounter}
       data-dialogue={state.dialogueNode ?? ''}
       data-save={state.saveStatus}
+      data-evidence={evidenceAttr(state.evidence)}
+      data-shop-quest={state.shopQuest.phase}
     >
       <Hud
         state={state}
@@ -133,7 +141,36 @@ export default function App() {
           onAdvance={() => dispatch({ type: 'ADVANCE_DIALOGUE' })}
           onChoose={(choice) => dispatch({ type: 'CHOOSE', choice })}
           onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+          onSubmitNl={(text) => dispatch({ type: 'SUBMIT_NL', text })}
         />
+      ) : null}
+      {state.mode === 'inspect' ? (
+        <InspectOverlay state={state} onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })} />
+      ) : null}
+      {state.mode === 'calculator' ? (
+        <CalculatorOverlay
+          state={state}
+          onKey={(key) => dispatch({ type: 'CALCULATOR_KEY', key })}
+          onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+        />
+      ) : null}
+      {state.mode === 'notice' ? (
+        <NoticeOverlay
+          state={state}
+          onApply={(field) => dispatch({ type: 'NOTICE_APPLY', field })}
+          onPost={(asDraft) => dispatch({ type: 'NOTICE_POST', asDraft })}
+          onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+        />
+      ) : null}
+      {state.mode === 'crate' ? (
+        <CrateOverlay
+          state={state}
+          onDecide={(who) => dispatch({ type: 'CRATE_DECIDE', who })}
+          onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+        />
+      ) : null}
+      {state.mode === 'explain' ? (
+        <ExplainOverlay state={state} onSkip={() => dispatch({ type: 'SKIP_EXPLAIN' })} />
       ) : null}
       {state.mode === 'paused' ? (
         <PauseHelp
