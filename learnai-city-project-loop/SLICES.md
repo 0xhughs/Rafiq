@@ -171,7 +171,6 @@ Approved contract: `4e7db2744f2ffb8738c9dcd015e207bef0313ef2df5e40618018f4451ed3
 Approved candidate: `158b856de69c486c49559dc92c27ab91a1822a0e132aba2d003448de648d0a8d`
 Implementation approval dispatch: `d-20260908-019-implrev-05`
 
-## Now
 ### 06 A notice the neighborhood can trust
 Goal: Produce a useful, sourced community notice and repair-request draft.
 Provides:
@@ -179,9 +178,12 @@ Provides:
 - A reviewed notice/request that changes an NPC response and opens the workshop lead. Covers 2.3, 2.6, 3.1, 3.2, 3.3.
 Depends on: 05
 Target membership: inside
+Archive: `slices/06-a-notice-the-neighborhood-can-trust.md`
+Approved contract: `a192c6eca98845b4ee79ec30489bd0d17c2f1d89f829c344f8c44b173410a8b2`
+Approved candidate: `51ee56d805700a58f3377f812c7ed404b861844bed62ca4ede71ba30f150c957`
+Implementation approval dispatch: `d-20260908-023-implrev-06`
 
-## Later
-
+## Now
 ### 07 The missing festival numbers
 Goal: Help the festival office plan from honest records and a permitted use of AI.
 Provides:
@@ -189,6 +191,9 @@ Provides:
 - A corrected manifest that supplies workshop materials. Covers 3.4, 3.5.
 Depends on: 06
 Target membership: inside
+
+## Later
+
 
 ### 08 One small service
 Goal: Help the workshop build a narrowly scoped service for one neighborhood need.
