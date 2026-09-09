@@ -1,0 +1,29 @@
+T01 state tests — Rafiq slice 02
+cwd: /workspace/app
+date: 2026-09-09T00:45:13+00:00
+command: npm test (vitest run)
+
+44 tests passed (2 files). Coverage of AC01–AC04/AC06 unit claims:
+
+- four maps with walkable spawns and bidirectional portal pairs
+- shop/library locked before help_accepted without skipping trash/encounter
+- companion follow offset after help_accepted
+- inventory grant/dispose idempotence
+- neighbor postpone/reopen without changing encounter
+- save serialize/validate/round-trip; missing saveVersion rejected
+- corrupt primary → backup recovered
+- LearnAI-like keys ignored on persist/clear
+
+----- raw vitest -----
+
+> app@0.0.0 test
+> vitest run
+
+
+ RUN  v5.0.0 /workspace/app
+
+
+ Test Files  2 passed (2)
+      Tests  44 passed (44)
+   Start at  00:45:13
+   Duration  239ms (transform 78%, import 11%, tests 8%, worker 2%)
