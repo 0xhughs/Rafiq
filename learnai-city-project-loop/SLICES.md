@@ -34,7 +34,7 @@ Authorized target for this run: complete and independently accept slices **01–
 Current authorization: On 8 September 2026 the user asked to read the project files, start the loop, and complete each loop until the full website is fully built. That request adopts slices 01–17. Slice 18 remains outside the target. This checkout (`github.com/0xhughs/Rafiq`) is the implementation repository. The adventure is a separate Vite + React + TypeScript app under `app/`; joufbot/LearnAI is curriculum/reference only and is not modified.
 
 ## Run status
-Running
+Finalizing
 
 ## Open decisions
 - Product name, robot name and final art treatment: working title and visual baseline are provisional; settle before production-art approval. They do not block the opening prototype.
@@ -54,11 +54,11 @@ Running
 - RG08 — LOOP finalization independently verifies accepted archives, current identities, an empty Now section, preserved outside-target work and no unresolved blockers. “Complete” is acceptance of the implementation target, not publication permission.
 
 ## Release evidence
-Pending finalization.
+Pending release review d-20260909-069-release.
 Failed release reviews for this target: 0
 Pending release result: none
-Release review events / last consumed dispatch: none
-No game build, playtest, independent plan review or release review has occurred in preparing this pack.
+Release review events / last consumed dispatch: none / d-20260909-068-implrev-17
+Target slices 01–17 independently accepted. Now empty. Slice 18 preserved outside target.
 
 ## Curriculum translation
 The 34 IDs and Arabic titles below are taken from the actual [LearnAI curriculum](https://github.com/joufbot/LearnAI/blob/c4125df8c0490024715f21e21c78c9403e9cdf51/src/lib/curriculum.ts). The corresponding 34 Markdown lesson files were retrieved; their topics and teaching/exercise sections informed this map. This is a redesigned learning plan, not endorsement of every claim or product-specific statement in those lessons.
@@ -304,7 +304,6 @@ Approved contract: `0b9a0c2d6339a2e33b443476d1ac70bf87b3d70c213436748092d7b64346
 Approved candidate: `67b49f4efc910e807c33ce974e3b4c08f8fcd1f1d52c6324621cc8250227927e`
 Implementation approval dispatch: `d-20260909-064-implrev-16`
 
-## Now
 ### 17 Your passport
 Goal: Receive and download the earned certificate as the story's ending.
 Provides:
@@ -313,6 +312,13 @@ Provides:
 Depends on: 16
 Target membership: inside
 Out: public certificate registry or external publication without a separate product decision.
+Archive: `slices/17-your-passport.md`
+Approved contract: `b760de08209f685da8d8418cebe7d8bf6536e8c722ec1b4a583809ae75849a2e`
+Approved candidate: `b680867179a7973832bbe4e06a99a3f77a8cde3ede5a507902af9eee879e07c0`
+Implementation approval dispatch: `d-20260909-068-implrev-17`
+
+## Now
+None — target complete
 
 ## Later
 
