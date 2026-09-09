@@ -336,12 +336,13 @@ export function parcelRobotNode(state: GameState): DialogueNodeId {
 }
 
 function talk(state: GameState, node: DialogueNodeId, quest = state.parcelQuest): GameState {
+  const next = { ...state, parcelQuest: quest };
   return {
-    ...state,
+    ...next,
     mode: 'dialogue',
     dialogueNode: node,
-    parcelQuest: quest,
     shopFeedback: null,
+    storyObjective: parcelObjective(next),
   };
 }
 

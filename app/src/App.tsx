@@ -128,7 +128,11 @@ export default function App() {
         onDismissRestore={() => dispatch({ type: 'DISMISS_RESTORE_NOTICE' })}
       />
       <WorldCanvas state={state} />
-      <CheckpointNote visible={state.checkpointReached} />
+      <CheckpointNote
+        visible={state.checkpointReached}
+        shopHelped={state.shopQuest.phase === 'helped'}
+        parcelDone={state.parcelQuest.commsRepaired}
+      />
       {naming ? (
         <NameEntry
           state={state}

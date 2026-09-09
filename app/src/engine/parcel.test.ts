@@ -213,6 +213,7 @@ describe('2.1 delegation and overbroad stop', () => {
     state = talkCompanion(state);
     state = act(state, { type: 'CHOOSE', choice: 'delegate_retrieve' });
     expect(state.parcelQuest.delegated).toBe(true);
+    expect(state.storyObjective).toBe(OBJECTIVES.stopOverbroad);
     expect(state.evidence['2.1']).toBeUndefined();
     expect(DIALOGUE.parcel_overbroad.text(state.playerName)).toBe(OVERBROAD_LINE);
     state = act(state, { type: 'CHOOSE', choice: 'allow_overbroad' });
