@@ -1,4 +1,4 @@
-export type MapId = 'apartment' | 'street' | 'shop' | 'library' | 'parcel' | 'archive';
+export type MapId = 'apartment' | 'street' | 'shop' | 'library' | 'parcel' | 'archive' | 'newsroom';
 
 export const MAP_IDS: readonly MapId[] = [
   'apartment',
@@ -7,6 +7,7 @@ export const MAP_IDS: readonly MapId[] = [
   'library',
   'parcel',
   'archive',
+  'newsroom',
 ];
 
 export type Mode =
@@ -24,7 +25,11 @@ export type Mode =
   | 'pay'
   | 'context'
   | 'redact'
-  | 'pack';
+  | 'pack'
+  | 'compare'
+  | 'draft'
+  | 'voice'
+  | 'letter';
 
 export type TrashState = 'home' | 'carried' | 'disposed';
 
@@ -53,8 +58,13 @@ export const EVIDENCE_IDS = [
   '1.6',
   '2.1',
   '2.2',
+  '2.3',
   '2.4',
   '2.5',
+  '2.6',
+  '3.1',
+  '3.2',
+  '3.3',
 ] as const;
 export type EvidenceId = (typeof EVIDENCE_IDS)[number];
 export type EvidenceStatus = 'demonstrated';
@@ -78,7 +88,12 @@ export type InspectTarget =
   | 'hold_east'
   | 'hold_board'
   | 'notes'
-  | 'spec';
+  | 'spec'
+  | 'source_a'
+  | 'source_b'
+  | 'clipping'
+  | 'original'
+  | 'editor_sample';
 export type ExplainTopic =
   | 'lookup'
   | 'notice'
@@ -89,7 +104,12 @@ export type ExplainTopic =
   | 'revise'
   | 'context'
   | 'privacy'
-  | 'pack';
+  | 'pack'
+  | 'compare'
+  | 'verify'
+  | 'review'
+  | 'voice'
+  | 'letter';
 export type ContextNoteId = 'constraint' | 'hold' | 'festival' | 'mango';
 export type PackFileId = 'spec' | 'delivery' | 'festival' | 'news_draft';
 export type PackStampId = 'rafiq_repair' | 'festival' | 'unnamed';
@@ -118,6 +138,63 @@ export interface LibraryQuest {
   packAssembled: boolean;
   specReleased: boolean;
   contextModule: boolean;
+  pendingExplain: ExplainTopic | null;
+}
+
+export const NEWSROOM_PHASES = ['unstarted', 'briefed', 'working', 'published'] as const;
+export type NewsroomPhase = (typeof NEWSROOM_PHASES)[number];
+
+export type MismatchId = 'always_open' | 'midnight_hold' | 'no_written';
+export type VoiceStyle = 'editor' | 'slogan' | 'change_facts';
+export type LetterRecipient = 'workshop_manager' | 'shopkeeper' | 'robot_manager' | 'circular14' | null;
+export type LetterPurpose = 'inspection' | 'midnight_parts' | 'circular14' | null;
+export type LetterTone = 'clear_polite' | 'slogan' | 'harsh' | null;
+export type LetterSigner = 'player' | 'robot_manager';
+export type CompareFlag =
+  | 'namedBulletin'
+  | 'namedPoster'
+  | 'hoursA'
+  | 'hoursB'
+  | 'accessA'
+  | 'accessB';
+
+export interface NewsroomQuest {
+  phase: NewsroomPhase;
+  briefed: boolean;
+  inspectedBulletin: boolean;
+  inspectedPoster: boolean;
+  namedBulletin: boolean;
+  namedPoster: boolean;
+  hoursA: boolean;
+  hoursB: boolean;
+  accessA: boolean;
+  accessB: boolean;
+  passageA: string;
+  passageB: string;
+  compared: boolean;
+  consensusAttempted: boolean;
+  inspectedClipping: boolean;
+  followedToOriginal: boolean;
+  inspectedOriginal: boolean;
+  citedBeforeOriginal: boolean;
+  verifiedCite: boolean;
+  inspectedDraft: boolean;
+  marked: Record<MismatchId, boolean>;
+  corrected: Record<MismatchId, boolean>;
+  releasedUnchecked: boolean;
+  noticeReleased: boolean;
+  inspectedSample: boolean;
+  voiceStyle: VoiceStyle | null;
+  voiceMatched: boolean;
+  factsChanged: boolean;
+  letterRecipient: LetterRecipient;
+  letterPurpose: LetterPurpose;
+  letterTone: LetterTone;
+  letterBody: string;
+  letterReviewed: boolean;
+  letterSignedBy: LetterSigner | null;
+  letterSent: boolean;
+  workshopLead: boolean;
   pendingExplain: ExplainTopic | null;
 }
 export type ParcelId = 'r17' | 'r19' | 'r71';
@@ -239,7 +316,14 @@ export type JournalEventId =
   | 'constraint_restored'
   | 'file_redacted'
   | 'pack_assembled'
-  | 'spec_released';
+  | 'spec_released'
+  | 'newsroom_visit'
+  | 'sources_compared'
+  | 'clipping_verified'
+  | 'notice_corrected'
+  | 'voice_matched'
+  | 'letter_reviewed'
+  | 'workshop_lead';
 
 export interface JournalEvent {
   id: JournalEventId;
@@ -306,7 +390,14 @@ export type DialogueNodeId =
   | 'librarian_brief'
   | 'librarian_revisit'
   | 'librarian_after_success'
-  | 'companion_after_archive';
+  | 'companion_after_archive'
+  | 'locked_newsroom'
+  | 'editor_hello'
+  | 'editor_brief'
+  | 'editor_revisit'
+  | 'editor_thanks'
+  | 'editor_workshop_lead'
+  | 'companion_after_newsroom';
 
 export type DialogueChoiceId =
   | 'agree'
@@ -353,11 +444,21 @@ export type InteractableId =
   | 'community_file'
   | 'pack_table'
   | 'spec_case'
-  | 'notes_crate';
+  | 'notes_crate'
+  | 'newsroom_door'
+  | 'editor'
+  | 'source_bulletin'
+  | 'source_poster'
+  | 'compare_desk'
+  | 'clipping_board'
+  | 'original_drawer'
+  | 'draft_table'
+  | 'voice_desk'
+  | 'letter_desk';
 
-export type PortalId = 'home' | 'shop' | 'library' | 'parcel' | 'archive';
+export type PortalId = 'home' | 'shop' | 'library' | 'parcel' | 'archive' | 'newsroom';
 
-export type NpcId = 'robot' | 'neighbor' | 'shopkeeper' | 'clerk' | 'librarian';
+export type NpcId = 'robot' | 'neighbor' | 'shopkeeper' | 'clerk' | 'librarian' | 'editor';
 
 export interface Vec2 {
   x: number;
@@ -390,11 +491,13 @@ export interface GameState {
   shopkeeper: NpcGreeting;
   clerk: NpcGreeting;
   librarian: NpcGreeting;
+  editor: NpcGreeting;
   journalEvents: JournalEvent[];
   evidence: EvidenceMap;
   shopQuest: ShopQuest;
   parcelQuest: ParcelQuest;
   libraryQuest: LibraryQuest;
+  newsroomQuest: NewsroomQuest;
   calculator: CalculatorState;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
@@ -439,7 +542,22 @@ export type GameAction =
   | { type: 'REDACT_GIVE' }
   | { type: 'PACK_TOGGLE'; file: PackFileId }
   | { type: 'PACK_STAMP'; stamp: PackStampId }
-  | { type: 'PACK_ASSEMBLE' };
+  | { type: 'PACK_ASSEMBLE' }
+  | { type: 'COMPARE_TOGGLE'; field: CompareFlag }
+  | { type: 'COMPARE_SUBMIT'; style: 'split' | 'consensus' }
+  | { type: 'CITE_CLIPPING' }
+  | { type: 'VERIFY_ORIGINAL' }
+  | { type: 'DRAFT_MARK'; mismatch: MismatchId }
+  | { type: 'DRAFT_CORRECT'; mismatch: MismatchId }
+  | { type: 'DRAFT_RELEASE' }
+  | { type: 'VOICE_APPLY'; style: VoiceStyle }
+  | {
+      type: 'LETTER_SET';
+      field: 'recipient' | 'purpose' | 'tone' | 'body';
+      value: string;
+    }
+  | { type: 'LETTER_REVIEW' }
+  | { type: 'LETTER_SEND'; signer: LetterSigner };
 
 export interface DialogueChoice {
   id: DialogueChoiceId;
@@ -453,6 +571,7 @@ export type DialogueSpeaker =
   | 'shopkeeper'
   | 'clerk'
   | 'librarian'
+  | 'editor'
   | 'notice';
 
 export interface DialogueLine {
@@ -483,6 +602,7 @@ export interface SerializedTestState {
   shopkeeper: NpcGreeting;
   clerk: NpcGreeting;
   librarian: NpcGreeting;
+  editor: NpcGreeting;
   journalEvents: JournalEvent[];
   mapsVisited: MapId[];
   saveStatus: SaveStatus;
@@ -493,6 +613,7 @@ export interface SerializedTestState {
   shopQuest: ShopQuest;
   parcelQuest: ParcelQuest;
   libraryQuest: LibraryQuest;
+  newsroomQuest: NewsroomQuest;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
   robotUnderstood: string | null;
@@ -515,11 +636,13 @@ export interface SaveEnvelope {
   shopkeeper: NpcGreeting;
   clerk: NpcGreeting;
   librarian: NpcGreeting;
+  editor: NpcGreeting;
   journalEvents: JournalEvent[];
   evidence: EvidenceMap;
   shopQuest: ShopQuest;
   parcelQuest: ParcelQuest;
   libraryQuest: LibraryQuest;
+  newsroomQuest: NewsroomQuest;
   robot: { companion: boolean };
   endingState: EndingState;
   mapsVisited: MapId[];

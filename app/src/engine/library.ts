@@ -360,7 +360,8 @@ function syncPhase(quest: LibraryQuest): LibraryQuest {
 
 export function libraryObjective(state: GameState): string {
   const quest = state.libraryQuest;
-  if (quest.contextModule && quest.specReleased) return OBJECTIVES.moduleReady;
+  if (state.newsroomQuest?.workshopLead) return OBJECTIVES.workshopLead;
+  if (quest.contextModule && quest.specReleased) return OBJECTIVES.newsroomLead;
   if (state.map === 'archive' || quest.briefed) return OBJECTIVES.archiveWork;
   if (state.parcelQuest.commsRepaired) return OBJECTIVES.parcelDone;
   return state.storyObjective;

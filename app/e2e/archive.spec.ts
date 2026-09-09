@@ -125,8 +125,22 @@ test('parcel-done through archive success with physical actions', async ({ page 
   await interactAt(page, 'street', WORLD_POS.robot.x, WORLD_POS.robot.y);
   await expect(page.getByTestId('dialogue-text')).toContainText(/الأخبار|منتصف/);
   await assertNoLessonUi(page);
-  await expect(page.locator('body')).not.toContainText('newsroom');
+  expect(done.evidence['2.3']).toBeUndefined();
+  expect(done.evidence['2.6']).toBeUndefined();
+  expect(done.evidence['3.1']).toBeUndefined();
+  expect(done.evidence['3.2']).toBeUndefined();
+  expect(done.evidence['3.3']).toBeUndefined();
+  await page.getByTestId('dialogue-advance').click();
+  await interactAt(page, 'street', WORLD_POS.newsroomDoor.x, WORLD_POS.newsroomDoor.y);
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-map', 'newsroom');
+  const entered = await getState(page);
+  expect(entered.evidence['2.3']).toBeUndefined();
+  expect(entered.evidence['2.6']).toBeUndefined();
+  expect(entered.evidence['3.1']).toBeUndefined();
+  expect(entered.evidence['3.2']).toBeUndefined();
+  expect(entered.evidence['3.3']).toBeUndefined();
   await expect(page.locator('body')).not.toContainText('شهادة');
+  await expect(page.locator('body')).not.toContainText('امتحان');
 });
 
 test('archive overlays stay inside 1366 and 1920 viewports', async ({ page }) => {

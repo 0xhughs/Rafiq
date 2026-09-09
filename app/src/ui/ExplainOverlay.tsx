@@ -1,9 +1,10 @@
 import { EXPLAIN } from '../engine/shop';
 import { PARCEL_EXPLAIN } from '../engine/parcel';
 import { LIBRARY_EXPLAIN } from '../engine/library';
+import { NEWSROOM_EXPLAIN } from '../engine/newsroom';
 import type { GameState } from '../engine/types';
 
-const NOTES = { ...EXPLAIN, ...PARCEL_EXPLAIN, ...LIBRARY_EXPLAIN };
+const NOTES = { ...EXPLAIN, ...PARCEL_EXPLAIN, ...LIBRARY_EXPLAIN, ...NEWSROOM_EXPLAIN };
 
 interface Props {
   state: GameState;

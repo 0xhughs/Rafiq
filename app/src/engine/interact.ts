@@ -4,13 +4,14 @@ import {
   doorHint,
   FURNITURE,
   libraryDoorHint,
+  newsroomDoorHint,
   parcelDoorHint,
   portalLetterPos,
   portalsOnMap,
   shopDoorHint,
   WORLD_POS,
 } from './maps';
-import { clerkVisible, isCompanion, librarianVisible, neighborVisible, npcPosition, robotVisible, shopkeeperVisible } from './npc';
+import { clerkVisible, editorVisible, isCompanion, librarianVisible, neighborVisible, npcPosition, robotVisible, shopkeeperVisible } from './npc';
 import type { Actionable, GameState, InteractableId } from './types';
 
 function dist(ax: number, ay: number, bx: number, by: number): number {
@@ -61,6 +62,30 @@ function shopRect(id: InteractableId): { x: number; y: number; w: number; h: num
       return shop.calculator;
     case 'crate':
       return shop.crate;
+    default:
+      return null;
+  }
+}
+
+function newsroomRect(id: InteractableId): { x: number; y: number; w: number; h: number } | null {
+  const room = FURNITURE.newsroom;
+  switch (id) {
+    case 'source_bulletin':
+      return room.bulletin;
+    case 'source_poster':
+      return room.poster;
+    case 'compare_desk':
+      return room.compare;
+    case 'clipping_board':
+      return room.clipping;
+    case 'original_drawer':
+      return room.original;
+    case 'draft_table':
+      return room.draft;
+    case 'voice_desk':
+      return room.voice;
+    case 'letter_desk':
+      return room.letter;
     default:
       return null;
   }
@@ -121,7 +146,7 @@ function itemDistance(state: GameState, item: Actionable): number {
     const box = FURNITURE.street.dumpster;
     return distToRect(state.position.x, state.position.y, box.x, box.y, box.w, box.h);
   }
-  const rect = shopRect(item.id) ?? parcelRect(item.id) ?? archiveRect(item.id);
+  const rect = shopRect(item.id) ?? parcelRect(item.id) ?? archiveRect(item.id) ?? newsroomRect(item.id);
   if (rect) {
     return distToRect(state.position.x, state.position.y, rect.x, rect.y, rect.w, rect.h);
   }
@@ -133,6 +158,7 @@ function portalHint(id: InteractableId, map: GameState['map']): string {
   if (id === 'shop_door') return shopDoorHint(map);
   if (id === 'parcel_door') return parcelDoorHint(map);
   if (id === 'library_inner') return archiveDoorHint(map);
+  if (id === 'newsroom_door') return newsroomDoorHint(map);
   return libraryDoorHint(map);
 }
 
@@ -217,6 +243,16 @@ export function listInteractables(state: GameState): Actionable[] {
     });
   }
 
+  if (editorVisible(state)) {
+    const editor = npcPosition(state, 'editor');
+    items.push({
+      id: 'editor',
+      label: HINT_LABELS.editor,
+      x: editor.x,
+      y: editor.y,
+    });
+  }
+
   if (state.map === 'shop' && state.encounter === 'help_accepted') {
     items.push(
       { id: 'shelf_west', label: HINT_LABELS.shelfWest, x: WORLD_POS.shelfWest.x, y: WORLD_POS.shelfWest.y },
@@ -274,6 +310,59 @@ export function listInteractables(state: GameState): Actionable[] {
         label: HINT_LABELS.specCase,
         x: WORLD_POS.specCase.x,
         y: WORLD_POS.specCase.y,
+      },
+    );
+  }
+
+  if (state.map === 'newsroom') {
+    items.push(
+      {
+        id: 'source_bulletin',
+        label: HINT_LABELS.sourceBulletin,
+        x: WORLD_POS.sourceBulletin.x,
+        y: WORLD_POS.sourceBulletin.y,
+      },
+      {
+        id: 'source_poster',
+        label: HINT_LABELS.sourcePoster,
+        x: WORLD_POS.sourcePoster.x,
+        y: WORLD_POS.sourcePoster.y,
+      },
+      {
+        id: 'compare_desk',
+        label: HINT_LABELS.compareDesk,
+        x: WORLD_POS.compareDesk.x,
+        y: WORLD_POS.compareDesk.y,
+      },
+      {
+        id: 'clipping_board',
+        label: HINT_LABELS.clippingBoard,
+        x: WORLD_POS.clippingBoard.x,
+        y: WORLD_POS.clippingBoard.y,
+      },
+      {
+        id: 'original_drawer',
+        label: HINT_LABELS.originalDrawer,
+        x: WORLD_POS.originalDrawer.x,
+        y: WORLD_POS.originalDrawer.y,
+      },
+      {
+        id: 'draft_table',
+        label: HINT_LABELS.draftTable,
+        x: WORLD_POS.draftTable.x,
+        y: WORLD_POS.draftTable.y,
+      },
+      {
+        id: 'voice_desk',
+        label: HINT_LABELS.voiceDesk,
+        x: WORLD_POS.voiceDesk.x,
+        y: WORLD_POS.voiceDesk.y,
+      },
+      {
+        id: 'letter_desk',
+        label: HINT_LABELS.letterDesk,
+        x: WORLD_POS.letterDesk.x,
+        y: WORLD_POS.letterDesk.y,
       },
     );
   }

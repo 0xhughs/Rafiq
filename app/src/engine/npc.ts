@@ -2,6 +2,7 @@ import { COMPANION_OFFSET } from './constants';
 import { shopkeeperNode } from './shop';
 import { clerkNode, parcelRobotNode } from './parcel';
 import { librarianNode } from './library';
+import { editorNode } from './newsroom';
 import type { DialogueNodeId, GameState, NpcId } from './types';
 import { WORLD_POS } from './maps';
 
@@ -38,11 +39,16 @@ export function librarianVisible(state: GameState): boolean {
   return state.map === 'archive';
 }
 
+export function editorVisible(state: GameState): boolean {
+  return state.map === 'newsroom';
+}
+
 export function npcPosition(state: GameState, id: NpcId): { x: number; y: number } {
   if (id === 'robot') return robotPosition(state);
   if (id === 'neighbor') return WORLD_POS.neighbor;
   if (id === 'clerk') return WORLD_POS.clerk;
   if (id === 'librarian') return WORLD_POS.librarian;
+  if (id === 'editor') return WORLD_POS.editor;
   return WORLD_POS.shopkeeper;
 }
 
@@ -50,6 +56,7 @@ export function openingNode(state: GameState, id: NpcId): DialogueNodeId | null 
   if (id === 'robot') {
     if (state.encounter === 'unseen') return null;
     if (state.encounter === 'help_accepted') {
+      if (state.newsroomQuest.workshopLead) return 'companion_after_newsroom';
       if (state.libraryQuest.contextModule) return 'companion_after_archive';
       if (state.parcelQuest.commsRepaired) return 'companion_after_parcel';
       if (state.map === 'parcel') return parcelRobotNode(state);
@@ -62,6 +69,7 @@ export function openingNode(state: GameState, id: NpcId): DialogueNodeId | null 
   }
   if (id === 'clerk') return clerkNode(state);
   if (id === 'librarian') return librarianNode(state);
+  if (id === 'editor') return editorNode(state);
   return shopkeeperNode(state);
 }
 
@@ -101,6 +109,14 @@ export function openNpc(state: GameState, id: NpcId): GameState {
       mode: 'dialogue',
       dialogueNode: node,
       librarian: state.librarian === 'greeted' ? 'greeted' : 'talking',
+    };
+  }
+  if (id === 'editor') {
+    return {
+      ...state,
+      mode: 'dialogue',
+      dialogueNode: node,
+      editor: state.editor === 'greeted' ? 'greeted' : 'talking',
     };
   }
   return {

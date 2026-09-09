@@ -1,6 +1,6 @@
 import { TILE } from '../engine/constants';
 import { robotPosition, robotVisible } from '../engine/npc';
-import { APARTMENT, ARCHIVE, FURNITURE, LIBRARY, PARCEL, SHOP, STREET, WORLD_POS, getMap } from '../engine/maps';
+import { APARTMENT, ARCHIVE, FURNITURE, LIBRARY, NEWSROOM, PARCEL, SHOP, STREET, WORLD_POS, getMap } from '../engine/maps';
 import type { Facing, GameState } from '../engine/types';
 
 const PALETTE = {
@@ -32,6 +32,10 @@ const PALETTE = {
   shopOpen: '#3d6b4f',
   library: '#4a5d78',
   libraryDoor: '#2c3a4f',
+  newsroom: '#6a3d4a',
+  newsroomDoor: '#3a1e28',
+  newsroomFloor: '#efe4d0',
+  newsroomFloorAlt: '#e6d8c4',
   parcel: '#3d5a62',
   parcelDoor: '#1e3a40',
   parcelFloor: '#d7e0d8',
@@ -180,7 +184,7 @@ function drawApartment(ctx: CanvasRenderingContext2D): void {
   ctx.fill();
 }
 
-function drawStreet(ctx: CanvasRenderingContext2D, storeOpen: boolean, parcelOpen: boolean): void {
+function drawStreet(ctx: CanvasRenderingContext2D, storeOpen: boolean, parcelOpen: boolean, newsroomOpen: boolean): void {
   const map = STREET;
   drawChecker(ctx, map.cols, map.rows, PALETTE.street, PALETTE.streetAlt);
   drawWalls(ctx, FURNITURE.street.walls);
@@ -216,6 +220,18 @@ function drawStreet(ctx: CanvasRenderingContext2D, storeOpen: boolean, parcelOpe
   fillRound(ctx, WORLD_POS.libraryDoor.x - 10, WORLD_POS.libraryDoor.y - 18, 20, 36, 4, PALETTE.libraryDoor);
 
   fillRound(ctx, WORLD_POS.shopDoor.x - 10, WORLD_POS.shopDoor.y - 18, 20, 36, 4, '#8a4b2a');
+
+  const news = FURNITURE.street.newsroom;
+  fillRound(ctx, news.x, news.y, news.w, news.h, 4, PALETTE.newsroom);
+  ctx.fillStyle = '#f4e6d4';
+  ctx.fillRect(news.x + 4, news.y - 22, news.w - 8, 20);
+  ctx.fillStyle = '#3a1e28';
+  ctx.font = '11px "Noto Naskh Arabic", "Cairo", sans-serif';
+  ctx.fillText('قاعة أخبار الحي', news.x + news.w / 2, news.y - 8);
+  fillRound(ctx, WORLD_POS.newsroomDoor.x - 10, WORLD_POS.newsroomDoor.y - 18, 20, 36, 4, PALETTE.newsroomDoor);
+  ctx.fillStyle = newsroomOpen ? PALETTE.shopOpen : '#2a2118';
+  ctx.font = '10px "Cairo", sans-serif';
+  ctx.fillText(newsroomOpen ? 'مفتوح' : 'مغلق', news.x + news.w / 2, news.y + 14);
 
   const parcel = FURNITURE.street.parcel;
   fillRound(ctx, parcel.x, parcel.y, parcel.w, parcel.h, 4, PALETTE.parcel);
@@ -515,6 +531,58 @@ function drawArchiveRoom(ctx: CanvasRenderingContext2D, specOpen: boolean): void
   fillRound(ctx, door.x - 10, door.y - 22, 20, 44, 4, PALETTE.libraryDoor);
 }
 
+function drawNewsroom(ctx: CanvasRenderingContext2D): void {
+  const map = NEWSROOM;
+  drawChecker(ctx, map.cols, map.rows, PALETTE.newsroomFloor, PALETTE.newsroomFloorAlt);
+  drawWalls(ctx, FURNITURE.newsroom.walls);
+  ctx.font = '11px "Noto Naskh Arabic", "Cairo", sans-serif';
+  ctx.direction = 'rtl';
+  ctx.textAlign = 'center';
+  for (const shelf of FURNITURE.newsroom.shelves) {
+    fillRound(ctx, shelf.x + 4, shelf.y + 4, shelf.w - 8, shelf.h - 8, 4, '#5a3a48');
+    ctx.fillStyle = '#ead9c0';
+    ctx.fillRect(shelf.x + 10, shelf.y + 12, shelf.w - 20, 6);
+  }
+  const clip = FURNITURE.newsroom.clipping;
+  fillRound(ctx, clip.x + 4, clip.y + 2, clip.w - 8, clip.h - 6, 4, '#efe0b8');
+  ctx.fillStyle = '#5a3218';
+  ctx.fillText('قصاصة', clip.x + clip.w / 2, clip.y + 28);
+  const bulletin = FURNITURE.newsroom.bulletin;
+  fillRound(ctx, bulletin.x + 4, bulletin.y + 6, bulletin.w - 8, bulletin.h - 10, 4, '#f4e4c4');
+  ctx.fillStyle = '#5a3218';
+  ctx.fillText('نشرة', bulletin.x + bulletin.w / 2, bulletin.y + 28);
+  const poster = FURNITURE.newsroom.poster;
+  fillRound(ctx, poster.x + 4, poster.y + 6, poster.w - 8, poster.h - 10, 4, '#f3d9a4');
+  ctx.fillStyle = '#3a2414';
+  ctx.fillText('ملصق', poster.x + poster.w / 2, poster.y + 28);
+  const compare = FURNITURE.newsroom.compare;
+  fillRound(ctx, compare.x + 4, compare.y + 6, compare.w - 8, compare.h - 10, 4, '#efe6d0');
+  ctx.fillStyle = '#2a2118';
+  ctx.fillText('مقارنة', compare.x + compare.w / 2, compare.y + 28);
+  const original = FURNITURE.newsroom.original;
+  fillRound(ctx, original.x + 4, original.y + 6, original.w - 8, original.h - 10, 4, '#d7efe4');
+  ctx.fillStyle = '#163238';
+  ctx.fillText('أصل', original.x + original.w / 2, original.y + 28);
+  const draft = FURNITURE.newsroom.draft;
+  fillRound(ctx, draft.x + 4, draft.y + 6, draft.w - 8, draft.h - 10, 4, '#f6d6c8');
+  ctx.fillStyle = '#7a241c';
+  ctx.fillText('مسودة', draft.x + draft.w / 2, draft.y + 28);
+  const voice = FURNITURE.newsroom.voice;
+  fillRound(ctx, voice.x + 4, voice.y + 6, voice.w - 8, voice.h - 10, 4, '#e7efd6');
+  ctx.fillStyle = '#2a3b1c';
+  ctx.fillText('صوت', voice.x + voice.w / 2, voice.y + 28);
+  const letter = FURNITURE.newsroom.letter;
+  fillRound(ctx, letter.x + 4, letter.y + 6, letter.w - 8, letter.h - 10, 4, '#ead9c0');
+  ctx.fillStyle = '#163238';
+  ctx.fillText('خطاب', letter.x + letter.w / 2, letter.y + 28);
+  const counter = FURNITURE.newsroom.counter;
+  fillRound(ctx, counter.x + 2, counter.y + 6, counter.w - 4, counter.h - 10, 6, PALETTE.newsroom);
+  ctx.fillStyle = '#ead9c0';
+  ctx.fillText('المنضدة', counter.x + counter.w / 2, counter.y + 22);
+  const door = map.door;
+  fillRound(ctx, door.x - 10, door.y - 22, 20, 44, 4, PALETTE.newsroomDoor);
+}
+
 function drawRobot(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -582,7 +650,12 @@ export function drawWorld(ctx: CanvasRenderingContext2D, state: GameState, time:
       drawTrashBag(ctx, WORLD_POS.trash.x, WORLD_POS.trash.y);
     }
   } else if (state.map === 'street') {
-    drawStreet(ctx, state.encounter === 'help_accepted', state.shopQuest.phase === 'helped');
+    drawStreet(
+      ctx,
+      state.encounter === 'help_accepted',
+      state.shopQuest.phase === 'helped',
+      state.libraryQuest.contextModule && state.libraryQuest.specReleased,
+    );
     drawVillager(ctx, WORLD_POS.neighbor.x, WORLD_POS.neighbor.y, PALETTE.neighborDress);
   } else if (state.map === 'shop') {
     drawShopInterior(ctx);
@@ -593,6 +666,9 @@ export function drawWorld(ctx: CanvasRenderingContext2D, state: GameState, time:
   } else if (state.map === 'archive') {
     drawArchiveRoom(ctx, state.libraryQuest.specReleased);
     drawVillager(ctx, WORLD_POS.librarian.x, WORLD_POS.librarian.y, '#4a5d78');
+  } else if (state.map === 'newsroom') {
+    drawNewsroom(ctx);
+    drawVillager(ctx, WORLD_POS.editor.x, WORLD_POS.editor.y, '#6a3d4a');
   } else {
     drawLibraryExterior(ctx, state.parcelQuest.commsRepaired);
   }

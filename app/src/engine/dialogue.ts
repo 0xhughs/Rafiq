@@ -25,7 +25,11 @@ export const OBJECTIVES = {
   reviseParcel: 'الأمر الغامض فشل. صحّح الناقص وأرسل أمراً جديداً لحجز ر-١٩.',
   parcelDone: 'حصلت على طرد الإصلاح. ادخل قاعة القراءة من الباب الداخلي في المكتبة.',
   archiveWork: 'قاعة القراءة: نافذة ملاحظتين، ملف الحي بلا أسرار، ثم حزمة الملفات المسماة.',
-  moduleReady: 'وحدة السياق جاهزة. اقرأ المواصفات في القاعة. قاعة الأخبار لم تُفتح.',
+  moduleReady: 'وحدة السياق جاهزة. ادخل قاعة أخبار الحي بين البقالة والمكتبة.',
+  newsroomLead: 'وحدة السياق جاهزة. ادخل قاعة أخبار الحي بين البقالة والمكتبة.',
+  newsroomWork:
+    'قاعة الأخبار: قارن المصدرين، اتبع القصاصة إلى أصلها، راجع المسودة، طابق صوت المحررة، ثم راجع خطاب المعاينة.',
+  workshopLead: 'المحررة شكرتك. خيط المعاينة يقود إلى ورشة الإصلاح. داخل الورشة لم يُفتح بعد.',
 } as const;
 
 export const SPEAKER = {
@@ -35,6 +39,7 @@ export const SPEAKER = {
   shopkeeper: () => 'البقال',
   clerk: () => 'موظف الطرود',
   librarian: () => 'أمينة القاعة',
+  editor: () => 'محررة الحي',
   notice: () => 'ملاحظة',
 };
 
@@ -59,6 +64,13 @@ export const JOURNAL_TEXT: Record<JournalEventId, string> = {
   file_redacted: 'أُعطي الروبوت حقائق الرف بلا أسماء ولا هاتف ولا عنوان.',
   pack_assembled: 'جُمعت حزمة إصلاح رفيق من المواصفات وملف التسليم فقط.',
   spec_released: 'غلاف المواصفات صار مقروءاً، ووحدة السياق ظاهرة.',
+  newsroom_visit: 'دخلتَ قاعة أخبار الحي بين البقالة والمكتبة.',
+  sources_compared: 'قارنتَ نشرة الورشة وملصق الرصيف دون محو الخلاف.',
+  clipping_verified: 'تبعتَ القصاصة إلى أصل ق-٢٠٤ وتحققت قبل الاستشهاد.',
+  notice_corrected: 'علّمت تعارضاً في المسودة الأنيقة وصحّحتها قبل التعليق.',
+  voice_matched: 'طابقتَ صوت المحررة دون تبديل الحقائق.',
+  letter_reviewed: 'راجعت خطاب موعد المعاينة إلى مدير ورشة الإصلاح.',
+  workshop_lead: 'المحررة شكرتك وفتحت خيط ورشة الإصلاح.',
 };
 
 export const LOCKED_COPY = {
@@ -70,6 +82,8 @@ export const LOCKED_COPY = {
     'باب قاعة القراءة مقفل الآن. أحضر طرد الإصلاح من مكتب الطرود بعد بقالة الزاوية.',
   parcel: (objective: string) =>
     `مكتب طرود الرصيف يفتح بعد أن تساعد البقال. الهدف الحالي: ${objective}`,
+  newsroom:
+    'قاعة أخبار الحي تُفتح بعد أن تكتمل وحدة السياق في قاعة القراءة.',
 } as const;
 
 export const SAVE_STATUS_COPY = {
@@ -540,7 +554,7 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     speaker: 'librarian',
     speakerLabel: () => SPEAKER.librarian(),
     text: () =>
-      'غلاف المواصفات مفتوح للقراءة. وحدة السياق ظاهرة على رفيقك. قاعة الأخبار لم تُفتح بعد.',
+      'غلاف المواصفات مفتوح للقراءة. قاعة أخبار الحي بين البقالة والمكتبة تنتظر إعلاناً موثوقاً.',
     next: null,
   },
   companion_after_archive: {
@@ -549,6 +563,61 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     speakerLabel: () => SPEAKER.robot(),
     text: () =>
       'قاعة الأخبار توزّع الشهادات وحدها بعد منتصف الليل. لم أقرأ أي لائحة على الباب.',
+    next: null,
+  },
+  locked_newsroom: {
+    id: 'locked_newsroom',
+    speaker: 'notice',
+    speakerLabel: () => SPEAKER.notice(),
+    text: () => LOCKED_COPY.newsroom,
+    next: null,
+  },
+  editor_hello: {
+    id: 'editor_hello',
+    speaker: 'editor',
+    speakerLabel: () => SPEAKER.editor(),
+    text: () =>
+      'أهلاً بك في قاعة أخبار الحي. نشرة الورشة وملصق الرصيف لا يتفقان، وقصاصة على اللوحة تستشهد بق-٢٠٤.',
+    next: 'editor_brief',
+  },
+  editor_brief: {
+    id: 'editor_brief',
+    speaker: 'editor',
+    speakerLabel: () => SPEAKER.editor(),
+    text: () =>
+      'قارن المصدرين دون محو الخلاف، اتبع القصاصة إلى أصلها، راجع مسودة الروبوت الأنيقة، طابق صوتي القصير، ثم راجع خطاب موعد المعاينة.',
+    next: null,
+  },
+  editor_revisit: {
+    id: 'editor_revisit',
+    speaker: 'editor',
+    speakerLabel: () => SPEAKER.editor(),
+    text: () =>
+      'ما زلنا نحتاج مقارنة صادقة، وتحققاً من ق-٢٠٤، ومسودة معلَّمة، وصوتاً بلا شعارات، وخطاباً مراجعاً.',
+    next: null,
+  },
+  editor_thanks: {
+    id: 'editor_thanks',
+    speaker: 'editor',
+    speakerLabel: () => SPEAKER.editor(),
+    text: () =>
+      'شكراً. الإعلان صار شيئاً يثق به الحي، وخطاب المعاينة واضح.',
+    next: 'editor_workshop_lead',
+  },
+  editor_workshop_lead: {
+    id: 'editor_workshop_lead',
+    speaker: 'editor',
+    speakerLabel: () => SPEAKER.editor(),
+    text: () =>
+      'مدير ورشة الإصلاح ينتظر المعاينة. داخل الورشة لم يُفتح بعد، لكن الخيط صار بيدك.',
+    next: null,
+  },
+  companion_after_newsroom: {
+    id: 'companion_after_newsroom',
+    speaker: 'robot',
+    speakerLabel: () => SPEAKER.robot(),
+    text: () =>
+      'ورشة الإصلاح توزّع القطع حسب تعميم ١٤ بعد منتصف الليل. لم أقرأ أي لائحة.',
     next: null,
   },
 };
@@ -579,7 +648,9 @@ export function isNpcNode(node: DialogueNodeId | null): boolean {
     node === 'companion_revisit' ||
     node === 'companion_after_shop' ||
     node === 'companion_after_parcel' ||
-    node === 'companion_after_archive'
+    node === 'companion_after_archive' ||
+    node === 'companion_after_newsroom' ||
+    node.startsWith('editor')
   );
 }
 
@@ -588,6 +659,7 @@ export function isLockedNode(node: DialogueNodeId | null): boolean {
     node === 'locked_shop' ||
     node === 'locked_library' ||
     node === 'locked_parcel' ||
-    node === 'library_inner_locked'
+    node === 'library_inner_locked' ||
+    node === 'locked_newsroom'
   );
 }

@@ -3,14 +3,17 @@ interface Props {
   shopHelped: boolean;
   parcelDone: boolean;
   moduleReady: boolean;
+  workshopLead: boolean;
 }
 
-export function CheckpointNote({ visible, shopHelped, parcelDone, moduleReady }: Props) {
+export function CheckpointNote({ visible, shopHelped, parcelDone, moduleReady, workshopLead }: Props) {
   if (!visible) return null;
   let text =
     'رفيق أصبح رفيقك في الحي. البقالة عند الزاوية مفتوحة الآن، وبعدها واجهة المكتبة. بقية ألغاز المغامرة ما زالت قيد التطوير.';
-  if (moduleReady) {
-    text = 'وحدة السياق جاهزة. المواصفات في القاعة للقراءة. قاعة الأخبار لم تُفتح.';
+  if (workshopLead) {
+    text = 'المحررة شكرتك. خيط المعاينة يقود إلى ورشة الإصلاح. داخل الورشة لم يُفتح بعد.';
+  } else if (moduleReady) {
+    text = 'وحدة السياق جاهزة. ادخل قاعة أخبار الحي بين البقالة والمكتبة.';
   } else if (parcelDone) {
     text = 'حصلت على طرد الإصلاح. باب قاعة القراءة في المكتبة صار يُفتح.';
   } else if (shopHelped) {

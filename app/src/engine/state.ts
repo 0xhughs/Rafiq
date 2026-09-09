@@ -31,6 +31,29 @@ import {
   skipLibraryExplain,
 } from './library';
 import {
+  closeNewsroomDialogue,
+  closeNewsroomOverlay,
+  createNewsroomQuest,
+  inspectNewsroom,
+  isNewsroomExplain,
+  isNewsroomOverlay,
+  newsroomObjective,
+  openDraft,
+  openVoice,
+  reduceCiteClipping,
+  reduceCompareSubmit,
+  reduceCompareToggle,
+  reduceDraftCorrect,
+  reduceDraftMark,
+  reduceDraftRelease,
+  reduceLetterReview,
+  reduceLetterSend,
+  reduceLetterSet,
+  reduceVerifyOriginal,
+  reduceVoiceApply,
+  skipNewsroomExplain,
+} from './newsroom';
+import {
   closeParcelDialogue,
   createParcelQuest,
   inspectParcel,
@@ -88,11 +111,13 @@ export function createInitialState(): GameState {
     shopkeeper: 'unmet',
     clerk: 'unmet',
     librarian: 'unmet',
+    editor: 'unmet',
     journalEvents: [],
     evidence: emptyEvidence(),
     shopQuest: createShopQuest(),
     parcelQuest: createParcelQuest(),
     libraryQuest: createLibraryQuest(),
+    newsroomQuest: createNewsroomQuest(),
     calculator: createCalculator(),
     inspectTarget: null,
     explainTopic: null,
@@ -141,6 +166,10 @@ function goThroughPortal(state: GameState, portalId: PortalId): GameState {
     if (!portal.lockedNode) return state;
     return { ...state, mode: 'dialogue', dialogueNode: portal.lockedNode };
   }
+  if (portal.requiresArchiveSuccess && !(state.libraryQuest.contextModule && state.libraryQuest.specReleased)) {
+    if (!portal.lockedNode) return state;
+    return { ...state, mode: 'dialogue', dialogueNode: portal.lockedNode };
+  }
   if (portal.requiresHelp && state.encounter !== 'help_accepted') {
     if (!portal.lockedNode) return state;
     return { ...state, mode: 'dialogue', dialogueNode: portal.lockedNode };
@@ -151,6 +180,7 @@ function goThroughPortal(state: GameState, portalId: PortalId): GameState {
   if (dest.map === 'library') events = recordEvent(events, 'library_visit');
   if (dest.map === 'parcel') events = recordEvent(events, 'parcel_visit');
   if (dest.map === 'archive') events = recordEvent(events, 'archive_visit');
+  if (dest.map === 'newsroom') events = recordEvent(events, 'newsroom_visit');
   const next = {
     ...state,
     map: dest.map,
@@ -162,6 +192,16 @@ function goThroughPortal(state: GameState, portalId: PortalId): GameState {
   let storyObjective = dest.map === 'parcel' ? parcelObjective(next) : next.storyObjective;
   if (dest.map === 'archive' || dest.map === 'library') {
     storyObjective = libraryObjective({ ...next, storyObjective });
+  }
+  if (dest.map === 'newsroom') {
+    storyObjective = newsroomObjective(next);
+  }
+  if (dest.map === 'street') {
+    if (next.newsroomQuest.workshopLead || (next.libraryQuest.contextModule && next.libraryQuest.specReleased)) {
+      storyObjective = newsroomObjective(next);
+    } else if (next.parcelQuest.commsRepaired) {
+      storyObjective = libraryObjective(next);
+    }
   }
   return { ...next, storyObjective };
 }
@@ -189,6 +229,7 @@ function postponeNpc(state: GameState): GameState {
     shopkeeper: state.shopkeeper === 'greeted' ? 'greeted' : 'unmet',
     clerk: state.clerk === 'greeted' ? 'greeted' : 'unmet',
     librarian: state.librarian === 'greeted' ? 'greeted' : 'unmet',
+    editor: state.editor === 'greeted' ? 'greeted' : 'unmet',
   };
 }
 
@@ -202,6 +243,8 @@ function closeDialogue(state: GameState): GameState {
   if (parcelClosed) return parcelClosed;
   const libraryClosed = closeLibraryDialogue(state);
   if (libraryClosed) return libraryClosed;
+  const newsroomClosed = closeNewsroomDialogue(state);
+  if (newsroomClosed) return newsroomClosed;
   if (state.dialogueNode === 'neighbor_thanks') {
     return {
       ...state,
@@ -356,11 +399,13 @@ export function reduce(state: GameState, action: GameAction): GameState {
         shopkeeper: 'unmet',
         clerk: 'unmet',
         librarian: 'unmet',
+        editor: 'unmet',
         journalEvents: [],
         evidence: emptyEvidence(),
         shopQuest: createShopQuest(),
         parcelQuest: createParcelQuest(),
         libraryQuest: createLibraryQuest(),
+        newsroomQuest: createNewsroomQuest(),
         calculator: createCalculator(),
         inspectTarget: null,
         explainTopic: null,
@@ -403,6 +448,8 @@ export function reduce(state: GameState, action: GameAction): GameState {
           return goThroughPortal(state, 'parcel');
         case 'library_inner':
           return goThroughPortal(state, 'archive');
+        case 'newsroom_door':
+          return goThroughPortal(state, 'newsroom');
         case 'dumpster':
           return dispose(state);
         case 'robot':
@@ -415,6 +462,8 @@ export function reduce(state: GameState, action: GameAction): GameState {
           return openNpc(state, 'clerk');
         case 'librarian':
           return openNpc(state, 'librarian');
+        case 'editor':
+          return openNpc(state, 'editor');
         case 'shelf_west':
           return inspectShop(state, 'west');
         case 'shelf_east':
@@ -452,6 +501,22 @@ export function reduce(state: GameState, action: GameAction): GameState {
           return { ...state, mode: 'pack', shopFeedback: null };
         case 'spec_case':
           return { ...state, mode: 'inspect', inspectTarget: 'spec', shopFeedback: null };
+        case 'source_bulletin':
+          return inspectNewsroom(state, 'source_a');
+        case 'source_poster':
+          return inspectNewsroom(state, 'source_b');
+        case 'clipping_board':
+          return inspectNewsroom(state, 'clipping');
+        case 'original_drawer':
+          return inspectNewsroom(state, 'original');
+        case 'compare_desk':
+          return { ...state, mode: 'compare', shopFeedback: null };
+        case 'draft_table':
+          return openDraft(state);
+        case 'voice_desk':
+          return openVoice(state);
+        case 'letter_desk':
+          return { ...state, mode: 'letter', shopFeedback: null };
         default:
           return state;
       }
@@ -477,6 +542,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
           if (isLibraryExplain(state.explainTopic)) {
             return skipLibraryExplain(state);
           }
+          if (isNewsroomExplain(state.explainTopic)) {
+            return skipNewsroomExplain(state);
+          }
           if (
             state.explainTopic === 'delegate' ||
             state.explainTopic === 'instruction' ||
@@ -496,6 +564,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
       }
       if (isLibraryOverlay(state.mode)) {
         return closeLibraryOverlay(state);
+      }
+      if (isNewsroomOverlay(state.mode)) {
+        return closeNewsroomOverlay(state);
       }
       if (isParcelOverlay(state.mode)) {
         return {
@@ -529,6 +600,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
       if (state.mode !== 'explain') return state;
       if (isLibraryExplain(state.explainTopic)) {
         return skipLibraryExplain(state);
+      }
+      if (isNewsroomExplain(state.explainTopic)) {
+        return skipNewsroomExplain(state);
       }
       if (
         state.explainTopic === 'delegate' ||
@@ -577,6 +651,28 @@ export function reduce(state: GameState, action: GameAction): GameState {
       return reducePackStamp(state, action.stamp);
     case 'PACK_ASSEMBLE':
       return reducePackAssemble(state);
+    case 'COMPARE_TOGGLE':
+      return reduceCompareToggle(state, action.field);
+    case 'COMPARE_SUBMIT':
+      return reduceCompareSubmit(state, action.style);
+    case 'CITE_CLIPPING':
+      return reduceCiteClipping(state);
+    case 'VERIFY_ORIGINAL':
+      return reduceVerifyOriginal(state);
+    case 'DRAFT_MARK':
+      return reduceDraftMark(state, action.mismatch);
+    case 'DRAFT_CORRECT':
+      return reduceDraftCorrect(state, action.mismatch);
+    case 'DRAFT_RELEASE':
+      return reduceDraftRelease(state);
+    case 'VOICE_APPLY':
+      return reduceVoiceApply(state, action.style);
+    case 'LETTER_SET':
+      return reduceLetterSet(state, action.field, action.value);
+    case 'LETTER_REVIEW':
+      return reduceLetterReview(state);
+    case 'LETTER_SEND':
+      return reduceLetterSend(state, action.signer);
     case 'CONFIRM_NEW_ADVENTURE':
       return createInitialState();
     case 'DISMISS_RESTORE_NOTICE':
@@ -624,6 +720,7 @@ export function serializeState(state: GameState): SerializedTestState {
     shopkeeper: state.shopkeeper,
     clerk: state.clerk,
     librarian: state.librarian,
+    editor: state.editor,
     journalEvents: [...state.journalEvents],
     mapsVisited: [...state.mapsVisited],
     saveStatus: state.saveStatus,
@@ -634,6 +731,7 @@ export function serializeState(state: GameState): SerializedTestState {
     shopQuest: { ...state.shopQuest },
     parcelQuest: { ...state.parcelQuest },
     libraryQuest: { ...state.libraryQuest },
+    newsroomQuest: { ...state.newsroomQuest },
     inspectTarget: state.inspectTarget,
     explainTopic: state.explainTopic,
     robotUnderstood: state.robotUnderstood,

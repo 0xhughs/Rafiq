@@ -21,6 +21,10 @@ import { PayOverlay } from './ui/PayOverlay';
 import { ContextOverlay } from './ui/ContextOverlay';
 import { RedactOverlay } from './ui/RedactOverlay';
 import { PackOverlay } from './ui/PackOverlay';
+import { CompareOverlay } from './ui/CompareOverlay';
+import { DraftOverlay } from './ui/DraftOverlay';
+import { VoiceOverlay } from './ui/VoiceOverlay';
+import { LetterOverlay } from './ui/LetterOverlay';
 import { evidenceAttr } from './engine/shop';
 
 function reducer(state: GameState, action: GameAction): GameState {
@@ -122,13 +126,15 @@ export default function App() {
       data-dialogue={state.dialogueNode ?? ''}
       data-save={state.saveStatus}
       data-evidence={evidenceAttr(state.evidence)}
-      data-slice="05"
+      data-slice="06"
       data-shop-quest={state.shopQuest.phase}
       data-parcel-quest={state.parcelQuest.phase}
       data-comms-repaired={state.parcelQuest.commsRepaired ? 'true' : 'false'}
       data-library-quest={state.libraryQuest.phase}
+      data-newsroom-quest={state.newsroomQuest.phase}
       data-context-window={state.libraryQuest.windowSlots.join(',')}
       data-cassette={state.libraryQuest.contextModule ? 'contextModule' : ''}
+      data-workshop-lead={state.newsroomQuest.workshopLead ? 'true' : 'false'}
     >
       <Hud
         state={state}
@@ -141,6 +147,7 @@ export default function App() {
         shopHelped={state.shopQuest.phase === 'helped'}
         parcelDone={state.parcelQuest.commsRepaired}
         moduleReady={state.libraryQuest.contextModule}
+        workshopLead={state.newsroomQuest.workshopLead}
       />
       {naming ? (
         <NameEntry
@@ -161,7 +168,12 @@ export default function App() {
         />
       ) : null}
       {state.mode === 'inspect' ? (
-        <InspectOverlay state={state} onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })} />
+        <InspectOverlay
+          state={state}
+          onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+          onCite={() => dispatch({ type: 'CITE_CLIPPING' })}
+          onVerify={() => dispatch({ type: 'VERIFY_ORIGINAL' })}
+        />
       ) : null}
       {state.mode === 'calculator' ? (
         <CalculatorOverlay
@@ -233,6 +245,39 @@ export default function App() {
           onToggle={(file) => dispatch({ type: 'PACK_TOGGLE', file })}
           onStamp={(stamp) => dispatch({ type: 'PACK_STAMP', stamp })}
           onAssemble={() => dispatch({ type: 'PACK_ASSEMBLE' })}
+          onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+        />
+      ) : null}
+      {state.mode === 'compare' ? (
+        <CompareOverlay
+          state={state}
+          onToggle={(field) => dispatch({ type: 'COMPARE_TOGGLE', field })}
+          onSubmit={(style) => dispatch({ type: 'COMPARE_SUBMIT', style })}
+          onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+        />
+      ) : null}
+      {state.mode === 'draft' ? (
+        <DraftOverlay
+          state={state}
+          onMark={(mismatch) => dispatch({ type: 'DRAFT_MARK', mismatch })}
+          onCorrect={(mismatch) => dispatch({ type: 'DRAFT_CORRECT', mismatch })}
+          onRelease={() => dispatch({ type: 'DRAFT_RELEASE' })}
+          onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+        />
+      ) : null}
+      {state.mode === 'voice' ? (
+        <VoiceOverlay
+          state={state}
+          onApply={(style) => dispatch({ type: 'VOICE_APPLY', style })}
+          onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+        />
+      ) : null}
+      {state.mode === 'letter' ? (
+        <LetterOverlay
+          state={state}
+          onSet={(field, value) => dispatch({ type: 'LETTER_SET', field, value })}
+          onReview={() => dispatch({ type: 'LETTER_REVIEW' })}
+          onSend={(signer) => dispatch({ type: 'LETTER_SEND', signer })}
           onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
         />
       ) : null}

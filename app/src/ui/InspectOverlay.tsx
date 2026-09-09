@@ -1,11 +1,20 @@
 import type { GameState } from '../engine/types';
+import {
+  CLIPPING_TEXT,
+  EDITOR_SAMPLE,
+  ORIGINAL_TEXT,
+  SOURCE_A,
+  SOURCE_B,
+} from '../engine/newsroom';
 
 interface Props {
   state: GameState;
   onClose: () => void;
+  onCite?: () => void;
+  onVerify?: () => void;
 }
 
-export function InspectOverlay({ state, onClose }: Props) {
+export function InspectOverlay({ state, onClose, onCite, onVerify }: Props) {
   const target = state.inspectTarget;
   if (!target) return null;
   return (
@@ -116,6 +125,61 @@ export function InspectOverlay({ state, onClose }: Props) {
               الغلاف ما زال مقفلاً حتى تكتمل النافذة والملف الآمن والحزمة المسماة.
             </p>
           )}
+        </article>
+      ) : null}
+      {target === 'source_a' ? (
+        <article className="paper-card" data-testid="source-a-card">
+          <p className="card-stamp">نشرة الورشة</p>
+          <pre className="notice-body" data-testid="source-a-text">
+            {SOURCE_A}
+          </pre>
+        </article>
+      ) : null}
+      {target === 'source_b' ? (
+        <article className="paper-card" data-testid="source-b-card">
+          <p className="card-stamp">ملصق الرصيف</p>
+          <pre className="notice-body" data-testid="source-b-text">
+            {SOURCE_B}
+          </pre>
+        </article>
+      ) : null}
+      {target === 'clipping' ? (
+        <article className="paper-card" data-testid="clipping-card">
+          <p className="card-stamp">قصاصة على اللوحة</p>
+          <pre className="notice-body" data-testid="clipping-text">
+            {CLIPPING_TEXT}
+          </pre>
+          <p className="card-note">اتبع ق-٢٠٤ إلى الأصل في الدرج قبل الاستشهاد.</p>
+          {state.shopFeedback ? (
+            <p className="parcel-fail" data-testid="clipping-feedback">
+              {state.shopFeedback}
+            </p>
+          ) : null}
+          <button type="button" className="ghost" data-testid="cite-clipping" onClick={() => onCite?.()}>
+            استشهد بالقصاصة الآن
+          </button>
+        </article>
+      ) : null}
+      {target === 'original' ? (
+        <article className="paper-card" data-testid="original-card">
+          <p className="card-stamp">الأصل</p>
+          <pre className="notice-body" data-testid="original-text">
+            {ORIGINAL_TEXT}
+          </pre>
+          {state.shopFeedback ? (
+            <p className="card-hours" data-testid="original-feedback">
+              {state.shopFeedback}
+            </p>
+          ) : null}
+          <button type="button" className="primary" data-testid="verify-original" onClick={() => onVerify?.()}>
+            تحقّق قبل الاستشهاد
+          </button>
+        </article>
+      ) : null}
+      {target === 'editor_sample' ? (
+        <article className="paper-card" data-testid="editor-sample-card">
+          <p className="card-stamp">عيّنة المحررة</p>
+          <pre className="notice-body">{EDITOR_SAMPLE}</pre>
         </article>
       ) : null}
       <div className="button-row card-actions">

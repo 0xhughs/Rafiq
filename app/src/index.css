@@ -305,6 +305,15 @@ input {
   margin-bottom: 12px;
 }
 
+.note-grid[data-testid="sources"] {
+  grid-template-columns: 1fr 1fr;
+}
+
+.instruction-card .notice-body {
+  max-height: 7.5rem;
+  overflow: auto;
+}
+
 .paper-slip {
   background: rgba(255, 250, 240, 0.72);
   border: 1px dashed rgba(120, 80, 40, 0.28);

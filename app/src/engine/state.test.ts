@@ -287,10 +287,15 @@ describe('city maps and portals', () => {
     expect(playerHitsSolid('archive', WORLD_POS.archiveSpawn.x, WORLD_POS.archiveSpawn.y)).toBe(
       false,
     );
+    expect(playerHitsSolid('newsroom', WORLD_POS.newsroomSpawn.x, WORLD_POS.newsroomSpawn.y)).toBe(
+      false,
+    );
+    expect(playerHitsSolid('street', WORLD_POS.robot.x, WORLD_POS.robot.y)).toBe(false);
     expect(PORTALS.map((portal) => portal.id).sort()).toEqual([
       'archive',
       'home',
       'library',
+      'newsroom',
       'parcel',
       'shop',
     ]);

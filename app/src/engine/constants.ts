@@ -4,7 +4,7 @@ export const PLAYER_HALF_H = 14;
 export const PLAYER_SPEED = 150;
 export const INTERACT_RANGE = 58;
 export const MAX_STEP = 8;
-export const JOURNAL_CAP = 16;
+export const JOURNAL_CAP = 24;
 export const COMPANION_OFFSET = { x: -32, y: 10 } as const;
 
 export const SAVE_KEY = 'rafiq.adventure.v1';
@@ -47,6 +47,17 @@ export const HINT_LABELS = {
   communityFile: 'E / مسافة — ملف الحي',
   packTable: 'E / مسافة — طاولة الحزمة',
   specCase: 'E / مسافة — غلاف المواصفات',
+  newsroomEnter: 'E / مسافة — دخول قاعة أخبار الحي',
+  newsroomExit: 'E / مسافة — الخروج إلى الشارع',
+  editor: 'E / مسافة — التحدث مع محررة الحي',
+  sourceBulletin: 'E / مسافة — نشرة الورشة',
+  sourcePoster: 'E / مسافة — ملصق الرصيف',
+  compareDesk: 'E / مسافة — منضدة المقارنة',
+  clippingBoard: 'E / مسافة — القصاصة',
+  originalDrawer: 'E / مسافة — أصل ق-٢٠٤',
+  draftTable: 'E / مسافة — مسودة الإعلان',
+  voiceDesk: 'E / مسافة — صوت المحررة',
+  letterDesk: 'E / مسافة — خطاب المعاينة',
 } as const;
 
 export const STORAGE_WARNING =

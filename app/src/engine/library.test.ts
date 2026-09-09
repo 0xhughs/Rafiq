@@ -368,12 +368,17 @@ describe('module release and leftovers', () => {
     state = act(at(state, WORLD_POS.specCase.x, WORLD_POS.specCase.y, 'archive'), { type: 'INTERACT' });
     expect(state.inspectTarget).toBe('spec');
     expect(state.libraryQuest.specReleased).toBe(true);
+    expect(state.evidence['2.3']).toBeUndefined();
+    expect(state.evidence['2.6']).toBeUndefined();
+    expect(state.evidence['3.1']).toBeUndefined();
+    expect(state.evidence['3.2']).toBeUndefined();
+    expect(state.evidence['3.3']).toBeUndefined();
     state = act(state, { type: 'CLOSE_OVERLAY' });
     state = act(at(state, WORLD_POS.robot.x, WORLD_POS.robot.y, 'street'), { type: 'INTERACT' });
     expect(state.dialogueNode).toBe('companion_after_archive');
     expect(DIALOGUE.companion_after_archive.text(state.playerName)).toMatch(/الأخبار|منتصف/);
     expect(robotPosition(state).x).toBe(state.position.x - 32);
-    expect(JSON.stringify(state)).not.toMatch(/newsroom map|امتحان|اختبار نهائي|MCP|harness/);
+    expect(JSON.stringify(state)).not.toMatch(/امتحان|اختبار نهائي|MCP|harness/);
   });
 
   it('hydrates missing libraryQuest as unstarted and keeps saveVersion 1', () => {

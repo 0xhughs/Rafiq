@@ -26,7 +26,8 @@ export type CellKind =
   | 'holdboard'
   | 'paywindow'
   | 'instruction'
-  | 'file';
+  | 'file'
+  | 'newsroom';
 
 export interface CellRect {
   kind: CellKind;
@@ -61,15 +62,16 @@ export interface PortalEnd {
 
 export interface PortalDef {
   id: PortalId;
-  interactable: 'door' | 'shop_door' | 'library_door' | 'parcel_door' | 'library_inner';
+  interactable: 'door' | 'shop_door' | 'library_door' | 'parcel_door' | 'library_inner' | 'newsroom_door';
   requiresHelp: boolean;
   requiresShopHelped?: boolean;
   requiresCommsRepaired?: boolean;
-  lockedNode: 'locked_shop' | 'locked_library' | 'locked_parcel' | 'library_inner_locked' | null;
+  requiresArchiveSuccess?: boolean;
+  lockedNode: 'locked_shop' | 'locked_library' | 'locked_parcel' | 'library_inner_locked' | 'locked_newsroom' | null;
   ends: [PortalEnd, PortalEnd];
 }
 
-const SOLID_LETTERS = new Set(['#', 'B', 'T', 'K', 'M', 'C', 'H', 'L', 'W', 'n', 'p', 'c', 'k', 'Q', 'b', 'y', 's', 'f']);
+const SOLID_LETTERS = new Set(['#', 'B', 'T', 'K', 'M', 'C', 'H', 'L', 'W', 'n', 'p', 'c', 'k', 'Q', 'b', 'y', 's', 'f', 'A', 'u', 'x', 'z', 'm', 'j', 'v', 't']);
 
 const APARTMENT_LEGEND = [
   '################',
@@ -103,9 +105,9 @@ const STREET_LEGEND = [
   eastExtend(`#${'.'.repeat(13)}MMM${'.'.repeat(10)}#`, '......'),
   eastExtend(`#${'.'.repeat(13)}MMM${'.'.repeat(10)}#`, '......'),
   eastExtend(`#${'.'.repeat(11)}o${'.'.repeat(14)}#`, '......'),
-  eastExtend(`#${'.'.repeat(3)}CCCCC${'.'.repeat(12)}LLLL${'.'.repeat(2)}#`, 'QQQQ..'),
-  eastExtend(`#${'.'.repeat(3)}CCCCC${'.'.repeat(12)}LLLL${'.'.repeat(2)}#`, 'QQQQ..'),
-  eastExtend(`#${'.'.repeat(5)}P${'.'.repeat(15)}I${'.'.repeat(4)}#`, '..R...'),
+  eastExtend(`#${'.'.repeat(3)}CCCCC${'.'.repeat(4)}AAAA${'.'.repeat(4)}LLLL${'.'.repeat(2)}#`, 'QQQQ..'),
+  eastExtend(`#${'.'.repeat(3)}CCCCC${'.'.repeat(4)}AAAA${'.'.repeat(4)}LLLL${'.'.repeat(2)}#`, 'QQQQ..'),
+  eastExtend(`#${'.'.repeat(5)}P${'.'.repeat(7)}E${'.'.repeat(7)}I${'.'.repeat(4)}#`, '..R...'),
   eastExtend(`#${'.'.repeat(11)}N${'.'.repeat(14)}#`, '......'),
   eastExtend(`#${'.'.repeat(26)}#`, '......'),
   eastExtend('#'.repeat(28), '######'),
@@ -158,6 +160,19 @@ const ARCHIVE_LEGEND = [
   '#..............#',
   '#n.f......p.s..#',
   '#..............#',
+  '#.......d......#',
+  '#..............#',
+  '################',
+];
+
+const NEWSROOM_LEGEND = [
+  '################',
+  '#WW....x.....WW#',
+  '#WW..........WW#',
+  '#..HHHHHHHH....#',
+  '#..............#',
+  '#u.z......m.j..#',
+  '#k.v......t....#',
   '#.......d......#',
   '#..............#',
   '################',
@@ -275,6 +290,11 @@ export const ARCHIVE = parseMap('archive', ARCHIVE_LEGEND, {
   entryDir: 'north',
 });
 
+export const NEWSROOM = parseMap('newsroom', NEWSROOM_LEGEND, {
+  doorLetter: 'd',
+  entryDir: 'north',
+});
+
 export const MAPS: Record<MapId, MapDef> = {
   apartment: APARTMENT,
   street: STREET,
@@ -282,6 +302,7 @@ export const MAPS: Record<MapId, MapDef> = {
   library: LIBRARY,
   parcel: PARCEL,
   archive: ARCHIVE,
+  newsroom: NEWSROOM,
 };
 
 export function getMap(id: MapId): MapDef {
@@ -328,6 +349,8 @@ function kindFromLetter(letter: string): CellKind {
       return 'library';
     case 'Q':
       return 'parcel';
+    case 'A':
+      return 'newsroom';
     case 'D':
     case 'd':
     case 'P':
@@ -335,6 +358,7 @@ function kindFromLetter(letter: string): CellKind {
     case 'i':
     case 'F':
     case 'R':
+    case 'E':
       return 'door';
     case 'S':
       return 'spawn';
@@ -361,6 +385,14 @@ function kindFromLetter(letter: string): CellKind {
     case 's':
       return 'instruction';
     case 'f':
+      return 'file';
+    case 'u':
+    case 'z':
+    case 'x':
+    case 'm':
+    case 'j':
+    case 'v':
+    case 't':
       return 'file';
     case 'N':
       return 'neighbor';
@@ -391,6 +423,7 @@ export const FURNITURE = {
     shop: mergeRects(collectKind(STREET, ['C']))[0],
     library: mergeRects(collectKind(STREET, ['L']))[0],
     parcel: mergeRects(collectKind(STREET, ['Q']))[0],
+    newsroom: mergeRects(collectKind(STREET, ['A']))[0],
     walls: collectKind(STREET, ['#']),
   },
   shop: {
@@ -428,6 +461,19 @@ export const FURNITURE = {
     pack: mergeRects(collectKind(ARCHIVE, ['p']))[0],
     spec: mergeRects(collectKind(ARCHIVE, ['s']))[0],
     walls: collectKind(ARCHIVE, ['#']),
+  },
+  newsroom: {
+    shelves: collectKind(NEWSROOM, ['W']),
+    counter: mergeRects(collectKind(NEWSROOM, ['H']))[0],
+    clipping: mergeRects(collectKind(NEWSROOM, ['x']))[0],
+    bulletin: mergeRects(collectKind(NEWSROOM, ['u']))[0],
+    poster: mergeRects(collectKind(NEWSROOM, ['z']))[0],
+    compare: mergeRects(collectKind(NEWSROOM, ['m']))[0],
+    original: mergeRects(collectKind(NEWSROOM, ['j']))[0],
+    draft: mergeRects(collectKind(NEWSROOM, ['k']))[0],
+    voice: mergeRects(collectKind(NEWSROOM, ['v']))[0],
+    letter: mergeRects(collectKind(NEWSROOM, ['t']))[0],
+    walls: collectKind(NEWSROOM, ['#']),
   },
 };
 
@@ -493,6 +539,17 @@ export const PORTALS: PortalDef[] = [
     ends: [
       { map: 'library', letter: 'F', spawnDir: 'south', arriveFacing: 'down' },
       { map: 'archive', letter: 'd', spawnDir: 'north', arriveFacing: 'up' },
+    ],
+  },
+  {
+    id: 'newsroom',
+    interactable: 'newsroom_door',
+    requiresHelp: true,
+    requiresArchiveSuccess: true,
+    lockedNode: 'locked_newsroom',
+    ends: [
+      { map: 'street', letter: 'E', spawnDir: 'south', arriveFacing: 'down' },
+      { map: 'newsroom', letter: 'd', spawnDir: 'north', arriveFacing: 'up' },
     ],
   },
 ];
@@ -582,6 +639,20 @@ export const WORLD_POS = {
   specCase: letterCenter(ARCHIVE, 's'),
   archiveTalk: cellCenter(4, 6),
   archiveWestWallInside: cellCenter(1, 4),
+  newsroomDoor: letterCenter(STREET, 'E'),
+  newsroomExit: letterCenter(NEWSROOM, 'd'),
+  newsroomSpawn: NEWSROOM.spawn,
+  editor: cellCenter(6, 4),
+  sourceBulletin: letterCenter(NEWSROOM, 'u'),
+  sourcePoster: letterCenter(NEWSROOM, 'z'),
+  compareDesk: letterCenter(NEWSROOM, 'm'),
+  clippingBoard: letterCenter(NEWSROOM, 'x'),
+  originalDrawer: letterCenter(NEWSROOM, 'j'),
+  draftTable: letterCenter(NEWSROOM, 'k'),
+  voiceDesk: letterCenter(NEWSROOM, 'v'),
+  letterDesk: letterCenter(NEWSROOM, 't'),
+  newsroomTalk: cellCenter(4, 6),
+  newsroomWestWallInside: cellCenter(1, 4),
 };
 
 export function doorHint(map: MapId): string {
@@ -602,4 +673,8 @@ export function parcelDoorHint(map: MapId): string {
 
 export function archiveDoorHint(map: MapId): string {
   return map === 'archive' ? HINT_LABELS.archiveExit : HINT_LABELS.archiveEnter;
+}
+
+export function newsroomDoorHint(map: MapId): string {
+  return map === 'newsroom' ? HINT_LABELS.newsroomExit : HINT_LABELS.newsroomEnter;
 }

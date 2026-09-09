@@ -29,4 +29,4 @@ npm run lint
 
 ## Current slice
 
-Apartment, street, corner-store visit, parcel office, library exterior, and the inner reading room are playable after agreeing to help the robot. After the repair parcel arrives, باب المكتبة الداخلي opens into قاعة القراءة: a two-slot working-context window, a fictional community file that must be redacted, and a named context pack «حزمة إصلاح رفيق».
+Apartment, street, corner-store visit, parcel office, library exterior, the inner reading room, and قاعة أخبار الحي are playable after agreeing to help the robot. After the archive’s context module is ready, the street door between the shop and the library opens into the newsroom: compare two disagreeing papers, follow clipping ق-٢٠٤ to its original, mark and correct an attractive draft, match the editor’s voice, and review a repair-request letter. Success thanks the editor and opens a workshop lead; the workshop interior is not open yet.

@@ -4,7 +4,7 @@ import type { GameAction, MapId, SerializedTestState } from '../src/engine/types
 
 export async function waitForGame(page: Page): Promise<void> {
   await page.waitForFunction(() => Boolean(window.__RAFIQ_TEST__));
-  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '05');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '06');
 }
 
 export async function getState(page: Page): Promise<SerializedTestState> {
@@ -205,6 +205,41 @@ export async function playToParcelDone(page: Page, name = 'علي حسن'): Prom
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-mode', 'playing');
   const done = await getState(page);
   expect(done.parcelQuest.commsRepaired).toBe(true);
+}
+
+export async function playToArchiveDone(page: Page, name = 'علي حسن'): Promise<void> {
+  await playToParcelDone(page, name);
+  await enterArchive(page);
+  await interactAt(page, 'archive', WORLD_POS.contextBench.x, WORLD_POS.contextBench.y);
+  await page.getByTestId('context-load-constraint').click();
+  await page.getByTestId('context-load-hold').click();
+  await page.getByTestId('context-recite').click();
+  await page.getByTestId('context-close').click();
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'archive', WORLD_POS.communityFile.x, WORLD_POS.communityFile.y);
+  await page.getByTestId('redact-name_noura').click();
+  await page.getByTestId('redact-name_khalid').click();
+  await page.getByTestId('redact-phone').click();
+  await page.getByTestId('redact-address').click();
+  await page.getByTestId('redact-give').click();
+  await page.getByTestId('redact-close').click();
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'archive', WORLD_POS.packTable.x, WORLD_POS.packTable.y);
+  await page.getByTestId('pack-toggle-spec').click();
+  await page.getByTestId('pack-toggle-delivery').click();
+  await page.getByTestId('pack-stamp-rafiq_repair').click();
+  await page.getByTestId('pack-assemble').click();
+  await page.getByTestId('pack-close').click();
+  await skipExplainIfOpen(page);
+  await expect(page.getByTestId('context-module')).toHaveText('وحدة السياق');
+}
+
+export async function enterNewsroom(page: Page): Promise<void> {
+  const before = await getState(page);
+  expect(before.libraryQuest.contextModule).toBe(true);
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-mode', 'playing');
+  await interactAt(page, 'street', WORLD_POS.newsroomDoor.x, WORLD_POS.newsroomDoor.y);
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-map', 'newsroom');
 }
 
 export async function enterArchive(page: Page): Promise<void> {
