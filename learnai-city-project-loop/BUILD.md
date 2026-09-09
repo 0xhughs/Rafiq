@@ -1,90 +1,78 @@
 # BUILD.md
 
-Slice: 02 — Return to a living neighborhood
-Archive: slices/02-return-to-a-living-neighborhood.md
+Slice: 03 — The price that was never checked
+Archive: slices/03-the-price-that-was-never-checked.md
 
 ## Goal
-Continue a saved adventure reliably and navigate its shared city spaces: after the slice 01 robot checkpoint the player can walk the connected street into additional real maps, restore from a versioned local save, and use a readable Arabic journal without bricking a postponed conversation.
+Help the shopkeeper using supported information instead of the robot's confidence: after the slice 02 neighborhood is reachable, the player works one connected corner-store visit where a fluent invented price or product fact is checked against inspectable shop records, exact totals go through a fictional calculator, a second claim is verified without a pointer, and writing / lookup / calculation / a human decision stay distinct tools. Success changes البقال and yields a repair-parcel lead; the robot is not cured of unsupported claims.
 
 ## Done when
-- AC01 — After `encounter === 'help_accepted'` (slice 01 checkpoint), the connected outdoor street remains a real walkable map that still contains the apartment door, dumpster, robot meeting point and corner-store facade. From that street the player can (1) enter **بقالة الزاوية** through a working door into a distinct interior map `shop` (a light shell: floor, walls, a counter or closed-shelf placeholder, exit back to the street; no price tags, calculator, shelf-record inspection or topic 1.1 mastery) and (2) reach a distinct civic exterior map `library` (واجهة المكتبة). Both new spaces exist as `MapId`s in `maps.ts`, not as HUD-only labels. The street legend may grow **east or south** so slice 01 landmarks stay in place. A locked inner library door, if present, states a story reason in Arabic and points back to the store lead.
-- AC02 — Doors and collisions work on `apartment`, `street`, `shop` and `library`. Each portal pair is bidirectional and drops the player on a walkable safe spawn (not inside a solid). Interaction hints appear only when an actionable portal/NPC/object is in range. After `help_accepted`, the robot companion is drawn on every of those maps using the existing follow offset (visual only; not a collision solid) and is not left stranded at the dumpster. Before `help_accepted`, shop and library portals may stay locked with a short Arabic reason and the current objective; that interaction is idempotent and does not skip the trash chore or force help. Street has more than one portal.
-- AC03 — The adventure writes a **versioned** local save under key `rafiq.adventure.v1`, plus last-valid backup `rafiq.adventure.v1.prev`. Never read or write LearnAI/course keys (no `learnai*` / quiz-completion keys). Envelope includes `saveVersion: 1` and: confirmed `playerName`; `map`; validated `position`/`facing`; `trash`; `encounter`; `conversationSeen`; `checkpointReached`; `storyObjective`; `inventory` (unique item ids, including `trash_bag` while carried); NPC greeting flags; `journalEvents`; `evidence` (empty object this slice — no demonstrated curriculum ids); `robot.companion` equivalent to `help_accepted`; `endingState: 'in_progress'`; `mapsVisited`. Persist at safe checkpoints only (not every movement frame): name confirmed, trash pickup, disposal, robot postpone/agree/`help_accepted`, successful portal transit, NPC postpone/close/complete, journal “new adventure” confirm. Do not persist `nameDraft`/`nameError`, mid-bubble `dialogueNode`, or `mode: 'dialogue'` as the resume surface — conversations stay reopenable from flags.
-- AC04 — Reload/refresh with a valid save **resumes** at the last checkpoint: `NameEntry` does not reappear; `data-mode` is `playing` (or journal/pause, then resumable); map, inventory, encounter, companion and objective match the save. If the stored pixel sits in a solid or off-map, snap to that map’s safe spawn. Corrupt/unreadable primary JSON loads the last valid backup, resumes from it, and shows a recoverable Arabic notice («تعذر قراءة الحفظ الأخير. أعدنا النسخة السليمة السابقة.»). If no valid save exists, fall back to slice 01 name entry without crashing. When `localStorage` throws or quota fails, play continues and a visible warning appears (testid `storage-warning`, copy: «تعذر حفظ المغامرة على هذا المتصفح. يمكنك اللعب الآن، لكن التحديث قد يعيد البداية.»). Replaying a checkpoint cannot duplicate `trash_bag`, spawn a second robot, re-grant `help_accepted`, or append duplicate NPC “first meeting” rewards; `grantItem` is a no-op if the id is already held. Journal offers **بداية جديدة** with confirmation that clears only the Rafiq keys and returns to name entry.
-- AC05 — The existing دفتر / مساعدة control (HUD button, `H` / `J`) opens a journal overlay that lists (1) the current lead, (2) recent story events in Arabic (at least pickup, disposal, help accepted, neighbor greeting, shop visit, library visit — when those have happened), and (3) the movement/interact/Esc controls already shown in slice 01. Layout is RTL and readable; events do not appear as a syllabus or lesson list. Replace PauseHelp’s slice 01 note «تحديث الصفحة يعيد هذه الشريحة من البداية. لا يوجد حفظ بعد.» with save status (saved / unavailable / recovered). Keep existing testids `pause-overlay`, `help-objective`, `help-controls`, `help-button`, `resume-button` and add `journal-events` and `journal-lead`. Escape closes the journal and returns focus to the game. Update `CheckpointNote` / `OBJECTIVES.cornerStore` so they no longer claim the corner store is still closed once it is enterable.
-- AC06 — At least one reusable street NPC (**الجارة** near the path between dumpster and shop/library) uses a shared NPC interaction helper (not a one-off robot-only branch). First visit: short Arabic greeting and a useful pointer to the shop and library. Postpone/close leaves `encounter`/`trash` unchanged, writes a valid save, and lets the player reopen the NPC. A later visit is an idempotent already-met line, not a second first-meeting grant. Proposed lines (adjustable for natural Arabic, meaning preserved):
-  - الجارة: «صباح الخير. أنت جارنا الجديد؟»
-  - اللاعب: «نعم. أبحث عن المتجر عند الزاوية.»
-  - الجارة: «البقالة هناك، والمكتبة أبعد قليلاً في الشارع.»
-  - خيارات: «شكراً، سأمر عليهما.» / «انتظر قليلاً. سأعود.»
-  A shopkeeper greeting inside `shop` may use the same helper; it must not invent prices or start the slice 03 verification puzzle.
-- AC07 — The confirmed name appears only in local UI (dialogue, name confirm, in-memory state, journal if it quotes the player) and inside the Rafiq save payload. It must not appear in `location.href`, query, hash, `document.title` (title stays the generic product name), network request URLs, or `console.log`/`info`/`debug` of game code. Markup-like names still render as text. No analytics SDK and no LearnAI remote identity write.
-- AC08 — With Rafiq keys cleared, the slice 01 opening still works on a fresh session: Arabic title, name field, confirm, apartment spawn, trash chore, street, dumpster once, robot conversation, postpone/reopen, agree, unseen-local-fact beat, no lesson/exam/quiz chrome, no topic 1.1 demonstrated evidence. Playable in the Vite dev server and production preview at **1366×768** and **1920×1080**. No required sound, pixel-perfect click, timed reaction, mobile layout or production art.
+- AC01 — **1.1 demonstrated only.** After `help_accepted`, بقالة الزاوية is a furnished interior. Inspectable world objects: west shelf record, east shelf record, posted price list. Overlays look like physical cards, not quizzes. Fixed stock: west خبز 3، لبن 4، ماء 2 (متوفر); east تمر الخلاص 9 and **no** عصير مانجو; price list same numbers plus «مفتوح حتى المغرب». Robot invents: «عصير المانجو على الرف الأيسر، سعره اثنا عشر ريالاً.» Inspecting alone does not award. `evidence['1.1'] === 'demonstrated'` only after opening a source **and** telling البقال a sourced fact (proposed: «نظرت إلى بطاقة الرف: لا يوجد مانجو.»). Robot mango/12 or sourced line without inspect fails recoverably. No player-facing topic IDs. Optional explanation after success is skippable.
+- AC02 — **1.2 demonstrated only.** Notice board world object. Robot rewrite is a mixed draft with a wrong total and a wrong current fact. Exact total **17** (3×3 + 2×4) must come from the fictional counter calculator. Current fact (تمر 9 and/or الماء متوفر) from an inspected source. Posting the unchecked draft fails. `1.2` only when posted notice contains 17 and a source-backed fact and does not present 20 / تمر 18 / ماء نفد as true.
+- AC03 — **1.3 demonstrated only.** Transaction: robot says تمر is 18; player must refuse, inspect east shelf/list (9), correct to **9**. Trusting 18 is recoverable. Then a **second** claim without naming where to look (proposed: water 5 or نفد). `1.3` only after catch + inspect + correct **and** independent inspect of ماء 2 متوفر used to reject the second claim. Hints must not name the second object; if they do, require a further unaided verification.
+- AC04 — **1.6 demonstrated only.** Four non-interchangeable errands: lookup (AC01), writing (notice), calculation (calculator), human decision (crate: البقال decides, not the robot). `1.6` only when all four succeed.
+- AC05 — When 1.1–1.3 and 1.6 are demonstrated, البقال thanks the player and gives a repair-parcel **lead** (parcel puzzle is slice 04, not implemented). Journal `shop_helped`. Robot remains damaged companion and still makes at least one unsupported claim. No other curriculum ids. Library inner door stays locked.
+- AC06 — No syllabus, quiz, exam, or player-facing lesson numbers. `assertNoLessonUi` stays green. Awards require world actions. Optional explanations only after the action.
+- AC07 — If natural language is present, accept meaning-preserving Arabic variants in a declared domain; show `robot-understood`; clarify unsupported phrasing. Physical actions remain sufficient. Never eval player text or call a live model.
+- AC08 — Saves, journal, privacy, companion, and slices 01–02 still work. Persist shop quest + evidence at checkpoints. Old `evidence: {}` hydrates as shop unstarted. Playable Chrome 1366×768 and 1920×1080 on dev and preview.
 
 ## Out
-- Store hallucination / price-verification puzzle, shelf-record comparison, calculator routing and topic 1.1–1.3 / 1.6 demonstrated evidence (slice 03).
-- Remaining 33-topic mastery, MCP, harness, robot upgrades beyond the damaged companion, certificate PNG/PDF, live models, accounts, cloud sync, public hosting and mobile controls.
-- Remaining civic interiors as puzzle spaces (library interior context-pack, newsroom, festival office, workshop, civic lab).
-- Overwriting or migrating LearnAI course saves; a generic reusable engine framework; final production art.
+- Slice 04 parcel retrieval and purchase-approval puzzle.
+- Slice 05 library context pack / redaction.
+- Certificate, live AI, MCP, harness, remaining curriculum ids, robot restoration, accounts, cloud, mobile.
+- Curing hallucination; syllabus; executing player text; real API keys.
 
 ## Constraints
-- Implement in the existing Vite + React + TypeScript app under `app/`. Keep Canvas world + HTML overlays. Inspect current code before editing.
-- Generalize portals, map drawing and interactable ids enough for four maps; do not relocate slice 01 apartment/dumpster/robot coordinates in a way that silently invalidates `WORLD_POS` used by `e2e/journey.spec.ts` unless those tests are updated in the same change and AC08 still passes.
-- No fork of external educational games. Original placeholder art may prove this slice. Do not execute player text, call real APIs or solicit keys.
-- Source topic 1.1 stays **introduced** by the slice 01 robot behavior only. Visiting the shop shell must not award demonstrated evidence. Dialogue choices still express intention; entering a map is not mastery.
-- Desktop Chrome on this VM is the required browser evidence for this slice. Firefox/Edge/Safari/Windows/macOS remain RG03, not this slice.
+- Implement in `app/`. Replace slice 02 shopkeeper “shelves still being arranged” copy so this verification work actually starts.
+- Keep portal id `shop` and slice 01 `WORLD_POS` unless tests update in the same change.
+- Authored simulation only. `saveVersion` stays 1 with backward-compatible hydration. Never weaken predicates.
 
 ## Data / state impact
-Extend `GameState` / `SerializedTestState` (and the save envelope) with: `MapId` union `'apartment' | 'street' | 'shop' | 'library'`; `inventory: ItemId[]` (`ItemId` includes `'trash_bag'`); NPC flag for the street neighbor (`'unmet' | 'talking' | 'greeted'` or equivalent); `journalEvents` (bounded recent list, proposed cap 12); `evidence: Record<string, never>` or empty record; `mapsVisited`; `saveStatus: 'absent' | 'ok' | 'unavailable' | 'recovered'`; `endingState: 'in_progress'`. Keep slice 01 fields (`trash`, `encounter`, `conversationSeen`, `checkpointReached`, `storyObjective`, `playerName`) and keep their transitions idempotent. Restore path: boot → read `rafiq.adventure.v1` → validate version/shape/name/map/spawn → if invalid try `.prev` → hydrate `playing` at last checkpoint or `name_entry` if none. New-adventure confirm deletes only those Rafiq keys. No production database, no remote profile, no LearnAI migration.
+Typed `evidence` for `'1.1' | '1.2' | '1.3' | '1.6'` as `'demonstrated'` only. `shopQuest` phases and inspect flags. Journal events `shop_shelf_checked`, `shop_notice_posted`, `shop_price_corrected`, `shop_helped`. Interactables: shelves, price list, notice, calculator, optional crate. Unknown evidence keys dropped on validate. No production DB.
 
 ## Tests
-- T01 — Vitest: legal portal pairs and walkable spawns on all four maps; shop/library locks before `help_accepted`; companion follow flag after; inventory grant/dispose idempotence; NPC postpone/reopen without changing `encounter`; save serialize/validate/round-trip; corrupt primary → backup; missing `saveVersion` rejected; LearnAI-like keys ignored. Capture under `evidence/02/state-tests.txt`.
-- T02 — Playwright journey from slice 01 checkpoint: walk/teleport-to-door into `shop` and `library`, exit back to `street`, companion present (`encounter=help_accepted` on those maps), collisions block a wall on each new map, no lesson UI. Screenshots `evidence/02/shop.png` and `evidence/02/library.png`.
-- T03 — Browser save/restore: agree to help (and optionally enter shop) → reload same context → resume without name overlay; NPC postpone → reload still valid; duplicate interact does not duplicate bag/robot; inject corrupt `rafiq.adventure.v1` while `.prev` is valid → recovered notice; simulated `setItem` failure → `storage-warning` and session still playable. Screenshot `evidence/02/resume.png`.
-- T04 — Journal + viewports: open دفتر at 1366×768 and 1920×1080 in **dev and preview**; current lead, `journal-events`, controls, RTL; overlay panel stays inside the viewport; long and mixed-script names readable; no `pageerror` / console `error`. Screenshot `evidence/02/journal.png`. Record browser/OS/version in `evidence/02/browser-checks.md`; missing engines explicitly untested.
-- T05 — Privacy and isolation: after play, `page.url()` has no player name; `document.title` has no player name; `localStorage` has `rafiq.adventure.v1` (or documented key) and **no** `learnai*` keys; game `console` listeners do not record the name. `evidence/02/privacy-checks.txt`.
-- T06 — Regression: existing `app/e2e/journey.spec.ts`, `negative.spec.ts` and `viewports.spec.ts` still pass on a fresh storage context (update selectors only if this slice renamed UI, and keep AC08). Run `npm run typecheck`, `lint`, `test`, `build`, and Playwright against preview (and dev for viewport/journey as in slice 01). `evidence/02/project-checks.txt`. Never point a test run at a production database.
-- Reviewer maps AC01–AC08 to actual evidence, independently verifies the snapshot and checks that the candidate remains within this slice. Evidence paths are proposed destinations, not files already created.
+- T01 — Vitest `evidence/03/state-tests.txt`: predicates in the draft (inspect-only no award; wrong tool; four ids only; hydrate old saves; robot still unsupported after helped; 02 portal/companion regressions).
+- T02 — Playwright from help-accepted through shop success. Screenshots `evidence/03/shelf-record.png`, `calculator.png`, `notice.png`, `success.png`.
+- T03 — Trusting robot price fails; retry succeeds; second claim UI does not name the object; no trap.
+- T04 — Viewports 1366 and 1920, dev and preview; `evidence/03/browser-checks.md`, `overlays.png`.
+- T05 — typecheck, lint, test, build; `evidence/03/project-checks.txt`.
+- T06 — Existing 01–02 e2e still pass on fresh storage; opening does not demonstrate 1.1.
+- Reviewer maps AC01–AC08 to evidence and verifies snapshot.
 
 ## Proof
-Independently accepted by implementation review d-20260908-007-implrev-02.
-- Approved candidate: `f1feab0147e6f41f01c86f58a8d05e136cce7c84a706e1508b3d8bfcb424eb4f` (59 files).
-- Approved contract: `b7f85a536ef8ae535e3892b6636b0a0a7cad70f3bdd2d27ae67590c14fa442d9`.
-- Reviewer re-ran typecheck/lint/build/vitest/playwright in `/tmp/rafiq-review-02`; all exit 0. AC01–AC08 pass. Chrome 148 Ubuntu 24.04.
-- Evidence: `evidence/02/`.
+Not completed yet.
 
 ## Review
-Plan approval: APPROVE_PLAN by reviewer bc-764a6df7-19d0-5e26-994f-cbc1f3b882a7 on dispatch d-20260908-005-plan-02. Contract `b7f85a536ef8ae535e3892b6636b0a0a7cad70f3bdd2d27ae67590c14fa442d9`. Snapshot `84a55200ef09c2d1ab29df0892a002ef291488986cc14560efa95647d94d0b1d`.
-Implementation approval: APPROVE_IMPLEMENTATION by reviewer bc-1d8592fc-a045-5176-be8d-6086ea61d490 on dispatch d-20260908-007-implrev-02. Contract `b7f85a536ef8ae535e3892b6636b0a0a7cad70f3bdd2d27ae67590c14fa442d9`. Snapshot `f1feab0147e6f41f01c86f58a8d05e136cce7c84a706e1508b3d8bfcb424eb4f`. Blockers: none.
+Pending plan review.
+Plan approval: none
+Implementation approval: none
 Each result records dispatch ID, reviewer identity, verdict, contract identity, snapshot identity, evidence and criterion-specific blockers.
 
 ## Loop state
 Execution mode / tool adapter: Cursor Cloud Agent coordinator with Task-spawned Builder and Reviewer subagents. Spawn = Task(generalPurpose). Send = Task resume. Wait = blocking Task completion. Stop = subagent completion; coordinator does not start a second writer in this checkout. Reviewer contexts are fresh and do not receive Builder reasoning. Mutating Reviewer checks, if needed, run on an isolated copy.
 Coordinator: cloud agent bc-6380229a-c83f-493f-af1c-47e5f2b00c70 (https://cursor.com/agents/bc-6380229a-c83f-493f-af1c-47e5f2b00c70), role Coordinator, checkout /workspace on branch cursor/rafiq-ai-city-adventure-0c70
-Worker / role / phase: pending launch / Builder / draft-proposal
-Dispatch ID / launch state / input identity: d-20260908-008-draft-03 / pending launch / next-slice:03 receipt:02 candidate:f1feab0147e6f41f01c86f58a8d05e136cce7c84a706e1508b3d8bfcb424eb4f
-Pending result / last consumed dispatch: none / d-20260908-007-implrev-02
+Worker / role / phase: pending launch / Reviewer / plan
+Dispatch ID / launch state / input identity: d-20260908-009-plan-03 / pending launch / contract:a609b8b90a350d89b672c4a997de338b496688cb8440d5428e23518b304ee8ca baseline:f1feab0147e6f41f01c86f58a8d05e136cce7c84a706e1508b3d8bfcb424eb4f
+Pending result / last consumed dispatch: none / d-20260908-008-draft-03
 Snapshot capture and recheck commands / coverage / exclusions: Capture = `python3 .loop/identity.py snapshot --label <label>` from repository root. Recheck = same command; compare `.loop/snapshots/<label>.digest` and the JSON `digest` field. Contract = `python3 .loop/identity.py contract`; identity is `.loop/contract/hashes.json` field `contract`. Combined = `python3 .loop/identity.py both --label <label>`.
 Coverage: `app`, `evidence`, root `package.json`/`package-lock.json`/`pnpm-lock.yaml`/`yarn.lock`, `index.html`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `playwright.config.ts`, `vitest.config.ts`, `README.md`, `public`. Missing paths are skipped. Detect add/delete by regenerating the covered file list.
 Exclusions: `.git`, `.loop`, `learnai-city-project-loop`, `node_modules`, `app/node_modules`, `app/dist`, `dist`, `coverage`, `test-results`, `playwright-report`, `.vite`, `app/.vite`. Protocol files are identified by contract hash, not candidate snapshot.
-Baseline snapshot: shipped slice 01 `84a55200ef09c2d1ab29df0892a002ef291488986cc14560efa95647d94d0b1d` (45 covered files)
-Contract identity: `b7f85a536ef8ae535e3892b6636b0a0a7cad70f3bdd2d27ae67590c14fa442d9` (`.loop/contract/hashes.json`)
-Candidate snapshot: `f1feab0147e6f41f01c86f58a8d05e136cce7c84a706e1508b3d8bfcb424eb4f` (`.loop/snapshots/coord-candidate-02.json`, 59 files)
-Rejection count: 0 (frozen at implementation approval)
-Consecutive no-progress repairs: 0 (frozen at implementation approval)
+Baseline snapshot: shipped slice 02 `f1feab0147e6f41f01c86f58a8d05e136cce7c84a706e1508b3d8bfcb424eb4f` (59 covered files)
+Contract identity: none
+Candidate snapshot: none
+Rejection count: 0
+Consecutive no-progress repairs: 0
 Open acceptance gaps / prior failing evidence: none
 Repair awaiting review: false
-Review events:
-- ev-001 / d-20260908-005-plan-02 / plan / APPROVE_PLAN / contract:b7f85a536ef8ae535e3892b6636b0a0a7cad70f3bdd2d27ae67590c14fa442d9 snapshot:84a55200ef09c2d1ab29df0892a002ef291488986cc14560efa95647d94d0b1d / gaps: none / identities matched / rejection count 0 / no-progress 0
-- ev-002 / d-20260908-007-implrev-02 / implementation / APPROVE_IMPLEMENTATION / contract:b7f85a536ef8ae535e3892b6636b0a0a7cad70f3bdd2d27ae67590c14fa442d9 snapshot:f1feab0147e6f41f01c86f58a8d05e136cce7c84a706e1508b3d8bfcb424eb4f / gaps: none / isolated re-run all 0 / rejection count 0 / no-progress 0
+Review events: none
 Budget limit / consumed / measurement: Not configured; no execution budget was supplied.
 Blocker / resume status / resume action / recheck condition / deadline: none
-Advance phase: archive written; next selected
-Next slice ID / draft: 03 / pending draft-proposal
+Advance phase: none
+Next slice ID / draft: none
 Prior shipped receipt: slice 02 archive `slices/02-return-to-a-living-neighborhood.md`
 
 ## Status
-Shipped
+Proposed
 
 ## Next
-Archive verified after copy. Builder draft-proposal for slice 03 (no code).
+Independent plan review of slice 03. Do not implement before APPROVE_PLAN.
