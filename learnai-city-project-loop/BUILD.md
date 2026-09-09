@@ -37,7 +37,10 @@ MapId `archive`. Evidence union adds `'1.4' | '1.5' | '2.5'`. `libraryQuest` wit
 - Reviewer maps AC01–AC08 and verifies snapshot.
 
 ## Proof
-Not completed yet.
+Builder proposed (d-20260908-018-impl-05). Not independently accepted.
+- Candidate: `158b856de69c486c49559dc92c27ab91a1822a0e132aba2d003448de648d0a8d` (110 files; coordinator matched).
+- Evidence: `evidence/05/`.
+Reviewer must re-run checks.
 
 ## Review
 Plan approved. Implementation not started.
@@ -48,15 +51,15 @@ Each result records dispatch ID, reviewer identity, verdict, contract identity, 
 ## Loop state
 Execution mode / tool adapter: Cursor Cloud Agent coordinator with Task-spawned Builder and Reviewer subagents. Spawn = Task(generalPurpose). Send = Task resume. Wait = blocking Task completion. Stop = subagent completion; coordinator does not start a second writer in this checkout. Reviewer contexts are fresh and do not receive Builder reasoning. Mutating Reviewer checks, if needed, run on an isolated copy.
 Coordinator: cloud agent bc-6380229a-c83f-493f-af1c-47e5f2b00c70 (https://cursor.com/agents/bc-6380229a-c83f-493f-af1c-47e5f2b00c70), role Coordinator, checkout /workspace on branch cursor/rafiq-ai-city-adventure-0c70
-Worker / role / phase: pending launch / Builder / implementation
-Dispatch ID / launch state / input identity: d-20260908-018-impl-05 / pending launch / contract:4e7db2744f2ffb8738c9dcd015e207bef0313ef2df5e40618018f4451ed3b45a baseline:7cba3a83b9f8733ca19d79f67624b3b477a53b9819a90e009d2c923ae719695f
-Pending result / last consumed dispatch: none / d-20260908-017-plan-05
+Worker / role / phase: pending launch / Reviewer / implementation
+Dispatch ID / launch state / input identity: d-20260908-019-implrev-05 / pending launch / contract:4e7db2744f2ffb8738c9dcd015e207bef0313ef2df5e40618018f4451ed3b45a candidate:158b856de69c486c49559dc92c27ab91a1822a0e132aba2d003448de648d0a8d
+Pending result / last consumed dispatch: builder d-20260908-018-impl-05 / d-20260908-017-plan-05
 Snapshot capture and recheck commands / coverage / exclusions: Capture = `python3 .loop/identity.py snapshot --label <label>` from repository root. Recheck = same command; compare `.loop/snapshots/<label>.digest` and the JSON `digest` field. Contract = `python3 .loop/identity.py contract`; identity is `.loop/contract/hashes.json` field `contract`. Combined = `python3 .loop/identity.py both --label <label>`.
 Coverage: `app`, `evidence`, root `package.json`/`package-lock.json`/`pnpm-lock.yaml`/`yarn.lock`, `index.html`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `playwright.config.ts`, `vitest.config.ts`, `README.md`, `public`. Missing paths are skipped. Detect add/delete by regenerating the covered file list.
 Exclusions: `.git`, `.loop`, `learnai-city-project-loop`, `node_modules`, `app/node_modules`, `app/dist`, `dist`, `coverage`, `test-results`, `playwright-report`, `.vite`, `app/.vite`. Protocol files are identified by contract hash, not candidate snapshot.
 Baseline snapshot: shipped slice 04 `7cba3a83b9f8733ca19d79f67624b3b477a53b9819a90e009d2c923ae719695f` (92 covered files)
 Contract identity: `4e7db2744f2ffb8738c9dcd015e207bef0313ef2df5e40618018f4451ed3b45a` (`.loop/contract/hashes.json`)
-Candidate snapshot: none
+Candidate snapshot: `158b856de69c486c49559dc92c27ab91a1822a0e132aba2d003448de648d0a8d` (110 files)
 Rejection count: 0
 Consecutive no-progress repairs: 0
 Open acceptance gaps / prior failing evidence: none
@@ -70,7 +73,7 @@ Next slice ID / draft: none
 Prior shipped receipt: slice 04 archive `slices/04-the-wrong-parcel.md`
 
 ## Status
-Building
+Ready for review
 
 ## Next
-Builder implements slice 05 under dispatch d-20260908-018-impl-05.
+Independent implementation review d-20260908-019-implrev-05.
