@@ -195,7 +195,6 @@ Approved contract: `f521d4d6bbfceeb572750066fb9c5044443f7beb784c7b1c630ad4634c91
 Approved candidate: `b21f3762b9f113adc83d93718a92addde8524c443862bcddba68f664a168c650`
 Implementation approval dispatch: `d-20260908-027-implrev-07`
 
-## Now
 ### 08 One small service
 Goal: Help the workshop build a narrowly scoped service for one neighborhood need.
 Provides:
@@ -203,10 +202,12 @@ Provides:
 - Deliberate handling of feature requests that exceed the brief. Covers 4.1, 4.2.
 Depends on: 07
 Target membership: inside
+Archive: `slices/08-one-small-service.md`
+Approved contract: `efdcb5a71dd206fc5689e409b1f98d364851d495a0831fac1ae6c3cb69f02411`
+Approved candidate: `a0ea63ff03ad96eb3fd5fb90a6e326ee001e9097334da5caac8fcee2c80eff4d`
+Implementation approval dispatch: `d-20260908-031-implrev-08`
 
-## Later
-
-
+## Now
 ### 09 The kiosk speaks Arabic
 Goal: Make the workshop service usable through a correct interface contract and readable Arabic UI.
 Provides:
@@ -214,6 +215,8 @@ Provides:
 - RTL and mixed-text repair, keyboard/manual checks and a usable city kiosk. Covers 4.3, 4.4.
 Depends on: 08
 Target membership: inside
+
+## Later
 
 ### 10 Fix the version people actually use
 Goal: Diagnose and repair the kiosk's simulated deployed version within a safe scope.
