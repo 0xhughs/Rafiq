@@ -325,6 +325,10 @@ describe('shop evidence predicates', () => {
     expect(valid!.evidence).toEqual({ '1.1': 'demonstrated' });
     expect(parseEvidence({ '1.6': 'demonstrated', '2.1': 'demonstrated' })).toEqual({
       '1.6': 'demonstrated',
+      '2.1': 'demonstrated',
+    });
+    expect(parseEvidence({ '1.6': 'demonstrated', '9.9': 'demonstrated' })).toEqual({
+      '1.6': 'demonstrated',
     });
   });
 

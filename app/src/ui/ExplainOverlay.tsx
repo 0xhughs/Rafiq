@@ -1,5 +1,8 @@
 import { EXPLAIN } from '../engine/shop';
+import { PARCEL_EXPLAIN } from '../engine/parcel';
 import type { GameState } from '../engine/types';
+
+const NOTES = { ...EXPLAIN, ...PARCEL_EXPLAIN };
 
 interface Props {
   state: GameState;
@@ -14,7 +17,7 @@ export function ExplainOverlay({ state, onSkip }: Props) {
       <div className="panel speech-panel">
         <p className="eyebrow">ملاحظة اختيارية</p>
         <p className="speech" data-testid="explain-text">
-          {EXPLAIN[topic]}
+          {topic ? NOTES[topic] : ''}
         </p>
         <div className="button-row">
           <button type="button" className="primary" data-testid="explain-continue" onClick={onSkip}>

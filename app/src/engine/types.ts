@@ -1,6 +1,6 @@
-export type MapId = 'apartment' | 'street' | 'shop' | 'library';
+export type MapId = 'apartment' | 'street' | 'shop' | 'library' | 'parcel';
 
-export const MAP_IDS: readonly MapId[] = ['apartment', 'street', 'shop', 'library'];
+export const MAP_IDS: readonly MapId[] = ['apartment', 'street', 'shop', 'library', 'parcel'];
 
 export type Mode =
   | 'name_entry'
@@ -12,7 +12,9 @@ export type Mode =
   | 'calculator'
   | 'notice'
   | 'crate'
-  | 'explain';
+  | 'explain'
+  | 'instruction'
+  | 'pay';
 
 export type TrashState = 'home' | 'carried' | 'disposed';
 
@@ -22,9 +24,9 @@ export type Facing = 'up' | 'down' | 'left' | 'right';
 
 export type Cardinal = 'north' | 'south' | 'east' | 'west';
 
-export type ItemId = 'trash_bag';
+export type ItemId = 'trash_bag' | 'repair_parcel';
 
-export const ITEM_IDS: readonly ItemId[] = ['trash_bag'];
+export const ITEM_IDS: readonly ItemId[] = ['trash_bag', 'repair_parcel'];
 
 export type NpcGreeting = 'unmet' | 'talking' | 'greeted';
 
@@ -32,7 +34,7 @@ export type SaveStatus = 'absent' | 'ok' | 'unavailable' | 'recovered';
 
 export type EndingState = 'in_progress';
 
-export const EVIDENCE_IDS = ['1.1', '1.2', '1.3', '1.6'] as const;
+export const EVIDENCE_IDS = ['1.1', '1.2', '1.3', '1.6', '2.1', '2.2', '2.4'] as const;
 export type EvidenceId = (typeof EVIDENCE_IDS)[number];
 export type EvidenceStatus = 'demonstrated';
 export type EvidenceMap = Partial<Record<EvidenceId, EvidenceStatus>>;
@@ -47,8 +49,74 @@ export const SHOP_PHASES = [
 ] as const;
 export type ShopPhase = (typeof SHOP_PHASES)[number];
 
-export type InspectTarget = 'west' | 'east' | 'price';
-export type ExplainTopic = 'lookup' | 'notice' | 'price' | 'tools';
+export type InspectTarget = 'west' | 'east' | 'price' | 'hold_west' | 'hold_east' | 'hold_board';
+export type ExplainTopic = 'lookup' | 'notice' | 'price' | 'tools' | 'delegate' | 'instruction' | 'revise';
+export type ParcelId = 'r17' | 'r19' | 'r71';
+export type ParcelPick = ParcelId | 'gray' | null;
+export type LocationPick = 'west' | 'east' | 'any' | null;
+export type ConstraintPick = 'repair_no_pay' | 'grab_all_pay' | 'none' | null;
+export type ReturnPick = 'tag_to_desk' | 'none' | null;
+export type ParcelOutcome =
+  | 'none'
+  | 'incomplete'
+  | 'overbroad_allowed'
+  | 'ambiguous_fail'
+  | 'decoy'
+  | 'stale_r17'
+  | 'robot_pay_blocked'
+  | 'retrieved';
+
+export const PARCEL_PHASES = [
+  'unstarted',
+  'briefed',
+  'delegated',
+  'overbroad',
+  'instructing',
+  'failed',
+  'retrieved',
+] as const;
+export type ParcelPhase = (typeof PARCEL_PHASES)[number];
+
+export interface InstructionDraft {
+  parcel: ParcelPick;
+  location: LocationPick;
+  constraints: ConstraintPick;
+  returnFormat: ReturnPick;
+}
+
+export interface ParcelUnderstood {
+  parcel: string;
+  location: string;
+  constraints: string;
+  returnFormat: string;
+}
+
+export interface ParcelQuest {
+  phase: ParcelPhase;
+  briefed: boolean;
+  inspectedWest: boolean;
+  inspectedEast: boolean;
+  inspectedBoard: boolean;
+  delegated: boolean;
+  overbroadOffered: boolean;
+  overbroadStopped: boolean;
+  overbroadAllowed: boolean;
+  failedAttempt: boolean;
+  failedParcelId: ParcelId | null;
+  intendedParcelId: 'r17' | 'r19';
+  retrievedParcelId: ParcelId | null;
+  retrievedWithCompleteSpec: boolean;
+  r19Staged: boolean;
+  sendCount: number;
+  failedSendId: number | null;
+  successSendId: number | null;
+  lastOutcome: ParcelOutcome;
+  instruction: InstructionDraft;
+  understood: ParcelUnderstood | null;
+  playerPaidDecoy: boolean;
+  robotPayAttempted: boolean;
+  commsRepaired: boolean;
+}
 export type CalcOp = 'add' | 'mul';
 export type CalcToken = number | CalcOp;
 
@@ -92,7 +160,11 @@ export type JournalEventId =
   | 'shop_shelf_checked'
   | 'shop_notice_posted'
   | 'shop_price_corrected'
-  | 'shop_helped';
+  | 'shop_helped'
+  | 'parcel_visit'
+  | 'parcel_overbroad_stopped'
+  | 'parcel_instruction_failed'
+  | 'parcel_retrieved';
 
 export interface JournalEvent {
   id: JournalEventId;
@@ -143,7 +215,18 @@ export type DialogueNodeId =
   | 'shopkeeper_helped_revisit'
   | 'locked_shop'
   | 'locked_library'
-  | 'library_inner_locked';
+  | 'locked_parcel'
+  | 'library_inner_locked'
+  | 'clerk_hello'
+  | 'clerk_brief'
+  | 'clerk_revisit'
+  | 'clerk_after_success'
+  | 'parcel_delegate_prompt'
+  | 'parcel_overbroad'
+  | 'parcel_overbroad_stopped'
+  | 'parcel_overbroad_allowed'
+  | 'parcel_retrieved_ok'
+  | 'companion_after_parcel';
 
 export type DialogueChoiceId =
   | 'agree'
@@ -157,7 +240,10 @@ export type DialogueChoiceId =
   | 'correct_dates'
   | 'reject_water'
   | 'trust_water'
-  | 'verify_later';
+  | 'verify_later'
+  | 'delegate_retrieve'
+  | 'stop_overbroad'
+  | 'allow_overbroad';
 
 export type InteractableId =
   | 'trash'
@@ -174,11 +260,18 @@ export type InteractableId =
   | 'price_list'
   | 'notice_board'
   | 'calculator'
-  | 'crate';
+  | 'crate'
+  | 'parcel_door'
+  | 'clerk'
+  | 'hold_west'
+  | 'hold_east'
+  | 'hold_board'
+  | 'pay_window'
+  | 'instruction_desk';
 
-export type PortalId = 'home' | 'shop' | 'library';
+export type PortalId = 'home' | 'shop' | 'library' | 'parcel';
 
-export type NpcId = 'robot' | 'neighbor' | 'shopkeeper';
+export type NpcId = 'robot' | 'neighbor' | 'shopkeeper' | 'clerk';
 
 export interface Vec2 {
   x: number;
@@ -209,9 +302,11 @@ export interface GameState {
   inventory: ItemId[];
   neighbor: NpcGreeting;
   shopkeeper: NpcGreeting;
+  clerk: NpcGreeting;
   journalEvents: JournalEvent[];
   evidence: EvidenceMap;
   shopQuest: ShopQuest;
+  parcelQuest: ParcelQuest;
   calculator: CalculatorState;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
@@ -243,14 +338,23 @@ export type GameAction =
   | { type: 'NOTICE_POST'; asDraft: boolean }
   | { type: 'CRATE_DECIDE'; who: 'shopkeeper' | 'robot' }
   | { type: 'SKIP_EXPLAIN' }
-  | { type: 'SUBMIT_NL'; text: string };
+  | { type: 'SUBMIT_NL'; text: string }
+  | { type: 'INSTRUCTION_SET'; field: 'parcel' | 'location' | 'constraints' | 'returnFormat'; value: string }
+  | { type: 'INSTRUCTION_SEND' }
+  | { type: 'PAY_DECIDE'; who: 'player' | 'robot' };
 
 export interface DialogueChoice {
   id: DialogueChoiceId;
   label: string;
 }
 
-export type DialogueSpeaker = 'player' | 'robot' | 'neighbor' | 'shopkeeper' | 'notice';
+export type DialogueSpeaker =
+  | 'player'
+  | 'robot'
+  | 'neighbor'
+  | 'shopkeeper'
+  | 'clerk'
+  | 'notice';
 
 export interface DialogueLine {
   id: DialogueNodeId;
@@ -278,6 +382,7 @@ export interface SerializedTestState {
   inventory: ItemId[];
   neighbor: NpcGreeting;
   shopkeeper: NpcGreeting;
+  clerk: NpcGreeting;
   journalEvents: JournalEvent[];
   mapsVisited: MapId[];
   saveStatus: SaveStatus;
@@ -286,6 +391,7 @@ export interface SerializedTestState {
   companion: boolean;
   evidence: EvidenceMap;
   shopQuest: ShopQuest;
+  parcelQuest: ParcelQuest;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
   robotUnderstood: string | null;
@@ -306,9 +412,11 @@ export interface SaveEnvelope {
   inventory: ItemId[];
   neighbor: NpcGreeting;
   shopkeeper: NpcGreeting;
+  clerk: NpcGreeting;
   journalEvents: JournalEvent[];
   evidence: EvidenceMap;
   shopQuest: ShopQuest;
+  parcelQuest: ParcelQuest;
   robot: { companion: boolean };
   endingState: EndingState;
   mapsVisited: MapId[];

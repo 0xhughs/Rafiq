@@ -16,6 +16,8 @@ import { NoticeOverlay } from './ui/NoticeOverlay';
 import { PauseHelp } from './ui/PauseHelp';
 import { CalculatorOverlay } from './ui/CalculatorOverlay';
 import { CrateOverlay } from './ui/CrateOverlay';
+import { InstructionOverlay } from './ui/InstructionOverlay';
+import { PayOverlay } from './ui/PayOverlay';
 import { evidenceAttr } from './engine/shop';
 
 function reducer(state: GameState, action: GameAction): GameState {
@@ -118,6 +120,7 @@ export default function App() {
       data-save={state.saveStatus}
       data-evidence={evidenceAttr(state.evidence)}
       data-shop-quest={state.shopQuest.phase}
+      data-parcel-quest={state.parcelQuest.phase}
     >
       <Hud
         state={state}
@@ -166,6 +169,29 @@ export default function App() {
         <CrateOverlay
           state={state}
           onDecide={(who) => dispatch({ type: 'CRATE_DECIDE', who })}
+          onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+        />
+      ) : null}
+      {state.mode === 'instruction' ? (
+        <InstructionOverlay
+          state={state}
+          onSet={(field, value) => dispatch({ type: 'INSTRUCTION_SET', field, value })}
+          onSend={() => dispatch({ type: 'INSTRUCTION_SEND' })}
+          onAmbiguous={() => {
+            dispatch({ type: 'INSTRUCTION_SET', field: 'parcel', value: 'gray' });
+            dispatch({ type: 'INSTRUCTION_SET', field: 'location', value: 'any' });
+            dispatch({ type: 'INSTRUCTION_SET', field: 'constraints', value: 'none' });
+            dispatch({ type: 'INSTRUCTION_SET', field: 'returnFormat', value: 'none' });
+            dispatch({ type: 'INSTRUCTION_SEND' });
+          }}
+          onSubmitNl={(text) => dispatch({ type: 'SUBMIT_NL', text })}
+          onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+        />
+      ) : null}
+      {state.mode === 'pay' ? (
+        <PayOverlay
+          state={state}
+          onDecide={(who) => dispatch({ type: 'PAY_DECIDE', who })}
           onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
         />
       ) : null}

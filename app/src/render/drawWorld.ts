@@ -1,6 +1,6 @@
 import { TILE } from '../engine/constants';
 import { robotPosition, robotVisible } from '../engine/npc';
-import { APARTMENT, FURNITURE, LIBRARY, SHOP, STREET, WORLD_POS, getMap } from '../engine/maps';
+import { APARTMENT, FURNITURE, LIBRARY, PARCEL, SHOP, STREET, WORLD_POS, getMap } from '../engine/maps';
 import type { Facing, GameState } from '../engine/types';
 
 const PALETTE = {
@@ -32,6 +32,11 @@ const PALETTE = {
   shopOpen: '#3d6b4f',
   library: '#4a5d78',
   libraryDoor: '#2c3a4f',
+  parcel: '#3d5a62',
+  parcelDoor: '#1e3a40',
+  parcelFloor: '#d7e0d8',
+  parcelFloorAlt: '#cdd6ce',
+  grayBox: '#8b9298',
   counter: '#7a4a2a',
   shelf: '#5c4030',
   plaza: '#cbb896',
@@ -173,7 +178,7 @@ function drawApartment(ctx: CanvasRenderingContext2D): void {
   ctx.fill();
 }
 
-function drawStreet(ctx: CanvasRenderingContext2D, storeOpen: boolean): void {
+function drawStreet(ctx: CanvasRenderingContext2D, storeOpen: boolean, parcelOpen: boolean): void {
   const map = STREET;
   drawChecker(ctx, map.cols, map.rows, PALETTE.street, PALETTE.streetAlt);
   drawWalls(ctx, FURNITURE.street.walls);
@@ -209,6 +214,18 @@ function drawStreet(ctx: CanvasRenderingContext2D, storeOpen: boolean): void {
   fillRound(ctx, WORLD_POS.libraryDoor.x - 10, WORLD_POS.libraryDoor.y - 18, 20, 36, 4, PALETTE.libraryDoor);
 
   fillRound(ctx, WORLD_POS.shopDoor.x - 10, WORLD_POS.shopDoor.y - 18, 20, 36, 4, '#8a4b2a');
+
+  const parcel = FURNITURE.street.parcel;
+  fillRound(ctx, parcel.x, parcel.y, parcel.w, parcel.h, 4, PALETTE.parcel);
+  ctx.fillStyle = '#e4efe8';
+  ctx.fillRect(parcel.x + 4, parcel.y - 22, parcel.w - 8, 20);
+  ctx.fillStyle = '#163238';
+  ctx.font = '11px "Noto Naskh Arabic", "Cairo", sans-serif';
+  ctx.fillText('مكتب طرود الرصيف', parcel.x + parcel.w / 2, parcel.y - 8);
+  fillRound(ctx, WORLD_POS.parcelDoor.x - 10, WORLD_POS.parcelDoor.y - 18, 20, 36, 4, PALETTE.parcelDoor);
+  ctx.fillStyle = parcelOpen ? PALETTE.shopOpen : '#2a2118';
+  ctx.font = '10px "Cairo", sans-serif';
+  ctx.fillText(parcelOpen ? 'مفتوح' : 'مغلق', parcel.x + parcel.w / 2, parcel.y + 14);
 
   const dump = FURNITURE.street.dumpster;
   fillRound(ctx, dump.x + 4, dump.y + 10, dump.w - 8, dump.h - 14, 8, PALETTE.dumpster);
@@ -285,6 +302,69 @@ function drawShopInterior(ctx: CanvasRenderingContext2D): void {
 
   const door = map.door;
   fillRound(ctx, door.x - 10, door.y - 22, 20, 44, 4, '#8a4b2a');
+}
+
+function drawGrayBox(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  tag: string,
+): void {
+  fillRound(ctx, x + 6, y + 8, w - 12, h - 12, 4, PALETTE.grayBox);
+  ctx.fillStyle = '#eceff1';
+  ctx.fillRect(x + 10, y + 12, w - 20, 10);
+  ctx.fillStyle = '#1c2a2e';
+  ctx.font = '10px "Noto Naskh Arabic", "Cairo", sans-serif';
+  ctx.direction = 'rtl';
+  ctx.textAlign = 'center';
+  ctx.fillText(tag, x + w / 2, y + 21);
+}
+
+function drawParcelOffice(ctx: CanvasRenderingContext2D, westTag: string): void {
+  const map = PARCEL;
+  drawChecker(ctx, map.cols, map.rows, PALETTE.parcelFloor, PALETTE.parcelFloorAlt);
+  drawWalls(ctx, FURNITURE.parcel.walls);
+  ctx.font = '11px "Noto Naskh Arabic", "Cairo", sans-serif';
+  ctx.direction = 'rtl';
+  ctx.textAlign = 'center';
+  for (const shelf of FURNITURE.parcel.westShelves) {
+    fillRound(ctx, shelf.x + 4, shelf.y + 4, shelf.w - 8, shelf.h - 8, 4, '#4a585c');
+    drawGrayBox(ctx, shelf.x, shelf.y, shelf.w, shelf.h, westTag);
+  }
+  for (const shelf of FURNITURE.parcel.eastShelves) {
+    fillRound(ctx, shelf.x + 4, shelf.y + 4, shelf.w - 8, shelf.h - 8, 4, '#4a585c');
+    drawGrayBox(ctx, shelf.x, shelf.y, shelf.w, shelf.h, 'ر-٧١');
+  }
+  const west = FURNITURE.parcel.westShelves[0];
+  const east = FURNITURE.parcel.eastShelves[0];
+  ctx.fillStyle = '#163238';
+  if (west) ctx.fillText('حجز إصلاح', west.x + 48, west.y - 4);
+  if (east) ctx.fillText('للبيع ١٢', east.x + 24, east.y - 4);
+
+  const board = FURNITURE.parcel.board;
+  fillRound(ctx, board.x + 4, board.y + 2, board.w - 8, board.h - 6, 4, '#efe0b8');
+  ctx.fillStyle = '#5a3218';
+  ctx.fillText('حجوزات', board.x + board.w / 2, board.y + 28);
+
+  const pay = FURNITURE.parcel.pay;
+  fillRound(ctx, pay.x + 4, pay.y + 2, pay.w - 8, pay.h - 6, 4, '#f3d9a4');
+  ctx.fillStyle = '#3a2414';
+  ctx.fillText('دفع', pay.x + pay.w / 2, pay.y + 28);
+
+  const counter = FURNITURE.parcel.counter;
+  fillRound(ctx, counter.x + 2, counter.y + 6, counter.w - 4, counter.h - 10, 6, '#3d5a62');
+  ctx.fillStyle = '#e8f2ef';
+  ctx.fillText('المنضدة', counter.x + counter.w / 2, counter.y + 22);
+
+  const desk = FURNITURE.parcel.desk;
+  fillRound(ctx, desk.x + 6, desk.y + 8, desk.w - 12, desk.h - 12, 4, '#efe6d0');
+  ctx.fillStyle = '#2a2118';
+  ctx.fillText('تعليمات', desk.x + desk.w / 2, desk.y + desk.h - 6);
+
+  const door = map.door;
+  fillRound(ctx, door.x - 10, door.y - 22, 20, 44, 4, PALETTE.parcelDoor);
 }
 
 function drawLibraryExterior(ctx: CanvasRenderingContext2D): void {
@@ -395,6 +475,7 @@ function drawRobot(
   y: number,
   time: number,
   companion: boolean,
+  commsRepaired: boolean,
 ): void {
   ctx.fillStyle = PALETTE.shadow;
   ctx.beginPath();
@@ -424,10 +505,13 @@ function drawRobot(
   ctx.moveTo(x, y - 12);
   ctx.lineTo(x + 6, y - 22);
   ctx.stroke();
-  ctx.fillStyle = PALETTE.rust;
+  ctx.fillStyle = commsRepaired ? '#7fdbda' : PALETTE.rust;
   ctx.beginPath();
-  ctx.arc(x + 6, y - 22, 3, 0, Math.PI * 2);
+  ctx.arc(x + 6, y - 22, commsRepaired ? 4 : 3, 0, Math.PI * 2);
   ctx.fill();
+  if (commsRepaired) {
+    fillRound(ctx, x - 16, y + 6, 10, 8, 2, '#2f5d62');
+  }
   if (companion) {
     ctx.strokeStyle = 'rgba(127, 219, 218, 0.6)';
     ctx.beginPath();
@@ -446,17 +530,27 @@ export function drawWorld(ctx: CanvasRenderingContext2D, state: GameState, time:
       drawTrashBag(ctx, WORLD_POS.trash.x, WORLD_POS.trash.y);
     }
   } else if (state.map === 'street') {
-    drawStreet(ctx, state.encounter === 'help_accepted');
+    drawStreet(ctx, state.encounter === 'help_accepted', state.shopQuest.phase === 'helped');
     drawVillager(ctx, WORLD_POS.neighbor.x, WORLD_POS.neighbor.y, PALETTE.neighborDress);
   } else if (state.map === 'shop') {
     drawShopInterior(ctx);
     drawVillager(ctx, WORLD_POS.shopkeeper.x, WORLD_POS.shopkeeper.y, PALETTE.keeperApron);
+  } else if (state.map === 'parcel') {
+    drawParcelOffice(ctx, state.parcelQuest.r19Staged ? 'ر-١٩' : 'ر-١٧');
+    drawVillager(ctx, WORLD_POS.clerk.x, WORLD_POS.clerk.y, '#2f5d62');
   } else {
     drawLibraryExterior(ctx);
   }
   if (robotVisible(state)) {
     const robot = robotPosition(state);
-    drawRobot(ctx, robot.x, robot.y, time, state.encounter === 'help_accepted');
+    drawRobot(
+      ctx,
+      robot.x,
+      robot.y,
+      time,
+      state.encounter === 'help_accepted',
+      state.parcelQuest.commsRepaired,
+    );
   }
   drawPlayer(ctx, state.position.x, state.position.y, state.facing);
 }

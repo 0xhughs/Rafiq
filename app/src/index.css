@@ -284,8 +284,27 @@ input {
   font-weight: 700;
 }
 
-.crate-card {
-  transform: rotate(0.4deg);
+.wrap-choices {
+  margin-bottom: 10px;
+}
+
+.instruction-card {
+  width: min(640px, 92vw);
+  max-height: 88vh;
+  overflow: auto;
+  transform: none;
+}
+
+.instruction-card .robot-understood p {
+  margin: 0 0 4px;
+}
+
+.parcel-fail {
+  background: #f6d6c8;
+  color: #7a241c;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-weight: 700;
 }
 
 

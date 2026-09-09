@@ -14,6 +14,7 @@ export function hasItem(inventory: readonly ItemId[], id: ItemId): boolean {
 }
 
 export function syncInventory(inventory: readonly ItemId[], trash: 'home' | 'carried' | 'disposed'): ItemId[] {
-  if (trash === 'carried') return grantItem(inventory, 'trash_bag');
-  return removeItem(inventory, 'trash_bag');
+  const kept = inventory.filter((id) => id === 'repair_parcel' || id === 'trash_bag');
+  if (trash === 'carried') return grantItem(kept, 'trash_bag');
+  return removeItem(kept, 'trash_bag');
 }

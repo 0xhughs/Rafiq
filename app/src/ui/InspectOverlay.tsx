@@ -51,6 +51,41 @@ export function InspectOverlay({ state, onClose }: Props) {
           <p className="card-note">لا يوجد مانجو في القائمة.</p>
         </article>
       ) : null}
+      {target === 'hold_west' ? (
+        <article className="paper-card" data-testid="parcel-tag-west">
+          <p className="card-stamp">بطاقة الرف الغربي</p>
+          <h2>{state.parcelQuest.r19Staged ? 'ر-١٩' : 'ر-١٧'}</h2>
+          <ul className="stock-list">
+            <li>حجز إصلاح — ليس للبيع</li>
+            <li>اللون: رمادي</li>
+            <li>الموقع: الرف الغربي</li>
+          </ul>
+          <p className="card-note">هذا الحجز يُستلم بتعليمات واضحة، لا يُشترى.</p>
+        </article>
+      ) : null}
+      {target === 'hold_east' ? (
+        <article className="paper-card" data-testid="parcel-tag-east">
+          <p className="card-stamp">بطاقة الرف الشرقي</p>
+          <h2>ر-٧١</h2>
+          <ul className="stock-list">
+            <li>للبيع — ١٢ ريالاً</li>
+            <li>اللون: رمادي</li>
+            <li>الموقع: الرف الشرقي</li>
+          </ul>
+          <p className="card-note">طرد رمادي معروض للبيع، ليس حجز الإصلاح.</p>
+        </article>
+      ) : null}
+      {target === 'hold_board' ? (
+        <article className="paper-card" data-testid="parcel-board">
+          <p className="card-stamp">لوحة الحجوزات</p>
+          <h2>مكتب طرود الرصيف</h2>
+          <ul className="stock-list">
+            <li>غربي: {state.parcelQuest.r19Staged ? 'ر-١٩' : 'ر-١٧'} حجز إصلاح — ليس للبيع</li>
+            <li>شرقي: ر-٧١ رمادي للبيع بـ ١٢</li>
+          </ul>
+          <p className="card-note">الدفع من النافذة لصاحب الطلب. الروبوت لا يدفع.</p>
+        </article>
+      ) : null}
       <div className="button-row card-actions">
         <button type="button" className="primary" data-testid="inspect-close" onClick={onClose}>
           إعادة البطاقة

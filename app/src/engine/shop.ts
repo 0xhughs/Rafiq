@@ -40,7 +40,7 @@ export const NOTICE_DRAFT = [
   'مفتوح حتى المغرب.',
 ].join('\n');
 
-export const EXPLAIN: Record<ExplainTopic, string> = {
+export const EXPLAIN: Record<'lookup' | 'notice' | 'price' | 'tools', string> = {
   lookup:
     'الروبوت يرتّب كلمات مقنعة حتى حين يخترع سلعة. البطاقة على الرف هي المصدر، لا نبرة الثقة.',
   notice:

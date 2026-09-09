@@ -11,6 +11,19 @@ import { getActionable, listInteractables } from './interact';
 import { APARTMENT, destinationOf, PORTALS } from './maps';
 import { validateName } from './names';
 import { openNpc } from './npc';
+import {
+  closeParcelDialogue,
+  createParcelQuest,
+  inspectParcel,
+  isParcelOverlay,
+  parcelObjective,
+  reduceInstructionSend,
+  reduceInstructionSet,
+  reduceParcelChoice,
+  reduceParcelNl,
+  reducePayDecide,
+  skipParcelExplain,
+} from './parcel';
 import { clearRafiqKeys, loadAdventure, persistAdventure, shouldPersist } from './save';
 import {
   applyCalculatorKey,
@@ -54,9 +67,11 @@ export function createInitialState(): GameState {
     inventory: [],
     neighbor: 'unmet',
     shopkeeper: 'unmet',
+    clerk: 'unmet',
     journalEvents: [],
     evidence: emptyEvidence(),
     shopQuest: createShopQuest(),
+    parcelQuest: createParcelQuest(),
     calculator: createCalculator(),
     inspectTarget: null,
     explainTopic: null,
@@ -97,6 +112,10 @@ function pickup(state: GameState): GameState {
 function goThroughPortal(state: GameState, portalId: PortalId): GameState {
   const portal = PORTALS.find((item) => item.id === portalId);
   if (!portal) return state;
+  if (portal.requiresShopHelped && state.shopQuest.phase !== 'helped') {
+    if (!portal.lockedNode) return state;
+    return { ...state, mode: 'dialogue', dialogueNode: portal.lockedNode };
+  }
   if (portal.requiresHelp && state.encounter !== 'help_accepted') {
     if (!portal.lockedNode) return state;
     return { ...state, mode: 'dialogue', dialogueNode: portal.lockedNode };
@@ -105,6 +124,7 @@ function goThroughPortal(state: GameState, portalId: PortalId): GameState {
   let events = state.journalEvents;
   if (dest.map === 'shop') events = recordEvent(events, 'shop_visit');
   if (dest.map === 'library') events = recordEvent(events, 'library_visit');
+  if (dest.map === 'parcel') events = recordEvent(events, 'parcel_visit');
   return {
     ...state,
     map: dest.map,
@@ -112,6 +132,7 @@ function goThroughPortal(state: GameState, portalId: PortalId): GameState {
     facing: dest.facing,
     mapsVisited: visitMap(state.mapsVisited, dest.map),
     journalEvents: events,
+    storyObjective: dest.map === 'parcel' ? parcelObjective(state) : state.storyObjective,
   };
 }
 
@@ -136,6 +157,7 @@ function postponeNpc(state: GameState): GameState {
     dialogueNode: null,
     neighbor: state.neighbor === 'greeted' ? 'greeted' : 'unmet',
     shopkeeper: state.shopkeeper === 'greeted' ? 'greeted' : 'unmet',
+    clerk: state.clerk === 'greeted' ? 'greeted' : 'unmet',
   };
 }
 
@@ -145,6 +167,8 @@ function closeDialogue(state: GameState): GameState {
   }
   const shopClosed = closeShopDialogue(state);
   if (shopClosed) return shopClosed;
+  const parcelClosed = closeParcelDialogue(state);
+  if (parcelClosed) return parcelClosed;
   if (state.dialogueNode === 'neighbor_thanks') {
     return {
       ...state,
@@ -164,7 +188,11 @@ function closeDialogue(state: GameState): GameState {
       dialogueNode: null,
       checkpointReached: true,
       storyObjective:
-        state.shopQuest.phase === 'helped' ? OBJECTIVES.repairLead : state.storyObjective,
+        state.parcelQuest.commsRepaired
+          ? OBJECTIVES.parcelDone
+          : state.shopQuest.phase === 'helped'
+            ? OBJECTIVES.repairLead
+            : state.storyObjective,
       journalEvents: recordEvent(state.journalEvents, 'help_accepted'),
     };
   }
@@ -245,6 +273,11 @@ function choose(state: GameState, choice: DialogueChoiceId): GameState {
       };
     }
   }
+  if (state.dialogueNode === 'parcel_delegate_prompt' && (choice === 'postpone' || choice === 'npc_postpone')) {
+    return postponeNpc(state);
+  }
+  const parcelChoice = reduceParcelChoice(state, choice);
+  if (parcelChoice) return parcelChoice;
   return reduceShopChoice(state, choice);
 }
 
@@ -288,9 +321,11 @@ export function reduce(state: GameState, action: GameAction): GameState {
         inventory: [],
         neighbor: 'unmet',
         shopkeeper: 'unmet',
+        clerk: 'unmet',
         journalEvents: [],
         evidence: emptyEvidence(),
         shopQuest: createShopQuest(),
+        parcelQuest: createParcelQuest(),
         calculator: createCalculator(),
         inspectTarget: null,
         explainTopic: null,
@@ -329,6 +364,8 @@ export function reduce(state: GameState, action: GameAction): GameState {
           return goThroughPortal(state, 'shop');
         case 'library_door':
           return goThroughPortal(state, 'library');
+        case 'parcel_door':
+          return goThroughPortal(state, 'parcel');
         case 'dumpster':
           return dispose(state);
         case 'robot':
@@ -337,6 +374,8 @@ export function reduce(state: GameState, action: GameAction): GameState {
           return openNpc(state, 'neighbor');
         case 'shopkeeper':
           return openNpc(state, 'shopkeeper');
+        case 'clerk':
+          return openNpc(state, 'clerk');
         case 'library_inner':
           return { ...state, mode: 'dialogue', dialogueNode: 'library_inner_locked' };
         case 'shelf_west':
@@ -345,6 +384,16 @@ export function reduce(state: GameState, action: GameAction): GameState {
           return inspectShop(state, 'east');
         case 'price_list':
           return inspectShop(state, 'price');
+        case 'hold_west':
+          return inspectParcel(state, 'hold_west');
+        case 'hold_east':
+          return inspectParcel(state, 'hold_east');
+        case 'hold_board':
+          return inspectParcel(state, 'hold_board');
+        case 'pay_window':
+          return { ...state, mode: 'pay', shopFeedback: null };
+        case 'instruction_desk':
+          return { ...state, mode: 'instruction', shopFeedback: null };
         case 'notice_board':
           return {
             ...state,
@@ -377,12 +426,28 @@ export function reduce(state: GameState, action: GameAction): GameState {
       if (state.mode === 'dialogue') return closeDialogue(state);
       if (state.mode === 'paused') return { ...state, mode: 'playing' };
       if (isShopOverlay(state.mode)) {
-        if (state.mode === 'explain') return skipExplain(state);
+        if (state.mode === 'explain') {
+          if (
+            state.explainTopic === 'delegate' ||
+            state.explainTopic === 'instruction' ||
+            state.explainTopic === 'revise'
+          ) {
+            return skipParcelExplain(state);
+          }
+          return skipExplain(state);
+        }
         return {
           ...state,
           mode: 'playing',
           inspectTarget: null,
           explainTopic: null,
+          shopFeedback: null,
+        };
+      }
+      if (isParcelOverlay(state.mode)) {
+        return {
+          ...state,
+          mode: 'playing',
           shopFeedback: null,
         };
       }
@@ -409,10 +474,33 @@ export function reduce(state: GameState, action: GameAction): GameState {
       return reduceCrateDecide(state, action.who);
     case 'SKIP_EXPLAIN':
       if (state.mode !== 'explain') return state;
+      if (
+        state.explainTopic === 'delegate' ||
+        state.explainTopic === 'instruction' ||
+        state.explainTopic === 'revise'
+      ) {
+        return skipParcelExplain(state);
+      }
       return skipExplain(state);
     case 'SUBMIT_NL':
+      if (state.mode === 'instruction') return reduceParcelNl(state, action.text);
+      if (state.mode === 'dialogue' && state.dialogueNode === 'parcel_overbroad') {
+        return reduceParcelNl(state, action.text);
+      }
+      if (state.mode === 'dialogue' && state.dialogueNode === 'parcel_delegate_prompt') {
+        return reduceParcelNl(state, action.text);
+      }
       if (state.mode !== 'dialogue' || state.dialogueNode !== 'shop_lookup_prompt') return state;
       return reduceLookupNl(state, action.text);
+    case 'INSTRUCTION_SET':
+      if (state.mode !== 'instruction') return state;
+      return reduceInstructionSet(state, action.field, action.value);
+    case 'INSTRUCTION_SEND':
+      if (state.mode !== 'instruction') return state;
+      return reduceInstructionSend(state);
+    case 'PAY_DECIDE':
+      if (state.mode !== 'pay') return state;
+      return reducePayDecide(state, action.who);
     case 'CONFIRM_NEW_ADVENTURE':
       return createInitialState();
     case 'DISMISS_RESTORE_NOTICE':
@@ -458,6 +546,7 @@ export function serializeState(state: GameState): SerializedTestState {
     inventory: [...state.inventory],
     neighbor: state.neighbor,
     shopkeeper: state.shopkeeper,
+    clerk: state.clerk,
     journalEvents: [...state.journalEvents],
     mapsVisited: [...state.mapsVisited],
     saveStatus: state.saveStatus,
@@ -466,6 +555,7 @@ export function serializeState(state: GameState): SerializedTestState {
     companion: state.encounter === 'help_accepted',
     evidence: { ...state.evidence },
     shopQuest: { ...state.shopQuest },
+    parcelQuest: { ...state.parcelQuest },
     inspectTarget: state.inspectTarget,
     explainTopic: state.explainTopic,
     robotUnderstood: state.robotUnderstood,

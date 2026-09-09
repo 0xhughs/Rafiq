@@ -1,14 +1,11 @@
 import { playerHitsSolid } from './collision';
-import { RESTORE_NOTICE, SAVE_BACKUP_KEY, SAVE_KEY } from './constants';
+import { JOURNAL_CAP, RESTORE_NOTICE, SAVE_BACKUP_KEY, SAVE_KEY } from './constants';
 import { OBJECTIVES } from './dialogue';
 import { syncInventory } from './inventory';
 import { getMap, MAPS } from './maps';
 import { validateName } from './names';
-import {
-  createCalculator,
-  parseEvidence,
-  parseShopQuest,
-} from './shop';
+import { createCalculator, parseEvidence, parseShopQuest } from './shop';
+import { parseParcelQuest } from './parcel';
 import type {
   EndingState,
   Facing,
@@ -73,6 +70,10 @@ const JOURNAL_IDS: readonly JournalEventId[] = [
   'shop_notice_posted',
   'shop_price_corrected',
   'shop_helped',
+  'parcel_visit',
+  'parcel_overbroad_stopped',
+  'parcel_instruction_failed',
+  'parcel_retrieved',
 ];
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -115,9 +116,11 @@ export function toEnvelope(state: GameState): SaveEnvelope {
     inventory: syncInventory(state.inventory, state.trash),
     neighbor: persistableGreeting(state.neighbor),
     shopkeeper: persistableGreeting(state.shopkeeper),
-    journalEvents: state.journalEvents.slice(-12),
+    clerk: persistableGreeting(state.clerk),
+    journalEvents: state.journalEvents.slice(-JOURNAL_CAP),
     evidence: parseEvidence(state.evidence),
     shopQuest: parseShopQuest(state.shopQuest),
+    parcelQuest: parseParcelQuest(state.parcelQuest),
     robot: { companion },
     endingState: 'in_progress',
     mapsVisited: state.mapsVisited.length > 0 ? [...state.mapsVisited] : [state.map],
@@ -135,7 +138,7 @@ function parseJournal(value: unknown): JournalEvent[] | null {
     if (events.some((event) => event.id === item.id)) continue;
     events.push({ id: item.id as JournalEventId, text: item.text });
   }
-  return events.slice(-12);
+  return events.slice(-JOURNAL_CAP);
 }
 
 function parseInventory(value: unknown): ItemId[] | null {
@@ -194,6 +197,11 @@ export function validateSave(raw: unknown): SaveEnvelope | null {
   if (typeof data.shopkeeper !== 'string' || !(GREETINGS as readonly string[]).includes(data.shopkeeper)) {
     return null;
   }
+  const clerkRaw = data.clerk;
+  const clerk: NpcGreeting =
+    typeof clerkRaw === 'string' && (GREETINGS as readonly string[]).includes(clerkRaw)
+      ? persistableGreeting(clerkRaw as NpcGreeting)
+      : 'unmet';
   const journalEvents = parseJournal(data.journalEvents);
   if (!journalEvents) return null;
   if (!isObject(data.evidence)) return null;
@@ -217,9 +225,11 @@ export function validateSave(raw: unknown): SaveEnvelope | null {
     inventory: syncInventory(inventory, data.trash as TrashState),
     neighbor: persistableGreeting(data.neighbor as NpcGreeting),
     shopkeeper: persistableGreeting(data.shopkeeper as NpcGreeting),
+    clerk,
     journalEvents,
     evidence: parseEvidence(data.evidence),
     shopQuest: parseShopQuest(data.shopQuest),
+    parcelQuest: parseParcelQuest(data.parcelQuest),
     robot: { companion },
     endingState: 'in_progress' satisfies EndingState,
     mapsVisited: mapsVisited.length > 0 ? mapsVisited : [data.map],
@@ -251,9 +261,11 @@ export function hydrateSave(
     inventory: syncInventory(envelope.inventory, envelope.trash),
     neighbor: persistableGreeting(envelope.neighbor),
     shopkeeper: persistableGreeting(envelope.shopkeeper),
-    journalEvents: envelope.journalEvents.slice(-12),
+    clerk: persistableGreeting(envelope.clerk),
+    journalEvents: envelope.journalEvents.slice(-JOURNAL_CAP),
     evidence: parseEvidence(envelope.evidence),
     shopQuest: parseShopQuest(envelope.shopQuest),
+    parcelQuest: parseParcelQuest(envelope.parcelQuest),
     calculator: createCalculator(),
     inspectTarget: null,
     explainTopic: null,
@@ -333,6 +345,7 @@ export function shouldPersist(prev: GameState, next: GameState, action: GameActi
   if (prev.encounter !== next.encounter) return true;
   if (persistableGreeting(prev.neighbor) !== persistableGreeting(next.neighbor)) return true;
   if (persistableGreeting(prev.shopkeeper) !== persistableGreeting(next.shopkeeper)) return true;
+  if (persistableGreeting(prev.clerk) !== persistableGreeting(next.clerk)) return true;
   if (prev.checkpointReached !== next.checkpointReached) return true;
   if (
     (action.type === 'CLOSE_OVERLAY' || action.type === 'CHOOSE' || action.type === 'ADVANCE_DIALOGUE') &&
@@ -342,12 +355,14 @@ export function shouldPersist(prev: GameState, next: GameState, action: GameActi
     prev.dialogueNode !== 'pickup_leaving' &&
     prev.dialogueNode !== 'locked_shop' &&
     prev.dialogueNode !== 'locked_library' &&
+    prev.dialogueNode !== 'locked_parcel' &&
     prev.dialogueNode !== 'library_inner_locked'
   ) {
     return true;
   }
   if (JSON.stringify(prev.evidence) !== JSON.stringify(next.evidence)) return true;
   if (shopQuestPersisted(prev.shopQuest) !== shopQuestPersisted(next.shopQuest)) return true;
+  if (JSON.stringify(prev.parcelQuest) !== JSON.stringify(next.parcelQuest)) return true;
   return false;
 }
 

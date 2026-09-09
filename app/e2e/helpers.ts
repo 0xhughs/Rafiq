@@ -131,6 +131,82 @@ export async function skipExplainIfOpen(page: Page): Promise<void> {
   }
 }
 
+export async function completeShopVisit(page: Page): Promise<void> {
+  await enterShop(page);
+  await hearShopMango(page);
+  await interactAt(page, 'shop', WORLD_POS.shelfWest.x, WORLD_POS.shelfWest.y);
+  await page.getByTestId('inspect-close').click();
+  await interactAt(page, 'shop', WORLD_POS.shopkeeper.x, WORLD_POS.shopkeeper.y);
+  await clickChoice(page, 'dialogue-choice-tell_no_mango');
+  await advanceDialogue(page);
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'shop', WORLD_POS.shelfEast.x, WORLD_POS.shelfEast.y);
+  await page.getByTestId('inspect-close').click();
+  await interactAt(page, 'shop', WORLD_POS.calculator.x, WORLD_POS.calculator.y);
+  for (const key of ['3', 'mul', '3', 'add', '2', 'mul', '4', 'eq'] as const) {
+    await page.getByTestId(`calc-key-${key}`).click();
+  }
+  await page.getByTestId('calculator-close').click();
+  await interactAt(page, 'shop', WORLD_POS.noticeBoard.x, WORLD_POS.noticeBoard.y);
+  await page.getByTestId('notice-use-total').click();
+  await page.getByTestId('notice-use-dates').click();
+  await page.getByTestId('notice-use-water').click();
+  await page.getByTestId('notice-post').click();
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'shop', WORLD_POS.shopkeeper.x, WORLD_POS.shopkeeper.y);
+  await advanceDialogue(page);
+  await clickChoice(page, 'dialogue-choice-refuse_dates');
+  await advanceDialogue(page);
+  await interactAt(page, 'shop', WORLD_POS.shelfEast.x, WORLD_POS.shelfEast.y);
+  await page.getByTestId('inspect-close').click();
+  await interactAt(page, 'shop', WORLD_POS.shopkeeper.x, WORLD_POS.shopkeeper.y);
+  await clickChoice(page, 'dialogue-choice-correct_dates');
+  await clickChoice(page, 'dialogue-choice-verify_later');
+  await interactAt(page, 'shop', WORLD_POS.shelfWest.x, WORLD_POS.shelfWest.y);
+  await page.getByTestId('inspect-close').click();
+  await interactAt(page, 'shop', WORLD_POS.shopkeeper.x, WORLD_POS.shopkeeper.y);
+  await clickChoice(page, 'dialogue-choice-reject_water');
+  await advanceDialogue(page);
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'shop', WORLD_POS.crate.x, WORLD_POS.crate.y);
+  await page.getByTestId('crate-ask-shopkeeper').click();
+  await advanceDialogue(page);
+  await advanceDialogue(page);
+  await advanceDialogue(page);
+  await skipExplainIfOpen(page);
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-shop-quest', 'helped');
+}
+
+export async function playToShopHelped(page: Page, name = 'علي حسن'): Promise<void> {
+  await playToHelpAccepted(page, name);
+  await completeShopVisit(page);
+}
+
+export async function enterParcelOffice(page: Page): Promise<void> {
+  await interactAt(page, 'street', WORLD_POS.parcelDoor.x, WORLD_POS.parcelDoor.y);
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-map', 'parcel');
+}
+
+export async function briefParcelClerk(page: Page): Promise<void> {
+  await interactAt(page, 'parcel', WORLD_POS.clerk.x, WORLD_POS.clerk.y);
+  await expect(page.getByTestId('dialogue-text')).toContainText('مكتب طرود الرصيف');
+  await advanceDialogue(page);
+  await expect(page.getByTestId('dialogue-text')).toContainText('الحجز');
+  await advanceDialogue(page);
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-mode', 'playing');
+}
+
+export async function talkCompanionOnParcel(page: Page): Promise<void> {
+  await interactAt(page, 'parcel', 4 * 48 + 24, 6 * 48 + 24);
+}
+
+export async function fillCompleteInstruction(page: Page, parcel: 'r17' | 'r19'): Promise<void> {
+  await page.getByTestId(`instruction-parcel-${parcel}`).click();
+  await page.getByTestId('instruction-location-west').click();
+  await page.getByTestId('instruction-constraints-repair_no_pay').click();
+  await page.getByTestId('instruction-return-tag_to_desk').click();
+}
+
 export async function enterShop(page: Page): Promise<void> {
   await interactAt(page, 'street', WORLD_POS.shopDoor.x, WORLD_POS.shopDoor.y);
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-map', 'shop');

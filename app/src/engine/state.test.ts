@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { playerHitsSolid } from './collision';
 import { DIALOGUE, JOURNAL_TEXT, LOCKED_COPY, OBJECTIVES } from './dialogue';
 import { grantItem } from './inventory';
-import { APARTMENT, LIBRARY, PORTALS, SHOP, STREET, WORLD_POS } from './maps';
+import { APARTMENT, LIBRARY, PARCEL, PORTALS, SHOP, STREET, WORLD_POS } from './maps';
 import { NAME_ERRORS } from './names';
 import { robotPosition } from './npc';
 import { createInitialState, reduce, stepGame } from './state';
@@ -84,7 +84,7 @@ function checkpoint(): GameState {
 describe('maps', () => {
   it('keeps apartment and street legends rectangular with collisions', () => {
     expect(new Set(APARTMENT.legend.map((row) => row.length))).toEqual(new Set([16]));
-    expect(new Set(STREET.legend.map((row) => row.length))).toEqual(new Set([28]));
+    expect(new Set(STREET.legend.map((row) => row.length))).toEqual(new Set([34]));
     expect(playerHitsSolid('apartment', APARTMENT.spawn.x, APARTMENT.spawn.y)).toBe(false);
     expect(playerHitsSolid('street', STREET.entryFromOther.x, STREET.entryFromOther.y)).toBe(
       false,
@@ -280,10 +280,11 @@ describe('pause overlay', () => {
 });
 
 describe('city maps and portals', () => {
-  it('registers four walkable maps and bidirectional portal pairs', () => {
+  it('registers five walkable maps and bidirectional portal pairs', () => {
     expect(playerHitsSolid('shop', SHOP.spawn.x, SHOP.spawn.y)).toBe(false);
     expect(playerHitsSolid('library', LIBRARY.spawn.x, LIBRARY.spawn.y)).toBe(false);
-    expect(PORTALS.map((portal) => portal.id).sort()).toEqual(['home', 'library', 'shop']);
+    expect(playerHitsSolid('parcel', PARCEL.spawn.x, PARCEL.spawn.y)).toBe(false);
+    expect(PORTALS.map((portal) => portal.id).sort()).toEqual(['home', 'library', 'parcel', 'shop']);
     const streetPortals = PORTALS.filter((portal) =>
       portal.ends.some((end) => end.map === 'street'),
     );

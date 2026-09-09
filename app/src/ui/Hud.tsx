@@ -45,7 +45,12 @@ export function Hud({ state, onHelp, onDismissRestore }: Props) {
     );
   }
   const nearby = getActionable(state);
-  const carrying = hasItem(state.inventory, 'trash_bag') || state.trash === 'carried';
+  const carryingBag = hasItem(state.inventory, 'trash_bag') || state.trash === 'carried';
+  const carryingParcel = hasItem(state.inventory, 'repair_parcel');
+  let inventoryLabel = 'لا يوجد شيء محمول';
+  if (carryingBag && carryingParcel) inventoryLabel = 'كيس القمامة، طرد الإصلاح';
+  else if (carryingBag) inventoryLabel = 'كيس القمامة';
+  else if (carryingParcel) inventoryLabel = 'طرد الإصلاح';
   return (
     <header className="hud" data-testid="hud">
       <Banners state={state} onDismissRestore={onDismissRestore} />
@@ -58,9 +63,9 @@ export function Hud({ state, onHelp, onDismissRestore }: Props) {
       <div
         className="inventory"
         data-testid="inventory"
-        data-carried={carrying ? 'true' : 'false'}
+        data-carried={carryingBag || carryingParcel ? 'true' : 'false'}
       >
-        {carrying ? 'كيس القمامة' : 'لا يوجد شيء محمول'}
+        {inventoryLabel}
       </div>
       <button type="button" className="ghost hud-help" data-testid="help-button" onClick={onHelp}>
         دفتر / مساعدة

@@ -4,7 +4,7 @@ export const PLAYER_HALF_H = 14;
 export const PLAYER_SPEED = 150;
 export const INTERACT_RANGE = 58;
 export const MAX_STEP = 8;
-export const JOURNAL_CAP = 12;
+export const JOURNAL_CAP = 16;
 export const COMPANION_OFFSET = { x: -32, y: 10 } as const;
 
 export const SAVE_KEY = 'rafiq.adventure.v1';
@@ -31,6 +31,14 @@ export const HINT_LABELS = {
   noticeBoard: 'E / مسافة — لوحة الإعلان',
   calculator: 'E / مسافة — آلة الحساب',
   crate: 'E / مسافة — الصندوق',
+  parcelEnter: 'E / مسافة — دخول مكتب طرود الرصيف',
+  parcelExit: 'E / مسافة — الخروج إلى الشارع',
+  clerk: 'E / مسافة — التحدث مع موظف الطرود',
+  holdWest: 'E / مسافة — بطاقة الحجز الغربي',
+  holdEast: 'E / مسافة — بطاقة الطرد الشرقي',
+  holdBoard: 'E / مسافة — لوحة الحجوزات',
+  payWindow: 'E / مسافة — نافذة الدفع',
+  instructionDesk: 'E / مسافة — ورقة التعليمات',
 } as const;
 
 export const STORAGE_WARNING =

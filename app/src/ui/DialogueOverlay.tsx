@@ -24,6 +24,8 @@ export function DialogueOverlay({ state, onAdvance, onChoose, onClose, onSubmitN
   const text = line.text(state.playerName, state.storyObjective);
   const canPostpone = state.dialogueNode !== 'pickup_leaving';
   const lookup = state.dialogueNode === 'shop_lookup_prompt';
+  const parcelNl =
+    state.dialogueNode === 'parcel_overbroad' || state.dialogueNode === 'parcel_delegate_prompt';
   return (
     <div
       className="overlay dialogue-overlay"
@@ -45,12 +47,12 @@ export function DialogueOverlay({ state, onAdvance, onChoose, onClose, onSubmitN
             {state.robotUnderstood}
           </p>
         ) : null}
-        {state.shopFeedback && lookup ? (
+        {state.shopFeedback && (lookup || parcelNl) ? (
           <p className="error" data-testid="nl-clarify" role="alert">
             {state.shopFeedback}
           </p>
         ) : null}
-        {lookup ? (
+        {lookup || parcelNl ? (
           <form
             className="nl-form"
             onSubmit={(event) => {
@@ -59,7 +61,7 @@ export function DialogueOverlay({ state, onAdvance, onChoose, onClose, onSubmitN
             }}
           >
             <label className="field-label" htmlFor="nl-report">
-              أو صِغ ما رأيت (اختياري)
+              أو صِغ الأمر (اختياري)
             </label>
             <input
               id="nl-report"
@@ -70,7 +72,7 @@ export function DialogueOverlay({ state, onAdvance, onChoose, onClose, onSubmitN
               onChange={(event) => setNl(event.target.value)}
             />
             <button type="submit" className="ghost" data-testid="nl-submit">
-              أخبر البقال
+              أرسل
             </button>
           </form>
         ) : null}

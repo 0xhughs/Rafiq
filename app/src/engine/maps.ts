@@ -21,7 +21,11 @@ export type CellKind =
   | 'notice'
   | 'pricelist'
   | 'calculator'
-  | 'crate';
+  | 'crate'
+  | 'parcel'
+  | 'holdboard'
+  | 'paywindow'
+  | 'instruction';
 
 export interface CellRect {
   kind: CellKind;
@@ -56,13 +60,14 @@ export interface PortalEnd {
 
 export interface PortalDef {
   id: PortalId;
-  interactable: 'door' | 'shop_door' | 'library_door';
+  interactable: 'door' | 'shop_door' | 'library_door' | 'parcel_door';
   requiresHelp: boolean;
-  lockedNode: 'locked_shop' | 'locked_library' | null;
+  requiresShopHelped?: boolean;
+  lockedNode: 'locked_shop' | 'locked_library' | 'locked_parcel' | null;
   ends: [PortalEnd, PortalEnd];
 }
 
-const SOLID_LETTERS = new Set(['#', 'B', 'T', 'K', 'M', 'C', 'H', 'L', 'W', 'n', 'p', 'c', 'k']);
+const SOLID_LETTERS = new Set(['#', 'B', 'T', 'K', 'M', 'C', 'H', 'L', 'W', 'n', 'p', 'c', 'k', 'Q', 'b', 'y', 's']);
 
 const APARTMENT_LEGEND = [
   '################',
@@ -79,19 +84,29 @@ const APARTMENT_LEGEND = [
   '################',
 ];
 
+function eastExtend(row: string, east6: string): string {
+  if (row.length !== 28) {
+    throw new Error(`street row must start at 28, got ${row.length}`);
+  }
+  if (east6.length !== 6) {
+    throw new Error(`east pad must be 6, got ${east6.length}`);
+  }
+  return `${row.slice(0, 27)}${east6}#`;
+}
+
 const STREET_LEGEND = [
-  '#'.repeat(28),
-  `D${'.'.repeat(26)}#`,
-  `#${'.'.repeat(26)}#`,
-  `#${'.'.repeat(13)}MMM${'.'.repeat(10)}#`,
-  `#${'.'.repeat(13)}MMM${'.'.repeat(10)}#`,
-  `#${'.'.repeat(11)}o${'.'.repeat(14)}#`,
-  `#${'.'.repeat(3)}CCCCC${'.'.repeat(12)}LLLL${'.'.repeat(2)}#`,
-  `#${'.'.repeat(3)}CCCCC${'.'.repeat(12)}LLLL${'.'.repeat(2)}#`,
-  `#${'.'.repeat(5)}P${'.'.repeat(15)}I${'.'.repeat(4)}#`,
-  `#${'.'.repeat(11)}N${'.'.repeat(14)}#`,
-  `#${'.'.repeat(26)}#`,
-  '#'.repeat(28),
+  eastExtend('#'.repeat(28), '######'),
+  eastExtend(`D${'.'.repeat(26)}#`, '......'),
+  eastExtend(`#${'.'.repeat(26)}#`, '......'),
+  eastExtend(`#${'.'.repeat(13)}MMM${'.'.repeat(10)}#`, '......'),
+  eastExtend(`#${'.'.repeat(13)}MMM${'.'.repeat(10)}#`, '......'),
+  eastExtend(`#${'.'.repeat(11)}o${'.'.repeat(14)}#`, '......'),
+  eastExtend(`#${'.'.repeat(3)}CCCCC${'.'.repeat(12)}LLLL${'.'.repeat(2)}#`, 'QQQQ..'),
+  eastExtend(`#${'.'.repeat(3)}CCCCC${'.'.repeat(12)}LLLL${'.'.repeat(2)}#`, 'QQQQ..'),
+  eastExtend(`#${'.'.repeat(5)}P${'.'.repeat(15)}I${'.'.repeat(4)}#`, '..R...'),
+  eastExtend(`#${'.'.repeat(11)}N${'.'.repeat(14)}#`, '......'),
+  eastExtend(`#${'.'.repeat(26)}#`, '......'),
+  eastExtend('#'.repeat(28), '######'),
 ];
 
 const SHOP_LEGEND = [
@@ -118,6 +133,19 @@ const LIBRARY_LEGEND = [
   '#............#',
   '#............#',
   '##############',
+];
+
+const PARCEL_LEGEND = [
+  '################',
+  '#WW....b.y...WW#',
+  '#WW..........WW#',
+  '#..HHHHHHHH....#',
+  '#..............#',
+  '#s.............#',
+  '#..............#',
+  '#.......d......#',
+  '#..............#',
+  '################',
 ];
 
 function assertLegend(name: string, rows: string[]): void {
@@ -222,11 +250,17 @@ export const LIBRARY = parseMap('library', LIBRARY_LEGEND, {
   entryDir: 'north',
 });
 
+export const PARCEL = parseMap('parcel', PARCEL_LEGEND, {
+  doorLetter: 'd',
+  entryDir: 'north',
+});
+
 export const MAPS: Record<MapId, MapDef> = {
   apartment: APARTMENT,
   street: STREET,
   shop: SHOP,
   library: LIBRARY,
+  parcel: PARCEL,
 };
 
 export function getMap(id: MapId): MapDef {
@@ -271,12 +305,15 @@ function kindFromLetter(letter: string): CellKind {
       return 'shop';
     case 'L':
       return 'library';
+    case 'Q':
+      return 'parcel';
     case 'D':
     case 'd':
     case 'P':
     case 'I':
     case 'i':
     case 'F':
+    case 'R':
       return 'door';
     case 'S':
       return 'spawn';
@@ -296,6 +333,12 @@ function kindFromLetter(letter: string): CellKind {
       return 'calculator';
     case 'k':
       return 'crate';
+    case 'b':
+      return 'holdboard';
+    case 'y':
+      return 'paywindow';
+    case 's':
+      return 'instruction';
     case 'N':
       return 'neighbor';
     default:
@@ -324,6 +367,7 @@ export const FURNITURE = {
     dumpster: mergeRects(collectKind(STREET, ['M']))[0],
     shop: mergeRects(collectKind(STREET, ['C']))[0],
     library: mergeRects(collectKind(STREET, ['L']))[0],
+    parcel: mergeRects(collectKind(STREET, ['Q']))[0],
     walls: collectKind(STREET, ['#']),
   },
   shop: {
@@ -340,6 +384,15 @@ export const FURNITURE = {
   library: {
     building: mergeRects(collectKind(LIBRARY, ['W']))[0],
     walls: collectKind(LIBRARY, ['#']),
+  },
+  parcel: {
+    counter: mergeRects(collectKind(PARCEL, ['H']))[0],
+    westShelves: collectKind(PARCEL, ['W']).filter((cell) => cell.col < 4),
+    eastShelves: collectKind(PARCEL, ['W']).filter((cell) => cell.col > 8),
+    board: mergeRects(collectKind(PARCEL, ['b']))[0],
+    pay: mergeRects(collectKind(PARCEL, ['y']))[0],
+    desk: mergeRects(collectKind(PARCEL, ['s']))[0],
+    walls: collectKind(PARCEL, ['#']),
   },
 };
 
@@ -383,6 +436,17 @@ export const PORTALS: PortalDef[] = [
     ends: [
       { map: 'street', letter: 'I', spawnDir: 'south', arriveFacing: 'down' },
       { map: 'library', letter: 'i', spawnDir: 'north', arriveFacing: 'up' },
+    ],
+  },
+  {
+    id: 'parcel',
+    interactable: 'parcel_door',
+    requiresHelp: true,
+    requiresShopHelped: true,
+    lockedNode: 'locked_parcel',
+    ends: [
+      { map: 'street', letter: 'R', spawnDir: 'south', arriveFacing: 'down' },
+      { map: 'parcel', letter: 'd', spawnDir: 'north', arriveFacing: 'up' },
     ],
   },
 ];
@@ -452,6 +516,16 @@ export const WORLD_POS = {
   priceList: cellCenter(9, 2),
   calculator: cellCenter(11, 4),
   crate: cellCenter(2, 5),
+  parcelDoor: letterCenter(STREET, 'R'),
+  parcelExit: letterCenter(PARCEL, 'd'),
+  parcelSpawn: PARCEL.spawn,
+  clerk: cellCenter(6, 4),
+  holdWest: cellCenter(3, 2),
+  holdEast: cellCenter(12, 2),
+  holdBoard: letterCenter(PARCEL, 'b'),
+  payWindow: letterCenter(PARCEL, 'y'),
+  instructionDesk: letterCenter(PARCEL, 's'),
+  parcelTalk: cellCenter(4, 6),
 };
 
 export function doorHint(map: MapId): string {
@@ -464,4 +538,8 @@ export function shopDoorHint(map: MapId): string {
 
 export function libraryDoorHint(map: MapId): string {
   return map === 'library' ? HINT_LABELS.libraryExit : HINT_LABELS.libraryEnter;
+}
+
+export function parcelDoorHint(map: MapId): string {
+  return map === 'parcel' ? HINT_LABELS.parcelExit : HINT_LABELS.parcelEnter;
 }

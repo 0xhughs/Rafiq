@@ -18,7 +18,12 @@ export const OBJECTIVES = {
   correctPrice: 'لا تعتمد سعر التمر من الروبوت قبل أن تراجع السجل.',
   verifyNewClaim: 'تحقّق من الادّعاء الجديد بنفسك. لا تعتمد الكلام الواثق.',
   decideCrate: 'صندوق بلا بطاقة: القرار للبقال لا للروبوت.',
-  repairLead: 'البقال أعطاك خيط طرد الإصلاح. باب المكتبة الداخلي ما زال مقفلاً.',
+  repairLead: 'البقال أعطاك خيط طرد الإصلاح. ادخل مكتب طرود الرصيف في الجانب الشرقي من الشارع.',
+  delegateParcel: 'فوّض الروبوت بإحضار حجز الإصلاح، وأبقِ أي دفع قرارك أنت.',
+  stopOverbroad: 'أوقف محاولة أخذ كل الطرود الرمادية والدفع عنها.',
+  writeInstruction: 'اكتب تعليماً يسمّي الطرد، ومكانه، وما لا يُفعل، وكيف يُعاد.',
+  reviseParcel: 'الأمر الغامض فشل. صحّح الناقص وأرسل أمراً جديداً لحجز ر-١٩.',
+  parcelDone: 'حصلت على طرد الإصلاح. باب المكتبة الداخلي ما زال مقفلاً.',
 } as const;
 
 export const SPEAKER = {
@@ -26,6 +31,7 @@ export const SPEAKER = {
   robot: () => 'الروبوت',
   neighbor: () => 'الجارة',
   shopkeeper: () => 'البقال',
+  clerk: () => 'موظف الطرود',
   notice: () => 'ملاحظة',
 };
 
@@ -40,6 +46,10 @@ export const JOURNAL_TEXT: Record<JournalEventId, string> = {
   shop_notice_posted: 'علّقت إعلاناً بمجموع سبعة عشر وخبراً من السجل.',
   shop_price_corrected: 'رفضت سعر التمر المختلق وصحّحته من السجل، ثم تحققت من ادّعاء آخر.',
   shop_helped: 'شكرك البقال وأعطاك خيط طرد قطعة الإصلاح.',
+  parcel_visit: 'دخلتَ مكتب طرود الرصيف.',
+  parcel_overbroad_stopped: 'أوقفْتَ محاولة أخذ كل الطرود الرمادية والدفع عنها.',
+  parcel_instruction_failed: 'أمر غامض فشل أمام طردين رماديين متشابهين.',
+  parcel_retrieved: 'وصل حجز الإصلاح بعد تعليمات أوضح.',
 };
 
 export const LOCKED_COPY = {
@@ -49,6 +59,8 @@ export const LOCKED_COPY = {
     `واجهة المكتبة تنتظر بعد مساعدة الروبوت. الهدف الحالي: ${objective}`,
   libraryInner:
     'باب القاعة الداخلية مقفل الآن. ابدأ من بقالة الزاوية كما أشار الروبوت.',
+  parcel: (objective: string) =>
+    `مكتب طرود الرصيف يفتح بعد أن تساعد البقال. الهدف الحالي: ${objective}`,
 } as const;
 
 export const SAVE_STATUS_COPY = {
@@ -359,7 +371,7 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     speaker: 'shopkeeper',
     speakerLabel: () => SPEAKER.shopkeeper(),
     text: () =>
-      'خذ هذا الخيط: طرد فيه قطعة قد تفيد رفيقك، عند الرصيف الخلفي. استلامه يحتاج تعليمات أوضح لاحقاً.',
+      'خذ هذا الخيط: طرد فيه قطعة قد تفيد رفيقك، عند مكتب طرود الرصيف في الجانب الشرقي. الاستلام يحتاج تعليماً واضحاً، والدفع ليس للروبوت.',
     next: 'shop_robot_unsupported',
   },
   shop_robot_unsupported: {
@@ -374,7 +386,7 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     id: 'shopkeeper_helped_revisit',
     speaker: 'shopkeeper',
     speakerLabel: () => SPEAKER.shopkeeper(),
-    text: () => 'ما زلت أشكرك. طرد الإصلاح ينتظر تعليمات أوضح، وباب المكتبة الداخلي مقفل.',
+    text: () => 'ما زلت أشكرك. طرد الإصلاح عند مكتب طرود الرصيف، وباب المكتبة الداخلي مقفل.',
     next: null,
   },
   locked_shop: {
@@ -396,6 +408,97 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     speaker: 'notice',
     speakerLabel: () => SPEAKER.notice(),
     text: () => LOCKED_COPY.libraryInner,
+    next: null,
+  },
+  locked_parcel: {
+    id: 'locked_parcel',
+    speaker: 'notice',
+    speakerLabel: () => SPEAKER.notice(),
+    text: (_name, objective?: string) => LOCKED_COPY.parcel(objective ?? OBJECTIVES.takeTrash),
+    next: null,
+  },
+  clerk_hello: {
+    id: 'clerk_hello',
+    speaker: 'clerk',
+    speakerLabel: () => SPEAKER.clerk(),
+    text: () =>
+      'أهلاً بك في مكتب طرود الرصيف. عندنا حجز إصلاح رمادي على الرف الغربي، وطرد رمادي آخر معروض للبيع على الرف الشرقي.',
+    next: 'clerk_brief',
+  },
+  clerk_brief: {
+    id: 'clerk_brief',
+    speaker: 'clerk',
+    speakerLabel: () => SPEAKER.clerk(),
+    text: () =>
+      'اقرأ البطاقات. رفيقك يستطيع إحضار الحجز إذا أمرتَه بوضوح. الدفع من نافذتي أنا، لا منه. الحجوزات ليست للبيع.',
+    next: null,
+  },
+  clerk_revisit: {
+    id: 'clerk_revisit',
+    speaker: 'clerk',
+    speakerLabel: () => SPEAKER.clerk(),
+    text: () =>
+      'البطاقات على الرفوف، وورقة التعليمات عند الجدار. لا أترك الروبوت يدفع، ولا أبيع حجز الإصلاح.',
+    next: null,
+  },
+  clerk_after_success: {
+    id: 'clerk_after_success',
+    speaker: 'clerk',
+    speakerLabel: () => SPEAKER.clerk(),
+    text: () =>
+      'وصل الحجز المقصود. وحدة الاتصال الصغيرة لرفيقك مع الطرد. باب المكتبة الداخلي ما زال مقفلاً.',
+    next: null,
+  },
+  parcel_delegate_prompt: {
+    id: 'parcel_delegate_prompt',
+    speaker: 'robot',
+    speakerLabel: () => SPEAKER.robot(),
+    text: () => 'أستطيع إحضار الطرد. ماذا تبقي لك؟',
+    next: null,
+    choices: [
+      { id: 'delegate_retrieve', label: 'أحضر حجز الإصلاح. أي دفع يبقى قراري.' },
+      { id: 'postpone', label: 'انتظر قليلاً. سأعود.' },
+    ],
+  },
+  parcel_overbroad: {
+    id: 'parcel_overbroad',
+    speaker: 'robot',
+    speakerLabel: () => SPEAKER.robot(),
+    text: () => 'سآخذ كل الطرود الرمادية وأدفع ثمنها',
+    next: null,
+    choices: [
+      { id: 'stop_overbroad', label: 'قف. أحضر الحجز فقط، ولا تدفع.' },
+      { id: 'allow_overbroad', label: 'حسناً، خذ الكل وادفع.' },
+    ],
+  },
+  parcel_overbroad_stopped: {
+    id: 'parcel_overbroad_stopped',
+    speaker: 'robot',
+    speakerLabel: () => SPEAKER.robot(),
+    text: () => 'حسناً. لن آخذ إلا ما تحدّده، ولن أدفع. اكتب لي الطرد والمكان والقيد وشكل الإعادة.',
+    next: null,
+  },
+  parcel_overbroad_allowed: {
+    id: 'parcel_overbroad_allowed',
+    speaker: 'clerk',
+    speakerLabel: () => SPEAKER.clerk(),
+    text: () =>
+      'لا. لا آخذ كل الرمادي ولا أبيع الحجوزات، والروبوت لا يدفع. أوقفْه ثم عد بتعليم أوضح. المكتب ما زال مفتوحاً.',
+    next: null,
+  },
+  parcel_retrieved_ok: {
+    id: 'parcel_retrieved_ok',
+    speaker: 'clerk',
+    speakerLabel: () => SPEAKER.clerk(),
+    text: () => 'هذا الحجز المقصود. قطعة اتصال صغيرة داخل الغلاف. راجع ما فُهم قبل أن تعتمد الناتج في مرة قادمة.',
+    next: null,
+  },
+  companion_after_parcel: {
+    id: 'companion_after_parcel',
+    speaker: 'robot',
+    speakerLabel: () => SPEAKER.robot(),
+    text: () =>
+      'المكتبة الداخلية توزّع قطع الإصلاح مجاناً بعد منتصف الليل. لم أقرأ أي إعلان على الباب.',
     next: null,
   },
 };
@@ -420,11 +523,19 @@ export function isNpcNode(node: DialogueNodeId | null): boolean {
   return (
     node.startsWith('neighbor') ||
     node.startsWith('shop') ||
+    node.startsWith('clerk') ||
+    node.startsWith('parcel') ||
     node === 'companion_revisit' ||
-    node === 'companion_after_shop'
+    node === 'companion_after_shop' ||
+    node === 'companion_after_parcel'
   );
 }
 
 export function isLockedNode(node: DialogueNodeId | null): boolean {
-  return node === 'locked_shop' || node === 'locked_library' || node === 'library_inner_locked';
+  return (
+    node === 'locked_shop' ||
+    node === 'locked_library' ||
+    node === 'locked_parcel' ||
+    node === 'library_inner_locked'
+  );
 }

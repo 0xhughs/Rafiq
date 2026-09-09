@@ -29,4 +29,4 @@ npm run lint
 
 ## Current slice
 
-Apartment, street, corner-store visit, and library exterior are playable after agreeing to help the robot. The shop visit covers checking the robot's invented mango claim, posting a sourced notice with a calculated total, correcting a false date price, and leaving the unlabeled crate to the shopkeeper.
+Apartment, street, corner-store visit, parcel office, and library exterior are playable after agreeing to help the robot. After helping the shopkeeper, مكتب طرود الرصيف opens: the player delegates retrieval, stops an overbroad grab-or-pay, writes a four-part instruction, and revises an ambiguous gray-box command.

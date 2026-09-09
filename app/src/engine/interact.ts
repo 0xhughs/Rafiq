@@ -3,12 +3,13 @@ import {
   doorHint,
   FURNITURE,
   libraryDoorHint,
+  parcelDoorHint,
   portalLetterPos,
   portalsOnMap,
   shopDoorHint,
   WORLD_POS,
 } from './maps';
-import { isCompanion, neighborVisible, npcPosition, robotVisible, shopkeeperVisible } from './npc';
+import { clerkVisible, isCompanion, neighborVisible, npcPosition, robotVisible, shopkeeperVisible } from './npc';
 import type { Actionable, GameState, InteractableId } from './types';
 
 function dist(ax: number, ay: number, bx: number, by: number): number {
@@ -64,12 +65,44 @@ function shopRect(id: InteractableId): { x: number; y: number; w: number; h: num
   }
 }
 
+function parcelRect(id: InteractableId): { x: number; y: number; w: number; h: number } | null {
+  const office = FURNITURE.parcel;
+  switch (id) {
+    case 'hold_west': {
+      const cells = office.westShelves;
+      if (cells.length === 0) return null;
+      const minX = Math.min(...cells.map((c) => c.x));
+      const minY = Math.min(...cells.map((c) => c.y));
+      const maxX = Math.max(...cells.map((c) => c.x + c.w));
+      const maxY = Math.max(...cells.map((c) => c.y + c.h));
+      return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+    }
+    case 'hold_east': {
+      const cells = office.eastShelves;
+      if (cells.length === 0) return null;
+      const minX = Math.min(...cells.map((c) => c.x));
+      const minY = Math.min(...cells.map((c) => c.y));
+      const maxX = Math.max(...cells.map((c) => c.x + c.w));
+      const maxY = Math.max(...cells.map((c) => c.y + c.h));
+      return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+    }
+    case 'hold_board':
+      return office.board;
+    case 'pay_window':
+      return office.pay;
+    case 'instruction_desk':
+      return office.desk;
+    default:
+      return null;
+  }
+}
+
 function itemDistance(state: GameState, item: Actionable): number {
   if (item.id === 'dumpster') {
     const box = FURNITURE.street.dumpster;
     return distToRect(state.position.x, state.position.y, box.x, box.y, box.w, box.h);
   }
-  const rect = shopRect(item.id);
+  const rect = shopRect(item.id) ?? parcelRect(item.id);
   if (rect) {
     return distToRect(state.position.x, state.position.y, rect.x, rect.y, rect.w, rect.h);
   }
@@ -79,6 +112,7 @@ function itemDistance(state: GameState, item: Actionable): number {
 function portalHint(id: InteractableId, map: GameState['map']): string {
   if (id === 'door') return doorHint(map);
   if (id === 'shop_door') return shopDoorHint(map);
+  if (id === 'parcel_door') return parcelDoorHint(map);
   return libraryDoorHint(map);
 }
 
@@ -143,6 +177,16 @@ export function listInteractables(state: GameState): Actionable[] {
     });
   }
 
+  if (clerkVisible(state)) {
+    const clerk = npcPosition(state, 'clerk');
+    items.push({
+      id: 'clerk',
+      label: HINT_LABELS.clerk,
+      x: clerk.x,
+      y: clerk.y,
+    });
+  }
+
   if (state.map === 'shop' && state.encounter === 'help_accepted') {
     items.push(
       { id: 'shelf_west', label: HINT_LABELS.shelfWest, x: WORLD_POS.shelfWest.x, y: WORLD_POS.shelfWest.y },
@@ -161,6 +205,21 @@ export function listInteractables(state: GameState): Actionable[] {
       x: WORLD_POS.libraryInner.x,
       y: WORLD_POS.libraryInner.y,
     });
+  }
+
+  if (state.map === 'parcel' && state.shopQuest.phase === 'helped') {
+    items.push(
+      { id: 'hold_west', label: HINT_LABELS.holdWest, x: WORLD_POS.holdWest.x, y: WORLD_POS.holdWest.y },
+      { id: 'hold_east', label: HINT_LABELS.holdEast, x: WORLD_POS.holdEast.x, y: WORLD_POS.holdEast.y },
+      { id: 'hold_board', label: HINT_LABELS.holdBoard, x: WORLD_POS.holdBoard.x, y: WORLD_POS.holdBoard.y },
+      { id: 'pay_window', label: HINT_LABELS.payWindow, x: WORLD_POS.payWindow.x, y: WORLD_POS.payWindow.y },
+      {
+        id: 'instruction_desk',
+        label: HINT_LABELS.instructionDesk,
+        x: WORLD_POS.instructionDesk.x,
+        y: WORLD_POS.instructionDesk.y,
+      },
+    );
   }
 
   return items;
