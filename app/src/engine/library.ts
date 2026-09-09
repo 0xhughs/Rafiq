@@ -360,7 +360,8 @@ function syncPhase(quest: LibraryQuest): LibraryQuest {
 
 export function libraryObjective(state: GameState): string {
   const quest = state.libraryQuest;
-  if (state.agentQuest?.agentReady) return OBJECTIVES.agentReady;
+  if (state.bridgeQuest?.bridgeReady) return OBJECTIVES.bridgeReady;
+  if (state.agentQuest?.agentReady) return OBJECTIVES.bridgeWork;
   if (state.labQuest?.labReady) return OBJECTIVES.agentWork;
   if (state.kioskQuest?.kioskReady) return OBJECTIVES.labWork;
   if (state.workshopQuest?.servicePosted) return OBJECTIVES.kioskWork;

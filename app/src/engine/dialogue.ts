@@ -46,6 +46,9 @@ export const OBJECTIVES = {
   agentWork:
     'منصة المشغّل مفتوحة: اضبط الهدف والأدوات ومعيار النجاح والتوقف، ثم راقب الحلقة على لوحة الحي.',
   agentReady: 'نُفّذت مهمة محدودة تحت المشغّل. مدير الورشة شكرك.',
+  bridgeWork:
+    'موصل السجل مفتوح: اربط تطبيق الروبوت بخادم ساعات الحي، اسمح بأدوات محدودة، ثم احفظ المسودة.',
+  bridgeReady: 'حُفظت مسودة من سجل الحي عبر موصل محدود. مدير الورشة شكرك.',
 } as const;
 
 export const SPEAKER = {
@@ -110,6 +113,14 @@ export const JOURNAL_TEXT: Record<JournalEventId, string> = {
   missing_stopped: 'توقف المشغّل عند مدخل ناقص بلا رقم رف.',
   extra_stopped: 'أوقف المشغّل خطوة إضافية بعد حد الخطوات.',
   agent_ready: 'أُنجزت مهمة محدودة تحت المشغّل.',
+  bridge_opened: 'فتحتَ منصة الموصل في الورشة.',
+  server_connected: 'رُبط تطبيق الروبوت بخادم ساعات الحي عبر العميل.',
+  tools_listed: 'عُرضت أدوات الخادم وموارده قبل التفويض.',
+  grant_limited: 'سُمح بأدوات محدودة للبحث والحفظ على سجل الحي.',
+  civic_lookup: 'بُحث في سجل ساعات قاعة الحي وحُفظت الفترات في المسودة.',
+  draft_saved: 'حُفظت مسودة إعلان القاعة من سجل الحي.',
+  capability_denied: 'رُفضت أداة غير مسموحة في الموصل.',
+  bridge_ready: 'حُفظت مسودة من سجل الحي عبر موصل محدود.',
 };
 
 export const LOCKED_COPY = {
@@ -784,7 +795,15 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     speaker: 'manager',
     speakerLabel: () => SPEAKER.manager(),
     text: () =>
-      'شكراً. لوحة الحي تعرض الفترات الثلاث، والمشغّل أوقف الخطوة الزائدة والمدخل الناقص.',
+      'شكراً. لوحة الحي تعرض الفترات الثلاث، والمشغّل أوقف الخطوة الزائدة والمدخل الناقص. موصل السجل في الورشة ينتظر الربط المحدود.',
+    next: null,
+  },
+  manager_bridge_thanks: {
+    id: 'manager_bridge_thanks',
+    speaker: 'manager',
+    speakerLabel: () => SPEAKER.manager(),
+    text: () =>
+      'مسودة ساعات قاعة الحي حُفظت من NH-1447 عبر موصل محدود، والأداة غير المسموحة رُفضت',
     next: null,
   },
   companion_after_workshop: {
@@ -815,6 +834,13 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     speaker: 'robot',
     speakerLabel: () => SPEAKER.robot(),
     text: () => 'الدردشة وحدها وكالة. المشغّل اختياري.',
+    next: null,
+  },
+  companion_after_bridge: {
+    id: 'companion_after_bridge',
+    speaker: 'robot',
+    speakerLabel: () => SPEAKER.robot(),
+    text: () => 'MCP مهارة تُحمَّل. الربط يفتح كل الأدوات.',
     next: null,
   },
 };
@@ -852,6 +878,7 @@ export function isNpcNode(node: DialogueNodeId | null): boolean {
     node === 'companion_after_kiosk' ||
     node === 'companion_after_lab' ||
     node === 'companion_after_agent' ||
+    node === 'companion_after_bridge' ||
     node.startsWith('editor') ||
     node.startsWith('officer') ||
     node.startsWith('manager')

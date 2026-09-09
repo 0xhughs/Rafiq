@@ -175,7 +175,8 @@ function syncPhase(quest: KioskQuest): KioskQuest {
 }
 
 export function kioskObjective(state: GameState): string {
-  if (state.agentQuest?.agentReady) return OBJECTIVES.agentReady;
+  if (state.bridgeQuest?.bridgeReady) return OBJECTIVES.bridgeReady;
+  if (state.agentQuest?.agentReady) return OBJECTIVES.bridgeWork;
   if (state.labQuest.labReady) return OBJECTIVES.agentWork;
   if (state.kioskQuest.kioskReady) return OBJECTIVES.labWork;
   if (state.workshopQuest.servicePosted) return OBJECTIVES.kioskWork;

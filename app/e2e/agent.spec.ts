@@ -54,7 +54,7 @@ test('lab-success through bounded agent job with physical actions', async ({ pag
   expect(afterLab.agentQuest.agentReady).toBe(false);
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-lab-ready', 'true');
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-agent-ready', 'false');
-  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '11');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '12');
   await expect(page.getByTestId('hud-objective')).toHaveText(
     'منصة المشغّل مفتوحة: اضبط الهدف والأدوات ومعيار النجاح والتوقف، ثم راقب الحلقة على لوحة الحي.',
   );
@@ -129,7 +129,10 @@ test('lab-success through bounded agent job with physical actions', async ({ pag
   expect(done.evidence['5.1']).toBe('demonstrated');
   expect(done.evidence['5.2']).toBe('demonstrated');
   expect(done.agentQuest.agentReady).toBe(true);
+  expect(done.evidence['5.3']).toBeUndefined();
+  expect(done.bridgeQuest.bridgeReady).toBe(false);
   await expect(page.getByTestId('planning-core')).toHaveText('نواة التخطيط');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-bridge-ready', 'false');
 
   await interactAt(page, 'workshop', WORLD_POS.manager.x, WORLD_POS.manager.y);
   await expect(page.getByTestId('dialogue-text')).toContainText(/لوحة الحي تعرض الفترات الثلاث/);

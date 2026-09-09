@@ -3,19 +3,35 @@ import { playerHitsSolid } from './collision';
 import { JOURNAL_CAP, TILE } from './constants';
 import { DIALOGUE, OBJECTIVES } from './dialogue';
 import {
-  API_HEADER,
-  API_PATH,
-  CHECKLIST,
-  DEMO_SLOT_KEY,
-  DOCS_TEXT,
-  KIOSK_FEEDBACK,
-  KIOSK_TITLE,
   canAward43,
   canAward44,
-  createKioskQuest,
-  faceLeaking,
-  parseKioskQuest,
 } from './kiosk';
+import {
+  AGENT_FEEDBACK,
+  BOARD_EMPTY,
+  canAward51,
+  canAward52,
+  neighborBoardText,
+} from './agent';
+import {
+  BRIDGE_EXPLAIN,
+  BRIDGE_FEEDBACK,
+  DRAFT_EMPTY,
+  DRAFT_SAVED,
+  HOUR_SAT,
+  HOUR_SUN,
+  HOUR_WED,
+  MCP_NOTE,
+  RESOURCE_WEEK,
+  TOOL_LOOKUP,
+  TOOL_SAVE,
+  canAward53,
+  createBridgeQuest,
+  grantLimited,
+  mcpComplete,
+  parseBridgeQuest,
+} from './bridge';
+import { createLabQuest } from './lab';
 import { listInteractables } from './interact';
 import { STREET, WORKSHOP, WORLD_POS } from './maps';
 import { robotPosition } from './npc';
@@ -431,25 +447,182 @@ function openDocs(state: GameState): GameState {
   return skipExplain(next);
 }
 
-function openVault(state: GameState): GameState {
-  const next = playing(state);
-  return act(at(next, WORLD_POS.kioskVault.x, WORLD_POS.kioskVault.y, 'workshop'), { type: 'INTERACT' });
-}
-
 function openFace(state: GameState): GameState {
   const next = playing(state);
   return act(at(next, WORLD_POS.kioskFace.x, WORLD_POS.kioskFace.y, 'workshop'), { type: 'INTERACT' });
 }
 
-describe('kiosk stations after servicePosted', () => {
-  it('unlocks q a e on empty cells, keeps landmarks, and does not award 4.3/4.4 on workshop success', () => {
+function playToKioskDone(state: GameState): GameState {
+  let next = playToWorkshopDone(state);
+  next = openDocs(next);
+  next = openFace(next);
+  next = act(next, { type: 'KIOSK_SEND' });
+  next = act(next, { type: 'KIOSK_STRIP' });
+  next = act(next, { type: 'KIOSK_SEND' });
+  next = act(next, { type: 'KIOSK_MOVE_VAULT' });
+  next = act(next, { type: 'KIOSK_SEND' });
+  expect(canAward43(next.kioskQuest)).toBe(true);
+  next = act(next, { type: 'KIOSK_SET_RTL' });
+  next = act(next, { type: 'KIOSK_ISOLATE' });
+  next = act(next, { type: 'KIOSK_LOOKUP', slot: 'tuesday' });
+  next = act(next, { type: 'KIOSK_CHECK', item: 'title' });
+  next = act(next, { type: 'KIOSK_CHECK', item: 'slot' });
+  next = act(next, { type: 'KIOSK_CHECK', item: 'lookup' });
+  expect(canAward44(next.kioskQuest)).toBe(true);
+  expect(next.kioskQuest.kioskReady).toBe(true);
+  expect(next.evidence['4.5']).toBeUndefined();
+  expect(next.evidence['4.6']).toBeUndefined();
+  expect(next.evidence['5.4']).toBeUndefined();
+  expect(next.labQuest.labReady).toBe(false);
+  return playing(next);
+}
+
+function openTerminal(state: GameState): GameState {
+  const next = playing(state);
+  return act(at(next, WORLD_POS.labTerminal.x, WORLD_POS.labTerminal.y, 'workshop'), {
+    type: 'INTERACT',
+  });
+}
+
+function openProd(state: GameState): GameState {
+  const next = playing(state);
+  return act(at(next, WORLD_POS.labProd.x, WORLD_POS.labProd.y, 'workshop'), { type: 'INTERACT' });
+}
+
+function playToLabDone(state: GameState): GameState {
+  let next = playToKioskDone(state);
+  next = openProd(next);
+  next = act(next, { type: 'LAB_LOOKUP' });
+  next = playing(next);
+  next = openTerminal(next);
+  next = act(next, { type: 'LAB_LS' });
+  next = act(next, { type: 'LAB_CAT', path: 'logs/preview.log' });
+  next = act(next, { type: 'LAB_CAT', path: 'logs/production.error' });
+  next = act(next, { type: 'LAB_SELECT_LOG', log: 'production.error' });
+  next = act(next, { type: 'LAB_PATCH', file: 'production/kiosk.js' });
+  next = act(next, { type: 'LAB_REFUSE', command: 'rm -rf /' });
+  next = act(next, { type: 'LAB_PUBLISH' });
+  next = playing(next);
+  next = openProd(next);
+  next = act(next, { type: 'LAB_LOOKUP' });
+  expect(next.evidence['4.5']).toBe('demonstrated');
+  expect(next.evidence['4.6']).toBe('demonstrated');
+  expect(next.evidence['5.4']).toBe('demonstrated');
+  expect(next.labQuest.labReady).toBe(true);
+  expect(next.evidence['5.1']).toBeUndefined();
+  expect(next.evidence['5.2']).toBeUndefined();
+  expect(next.agentQuest.agentReady).toBe(false);
+  return playing(next);
+}
+
+function openConsole(state: GameState): GameState {
+  const next = playing(state);
+  return act(at(next, WORLD_POS.agentConsole.x, WORLD_POS.agentConsole.y, 'workshop'), {
+    type: 'INTERACT',
+  });
+}
+
+function openBoard(state: GameState): GameState {
+  const next = playing(state);
+  return act(at(next, WORLD_POS.agentBoard.x, WORLD_POS.agentBoard.y, 'workshop'), {
+    type: 'INTERACT',
+  });
+}
+
+function configureCorrect(state: GameState): GameState {
+  let next = state.mode === 'agent' ? state : openConsole(state);
+  next = act(next, { type: 'AGENT_LOAD_JOB', job: 'slots' });
+  next = act(next, { type: 'AGENT_SET_GOAL', goal: 'post_slots' });
+  if (!next.agentQuest.toolRead) next = act(next, { type: 'AGENT_TOGGLE_TOOL', tool: 'read' });
+  if (!next.agentQuest.toolWrite) next = act(next, { type: 'AGENT_TOGGLE_TOOL', tool: 'write' });
+  if (!next.agentQuest.toolVerify) next = act(next, { type: 'AGENT_TOGGLE_TOOL', tool: 'verify' });
+  if (next.agentQuest.toolChat) next = act(next, { type: 'AGENT_TOGGLE_TOOL', tool: 'chat' });
+  if (next.agentQuest.toolHours) next = act(next, { type: 'AGENT_TOGGLE_TOOL', tool: 'hours' });
+  next = act(next, { type: 'AGENT_SET_SUCCESS', test: 'slots_posted' });
+  next = act(next, { type: 'AGENT_SET_STOP', rule: 'budget_3_or_missing' });
+  return next;
+}
+
+function playToAgentDone(state: GameState): GameState {
+  let next = playToLabDone(state);
+  next = openBoard(next);
+  expect(neighborBoardText(next.agentQuest)).toBe(BOARD_EMPTY);
+  next = playing(next);
+  next = openConsole(next);
+  next = act(next, { type: 'AGENT_CHAT_PLAN' });
+  expect(next.shopFeedback).toBe(AGENT_FEEDBACK.chatPlan);
+  next = configureCorrect(next);
+  next = act(next, { type: 'AGENT_LOAD_JOB', job: 'shelf' });
+  next = act(next, { type: 'AGENT_RUN' });
+  next = act(next, { type: 'AGENT_LOAD_JOB', job: 'slots' });
+  next = act(next, { type: 'AGENT_RUN' });
+  next = playing(next);
+  next = openBoard(next);
+  expect(next.evidence['5.1']).toBe('demonstrated');
+  expect(next.evidence['5.2']).toBe('demonstrated');
+  expect(canAward51(next.agentQuest, true)).toBe(true);
+  expect(canAward52(next.agentQuest, true)).toBe(true);
+  next = playing(next);
+  next = openConsole(next);
+  next = act(next, { type: 'AGENT_EXTRA_STEP' });
+  expect(next.agentQuest.agentReady).toBe(true);
+  expect(next.evidence['5.3']).toBeUndefined();
+  expect(next.bridgeQuest.bridgeReady).toBe(false);
+  expect(JSON.stringify(next)).not.toMatch(/MCP/);
+  return playing(next);
+}
+
+function openHost(state: GameState): GameState {
+  const next = playing(state);
+  return act(at(next, WORLD_POS.bridgeHost.x, WORLD_POS.bridgeHost.y, 'workshop'), {
+    type: 'INTERACT',
+  });
+}
+
+function openBrowser(state: GameState): GameState {
+  const next = playing(state);
+  return act(at(next, WORLD_POS.bridgeBrowser.x, WORLD_POS.bridgeBrowser.y, 'workshop'), {
+    type: 'INTERACT',
+  });
+}
+
+function limitedGrant(state: GameState): GameState {
+  let next = state.mode === 'bridge' ? state : openHost(state);
+  if (!next.bridgeQuest.grantLookup) next = act(next, { type: 'BRIDGE_GRANT', grant: 'lookup' });
+  if (!next.bridgeQuest.grantDraft) next = act(next, { type: 'BRIDGE_GRANT', grant: 'draft' });
+  if (!next.bridgeQuest.grantWeek) next = act(next, { type: 'BRIDGE_GRANT', grant: 'week' });
+  if (next.bridgeQuest.grantRewrite) next = act(next, { type: 'BRIDGE_GRANT', grant: 'rewrite' });
+  if (next.bridgeQuest.grantPayroll) next = act(next, { type: 'BRIDGE_GRANT', grant: 'payroll' });
+  return next;
+}
+
+function connectListGrant(state: GameState): GameState {
+  let next = state.mode === 'bridge' && state.bridgeQuest.view === 'host' ? state : openHost(state);
+  next = act(next, { type: 'BRIDGE_CONNECT' });
+  next = act(next, { type: 'BRIDGE_LIST_TOOLS' });
+  next = act(next, { type: 'BRIDGE_LIST_RESOURCES' });
+  next = limitedGrant(next);
+  return next;
+}
+
+describe('bridge stations after agentReady', () => {
+  it('places f and v on empty row 8, keeps landmarks, and does not award 5.3 on agent success', () => {
     expect(WORLD_POS.robot).toEqual({ x: 12 * TILE + 24, y: 5 * TILE + 24 });
     expect(MAP_IDS).toContain('workshop');
     expect(WORKSHOP.legend[4]).toBe('#...........e..#');
     expect(WORKSHOP.legend[5]).toBe('#u.z...a..m.j..#');
     expect(WORKSHOP.legend[6]).toBe('#k.q......t....#');
+    expect(WORKSHOP.legend[7]).toBe('#.......d......#');
+    expect(WORKSHOP.legend[8]).toBe('#..w.fh..vx.l..#');
+    expect(WORKSHOP.legend[8][3]).toBe('w');
+    expect(WORKSHOP.legend[8][5]).toBe('f');
+    expect(WORKSHOP.legend[8][6]).toBe('h');
+    expect(WORKSHOP.legend[8][8]).toBe('.');
+    expect(WORKSHOP.legend[8][9]).toBe('v');
+    expect(WORKSHOP.legend[8][10]).toBe('x');
+    expect(WORKSHOP.legend[8][12]).toBe('l');
+    expect(WORKSHOP.legend[6][8]).toBe('.');
     expect(JSON.stringify(WORKSHOP.legend.join(''))).not.toMatch(/[PEIRFDGY]/);
-    expect(STREET.legend[5]).toContain('o');
     const street = STREET.legend.join('');
     expect(street).toContain('P');
     expect(street).toContain('R');
@@ -457,190 +630,182 @@ describe('kiosk stations after servicePosted', () => {
     expect(street).toContain('E');
     expect(street).toContain('G');
     expect(street).toContain('Y');
-    expect(WORLD_POS.libraryInner).toEqual(WORLD_POS.libraryInner);
-    expect(playerHitsSolid('workshop', WORLD_POS.kioskDocs.x, WORLD_POS.kioskDocs.y)).toBe(true);
-    expect(playerHitsSolid('workshop', WORLD_POS.kioskVault.x, WORLD_POS.kioskVault.y)).toBe(true);
-    expect(playerHitsSolid('workshop', WORLD_POS.kioskFace.x, WORLD_POS.kioskFace.y)).toBe(true);
+    expect(playerHitsSolid('workshop', WORLD_POS.bridgeHost.x, WORLD_POS.bridgeHost.y)).toBe(true);
+    expect(playerHitsSolid('workshop', WORLD_POS.bridgeBrowser.x, WORLD_POS.bridgeBrowser.y)).toBe(true);
+    expect(playerHitsSolid('workshop', WORLD_POS.agentConsole.x, WORLD_POS.agentConsole.y)).toBe(true);
+    expect(playerHitsSolid('workshop', WORLD_POS.labTerminal.x, WORLD_POS.labTerminal.y)).toBe(true);
     expect(playerHitsSolid('workshop', WORKSHOP.spawn.x, WORKSHOP.spawn.y)).toBe(false);
-    let state = enterWorkshop(playFestivalDone(checkpoint()));
-    const before = listInteractables(state).map((item) => item.id);
-    expect(before).not.toContain('kiosk_docs');
-    expect(before).not.toContain('kiosk_vault');
-    expect(before).not.toContain('kiosk_face');
-    state = playToWorkshopDone(checkpoint());
-    expect(state.storyObjective).toBe(OBJECTIVES.kioskWork);
-    expect(state.kioskQuest.kioskReady).toBe(false);
-    expect(state.evidence['4.3']).toBeUndefined();
-    expect(state.evidence['4.4']).toBeUndefined();
-    const after = listInteractables(state).map((item) => item.id);
-    expect(after).toContain('kiosk_docs');
-    expect(after).toContain('kiosk_vault');
-    expect(after).toContain('kiosk_face');
     expect(JOURNAL_CAP).toBe(72);
+    expect(`${BRIDGE_EXPLAIN.connector_roles} ${MCP_NOTE}`).toMatch(/MCP/);
+
+    let state = playToLabDone(checkpoint());
+    const beforeReady = listInteractables(state).map((item) => item.id);
+    expect(beforeReady).not.toContain('bridge_host');
+    expect(beforeReady).not.toContain('bridge_browser');
+    expect(beforeReady).toContain('agent_console');
+    state = playToAgentDone(checkpoint());
+    expect(state.storyObjective).toBe(OBJECTIVES.bridgeWork);
+    expect(state.agentQuest.agentReady).toBe(true);
+    expect(state.bridgeQuest.bridgeReady).toBe(false);
+    expect(state.evidence['5.1']).toBe('demonstrated');
+    expect(state.evidence['5.2']).toBe('demonstrated');
+    expect(state.evidence['5.3']).toBeUndefined();
+    expect(JSON.stringify(state)).not.toMatch(/MCP/);
+    const after = listInteractables(state).map((item) => item.id);
+    expect(after).toContain('bridge_host');
+    expect(after).toContain('bridge_browser');
+    expect(after).toContain('agent_console');
+    expect(after).toContain('lab_terminal');
   });
 });
 
-describe('4.3 dummy key and simulated request', () => {
-  it('starts leaking, fails exposure and missing-key, and awards only after inspect + both fails + vault + clean face + 200', () => {
-    expect(DOCS_TEXT).toContain(API_PATH);
-    expect(DOCS_TEXT).toContain(API_HEADER);
-    expect(DOCS_TEXT).toContain(DEMO_SLOT_KEY);
-    expect(DOCS_TEXT).toContain('وهمي');
-    expect(KIOSK_FEEDBACK.missing).toBe('المفتاح غير موجود');
-    let state = playToWorkshopDone(checkpoint());
-    expect(faceLeaking(state)).toBe(true);
-    expect(state.kioskQuest.vaultHasKey).toBe(false);
-    state = openDocs(state);
-    expect(state.kioskQuest.inspectedDocs).toBe(true);
-    expect(state.evidence['4.3']).toBeUndefined();
-    state = openVault(state);
-    expect(state.kioskQuest.vaultHasKey).toBe(false);
-    state = act(state, { type: 'CLOSE_OVERLAY' });
-    state = openFace(state);
-    expect(state.mode).toBe('kiosk');
-    expect(state.kioskQuest.faceHasKey).toBe(true);
-    expect(state.kioskQuest.openedBroken).toBe(true);
-    state = act(state, { type: 'KIOSK_SEND' });
-    expect(state.kioskQuest.sawExposure).toBe(true);
-    expect(state.shopFeedback).toBe(KIOSK_FEEDBACK.exposure);
-    expect(state.evidence['4.3']).toBeUndefined();
-    state = act(state, { type: 'KIOSK_STRIP' });
-    expect(state.kioskQuest.faceHasKey).toBe(false);
-    state = act(state, { type: 'KIOSK_SEND' });
-    expect(state.kioskQuest.sawMissingKey).toBe(true);
-    expect(state.shopFeedback).toBe(KIOSK_FEEDBACK.missing);
-    expect(canAward43(state.kioskQuest)).toBe(false);
-    state = act(state, { type: 'CLOSE_OVERLAY' });
-    state = skipExplain(state);
-    state = openVault(state);
-    state = act(state, { type: 'KIOSK_VAULT_PUT' });
-    expect(state.kioskQuest.vaultHasKey).toBe(true);
-    state = act(state, { type: 'CLOSE_OVERLAY' });
-    state = openFace(state);
-    state = act(state, { type: 'KIOSK_SEND' });
-    expect(state.shopFeedback).toBe(KIOSK_FEEDBACK.ok200);
-    expect(state.kioskQuest.requestOk).toBe(true);
-    expect(canAward43(state.kioskQuest)).toBe(true);
-    expect(state.evidence['4.3']).toBe('demonstrated');
-    expect(state.evidence['4.4']).toBeUndefined();
+describe('5.3 civic lookup and draft', () => {
+  it('awards only after connect, list, limited grant, NH-1447 lookup, save, and seeing the draft', () => {
+    let state = playToAgentDone(checkpoint());
+    state = openHost(state);
+    expect(state.mode).toBe('bridge');
+    expect(state.bridgeQuest.openedHost).toBe(true);
+    expect(state.evidence['5.3']).toBeUndefined();
+    expect(state.bridgeQuest.bridgeReady).toBe(false);
+    state = act(state, { type: 'BRIDGE_LOOKUP' });
+    expect(state.shopFeedback).toBe(BRIDGE_FEEDBACK.notConnected);
+    expect(canAward53(state.bridgeQuest, true)).toBe(false);
+    state = act(state, { type: 'BRIDGE_CONNECT' });
+    expect(state.bridgeQuest.connected).toBe(true);
+    expect(MCP_NOTE).toMatch(/MCP/);
+    state = act(state, { type: 'BRIDGE_SAVE_DRAFT' });
+    expect(state.shopFeedback).toBe(BRIDGE_FEEDBACK.notListed);
+    state = act(state, { type: 'BRIDGE_LIST_TOOLS' });
+    state = act(state, { type: 'BRIDGE_SAVE_DRAFT' });
+    expect(state.shopFeedback).toBe(BRIDGE_FEEDBACK.notListed);
+    state = act(state, { type: 'BRIDGE_LIST_RESOURCES' });
+    state = act(state, { type: 'BRIDGE_LOOKUP' });
+    expect(state.shopFeedback).toBe(BRIDGE_FEEDBACK.wrongGrant);
+    state = limitedGrant(state);
+    expect(grantLimited(state.bridgeQuest)).toBe(true);
+    state = act(state, { type: 'BRIDGE_SAVE_DRAFT' });
+    expect(state.shopFeedback).toBe(BRIDGE_FEEDBACK.saveWithoutLookup);
+    expect(state.bridgeQuest.draftSaved).toBe(false);
+    state = act(state, { type: 'BRIDGE_LOOKUP' });
+    expect(state.bridgeQuest.lookedUp).toBe(true);
+    expect(canAward53(state.bridgeQuest, true)).toBe(false);
+    expect(state.evidence['5.3']).toBeUndefined();
+    state = act(state, { type: 'BRIDGE_SAVE_DRAFT' });
+    expect(state.bridgeQuest.draftSaved).toBe(true);
+    expect(state.bridgeQuest.inspectedDraft).toBe(true);
+    expect(DRAFT_SAVED).toContain(HOUR_SAT);
+    expect(DRAFT_SAVED).toContain(HOUR_SUN);
+    expect(DRAFT_SAVED).toContain(HOUR_WED);
+    expect(canAward53(state.bridgeQuest, true)).toBe(true);
+    expect(state.evidence['5.3']).toBe('demonstrated');
+    expect(state.bridgeQuest.bridgeReady).toBe(false);
+    expect(TOOL_LOOKUP).toBe('lookup_hours');
+    expect(TOOL_SAVE).toBe('save_draft');
+    expect(RESOURCE_WEEK).toBe('hours://neighborhood/week');
   });
 
-  it('inspect-only, vault-without-send, manager-talk, and robot تم do not award 4.3', () => {
-    let state = playToWorkshopDone(checkpoint());
-    state = openDocs(state);
-    expect(state.evidence['4.3']).toBeUndefined();
-    state = openVault(state);
-    state = act(state, { type: 'KIOSK_VAULT_PUT' });
-    state = act(state, { type: 'CLOSE_OVERLAY' });
-    expect(state.evidence['4.3']).toBeUndefined();
-    state = act(at(state, WORLD_POS.manager.x, WORLD_POS.manager.y, 'workshop'), { type: 'INTERACT' });
-    expect(state.dialogueNode).toBe('manager_thanks');
-    expect(state.evidence['4.3']).toBeUndefined();
-    state = act(state, { type: 'ADVANCE_DIALOGUE' });
-    state = openFace(state);
-    state = act(state, { type: 'KIOSK_ROBOT_DONE' });
-    expect(state.shopFeedback).toBe(KIOSK_FEEDBACK.robotDone);
-    expect(state.evidence['4.3']).toBeUndefined();
-  });
-});
-
-describe('4.4 RTL repair and manual lookup', () => {
-  it('starts LTR-broken, fails lookup until RTL, and awards only after isolate + lookup + checklist', () => {
-    expect(KIOSK_TITLE).toBe('احجز موعد المعاينة');
-    expect(CHECKLIST.title).toBe('العنوان من اليمين');
-    expect(CHECKLIST.slot).toContain('slot-id');
-    expect(CHECKLIST.lookup).toContain('التأكيد');
-    expect(KIOSK_FEEDBACK.fixRtl).toBe('أصلح اتجاه الواجهة أولاً');
-    let state = playToWorkshopDone(checkpoint());
-    state = openFace(state);
-    expect(state.kioskQuest.layoutRtl).toBe(false);
-    expect(state.kioskQuest.openedBroken).toBe(true);
-    state = act(state, { type: 'KIOSK_LOOKUP', slot: 'sunday' });
-    expect(state.shopFeedback).toBe(KIOSK_FEEDBACK.fixRtl);
-    expect(state.kioskQuest.lookupDone).toBe(false);
-    expect(state.evidence['4.4']).toBeUndefined();
-    state = act(state, { type: 'CLOSE_OVERLAY' });
-    expect(state.evidence['4.4']).toBeUndefined();
-    state = openFace(state);
-    state = act(state, { type: 'KIOSK_SET_RTL' });
-    state = act(state, { type: 'KIOSK_ISOLATE' });
-    state = act(state, { type: 'KIOSK_LOOKUP', slot: 'monday' });
-    expect(state.kioskQuest.lookupDone).toBe(true);
-    expect(state.shopFeedback).toContain('slot-id: mon-am');
-    expect(canAward44(state.kioskQuest)).toBe(false);
-    state = act(state, { type: 'CLOSE_OVERLAY' });
-    expect(state.evidence['4.4']).toBeUndefined();
-    state = openFace(state);
-    state = act(state, { type: 'KIOSK_CHECK', item: 'title' });
-    state = act(state, { type: 'KIOSK_CHECK', item: 'slot' });
-    state = act(state, { type: 'KIOSK_CHECK', item: 'lookup' });
-    expect(canAward44(state.kioskQuest)).toBe(true);
-    expect(state.evidence['4.4']).toBe('demonstrated');
-  });
-});
-
-describe('kiosk success', () => {
-  it('awards both ids, thanks the manager for the usable kiosk, and keeps the robot unsupported', () => {
-    let state = playToWorkshopDone(checkpoint());
-    state = openDocs(state);
-    state = openFace(state);
-    state = act(state, { type: 'KIOSK_SEND' });
-    state = act(state, { type: 'KIOSK_STRIP' });
-    state = act(state, { type: 'KIOSK_SEND' });
-    state = act(state, { type: 'CLOSE_OVERLAY' });
-    state = skipExplain(state);
-    state = openVault(state);
-    state = act(state, { type: 'KIOSK_VAULT_PUT' });
-    state = act(state, { type: 'CLOSE_OVERLAY' });
-    state = openFace(state);
-    state = act(state, { type: 'KIOSK_SEND' });
-    expect(state.evidence['4.3']).toBe('demonstrated');
-    state = act(state, { type: 'KIOSK_SET_RTL' });
-    state = act(state, { type: 'KIOSK_ISOLATE' });
-    state = act(state, { type: 'KIOSK_LOOKUP', slot: 'tuesday' });
-    state = act(state, { type: 'KIOSK_CHECK', item: 'title' });
-    state = act(state, { type: 'KIOSK_CHECK', item: 'slot' });
-    state = act(state, { type: 'KIOSK_CHECK', item: 'lookup' });
-    expect(state.evidence['4.4']).toBe('demonstrated');
-    expect(state.kioskQuest.kioskReady).toBe(true);
-    expect(state.storyObjective).toBe(OBJECTIVES.labWork);
-    expect(state.labQuest.labReady).toBe(false);
-    expect(state.evidence['4.5']).toBeUndefined();
-    expect(state.evidence['4.6']).toBeUndefined();
-    expect(state.evidence['5.4']).toBeUndefined();
-    expect(state.journalEvents.some((event) => event.id === 'kiosk_ready')).toBe(true);
-    expect(state.journalEvents.some((event) => event.id === 'service_posted')).toBe(true);
+  it('inspect-only, manager-talk, and robot تم do not award 5.3', () => {
+    let state = playToAgentDone(checkpoint());
+    expect(state.storyObjective).toBe(OBJECTIVES.bridgeWork);
+    state = openHost(state);
+    expect(state.bridgeQuest.openedHost).toBe(true);
+    expect(state.evidence['5.3']).toBeUndefined();
     state = playing(state);
     state = act(at(state, WORLD_POS.manager.x, WORLD_POS.manager.y, 'workshop'), { type: 'INTERACT' });
-    expect(state.dialogueNode).toBe('manager_kiosk_thanks');
-    expect(DIALOGUE.manager_kiosk_thanks.text(state.playerName)).toMatch(/كiosk/);
+    expect(state.dialogueNode).toBe('manager_agent_thanks');
+    expect(DIALOGUE.manager_agent_thanks.text(state.playerName)).toMatch(
+      /لوحة الحي تعرض الفترات الثلاث/,
+    );
+    expect(state.evidence['5.3']).toBeUndefined();
+    state = act(state, { type: 'ADVANCE_DIALOGUE' });
+    state = openBrowser(state);
+    expect(state.mode).toBe('bridge');
+    expect(state.evidence['5.3']).toBeUndefined();
+    state = playing(state);
+    state = openHost(state);
+    state = act(state, { type: 'BRIDGE_ROBOT_DONE' });
+    expect(state.shopFeedback).toBe(BRIDGE_FEEDBACK.robotDone);
+    expect(state.evidence['5.3']).toBeUndefined();
+    expect(state.bridgeQuest.bridgeReady).toBe(false);
+  });
+});
+
+describe('MCP named connector and browser contrast', () => {
+  it('denies rewrite, misses pay_fees, refuses browser save, then closes the slice', () => {
+    let state = playToAgentDone(checkpoint());
+    state = connectListGrant(state);
+    state = act(state, { type: 'BRIDGE_GRANT', grant: 'all' });
+    expect(state.shopFeedback).toBe(BRIDGE_FEEDBACK.grantAll);
+    expect(state.evidence['5.3']).toBeUndefined();
+    state = act(state, { type: 'BRIDGE_GRANT', grant: 'rewrite' });
+    state = act(state, { type: 'BRIDGE_GRANT', grant: 'payroll' });
+    state = limitedGrant(state);
+    expect(grantLimited(state.bridgeQuest)).toBe(true);
+    state = act(state, { type: 'BRIDGE_LOOKUP_PAYROLL' });
+    expect(state.shopFeedback).toBe(BRIDGE_FEEDBACK.payroll);
+    state = act(state, { type: 'BRIDGE_LOOKUP' });
+    state = act(state, { type: 'BRIDGE_SAVE_DRAFT' });
+    expect(state.evidence['5.3']).toBe('demonstrated');
+    state = act(state, { type: 'BRIDGE_INVOKE_REWRITE' });
+    expect(state.shopFeedback).toBe(BRIDGE_FEEDBACK.deniedRewrite);
+    expect(state.bridgeQuest.deniedRewrite).toBe(true);
+    expect(state.bridgeQuest.draftSaved).toBe(true);
+    state = act(state, { type: 'BRIDGE_INVOKE_PAY' });
+    expect(state.shopFeedback).toBe(BRIDGE_FEEDBACK.missingPay);
+    expect(mcpComplete(state.bridgeQuest)).toBe(true);
+    state = act(state, { type: 'BRIDGE_LOAD_SKILL' });
+    expect(state.shopFeedback).toBe(BRIDGE_FEEDBACK.loadSkill);
+    expect(state.bridgeQuest.bridgeReady).toBe(false);
+    state = playing(state);
+    state = openBrowser(state);
+    expect(state.bridgeQuest.browserSeen).toBe(true);
+    expect(state.evidence['5.3']).toBe('demonstrated');
+    expect(state.bridgeQuest.bridgeReady).toBe(false);
+    state = act(state, { type: 'BRIDGE_BROWSER_SAVE' });
+    expect(state.shopFeedback).toBe(BRIDGE_FEEDBACK.browserSave);
+    expect(state.bridgeQuest.browserSaveFailed).toBe(true);
+    expect(state.bridgeQuest.bridgeReady).toBe(true);
+    expect(state.storyObjective).toBe(OBJECTIVES.bridgeReady);
+    expect(state.journalEvents.some((event) => event.id === 'agent_ready')).toBe(true);
+    expect(state.journalEvents.some((event) => event.id === 'bridge_ready')).toBe(true);
+    expect(state.journalEvents.length).toBeLessThanOrEqual(JOURNAL_CAP);
+    state = playing(state);
+    state = act(at(state, WORLD_POS.manager.x, WORLD_POS.manager.y, 'workshop'), { type: 'INTERACT' });
+    expect(state.dialogueNode).toBe('manager_bridge_thanks');
+    expect(DIALOGUE.manager_bridge_thanks.text(state.playerName)).toMatch(
+      /مسودة ساعات قاعة الحي حُفظت من NH-1447 عبر موصل محدود/,
+    );
     state = act(state, { type: 'ADVANCE_DIALOGUE' });
     state = act(at(state, WORLD_POS.robot.x, WORLD_POS.robot.y, 'street'), { type: 'INTERACT' });
-    expect(state.dialogueNode).toBe('companion_after_kiosk');
-    expect(DIALOGUE.companion_after_kiosk.text(state.playerName)).toMatch(/ضع المفتاح على الشاشة|Book appointment/);
+    expect(state.dialogueNode).toBe('companion_after_bridge');
+    expect(DIALOGUE.companion_after_bridge.text(state.playerName)).toMatch(
+      /MCP مهارة تُحمَّل|الربط يفتح كل الأدوات/,
+    );
     expect(robotPosition(state).x).toBe(state.position.x - 32);
-    expect(JSON.stringify(state)).not.toMatch(/امتحان|اختبار نهائي|MCP|harness|شهادة/);
-    expect(state.journalEvents.length).toBeLessThanOrEqual(JOURNAL_CAP);
-    expect(state.evidence['4.3']).toBe('demonstrated');
-    expect(state.evidence['4.4']).toBe('demonstrated');
-    expect(state.evidence['4.5']).toBeUndefined();
-    expect(state.evidence['4.6']).toBeUndefined();
-    expect(state.evidence['5.4']).toBeUndefined();
-    expect(state.labQuest.labReady).toBe(false);
   });
 
-  it('hydrates missing kioskQuest as unstarted with face leaking after posted, saveVersion 1', () => {
-    const state = playToWorkshopDone(checkpoint());
-    const envelope = toEnvelope(state);
+  it('keeps draft empty on browser-save before connector save, and hydrates missing bridgeQuest', () => {
+    let state = playToAgentDone(checkpoint());
+    expect(DRAFT_EMPTY).toBe('المسودة فارغة');
+    state = openBrowser(state);
+    state = act(state, { type: 'BRIDGE_BROWSER_SAVE' });
+    expect(state.shopFeedback).toBe(BRIDGE_FEEDBACK.browserSave);
+    expect(state.bridgeQuest.draftSaved).toBe(false);
+    expect(state.evidence['5.3']).toBeUndefined();
+    expect(state.bridgeQuest.bridgeReady).toBe(false);
+    const envelope = toEnvelope(playToAgentDone(checkpoint()));
     expect(envelope.saveVersion).toBe(1);
-    const legacy = { ...envelope, kioskQuest: undefined };
+    const legacy = { ...envelope, bridgeQuest: undefined };
     const parsed = validateSave(JSON.stringify(legacy));
     expect(parsed).not.toBeNull();
     const hydrated = hydrateSave(parsed!, 'ok', false);
-    expect(hydrated.kioskQuest).toEqual(createKioskQuest());
-    expect(hydrated.kioskQuest.faceHasKey).toBe(false);
-    expect(hydrated.workshopQuest.servicePosted).toBe(true);
-    expect(faceLeaking(hydrated)).toBe(true);
-    expect(parseKioskQuest(undefined).phase).toBe('unstarted');
+    expect(hydrated.bridgeQuest).toEqual(createBridgeQuest());
+    expect(hydrated.bridgeQuest.bridgeReady).toBe(false);
+    expect(hydrated.agentQuest.agentReady).toBe(true);
+    expect(parseBridgeQuest(undefined).phase).toBe('unstarted');
+    expect(createLabQuest().labReady).toBe(false);
+    expect(hydrated.storyObjective).toBe(OBJECTIVES.bridgeWork);
   });
 });
+
+

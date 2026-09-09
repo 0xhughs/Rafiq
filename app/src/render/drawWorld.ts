@@ -736,6 +736,14 @@ function drawWorkshop(ctx: CanvasRenderingContext2D): void {
   fillRound(ctx, notice.x + 4, notice.y + 6, notice.w - 8, notice.h - 10, 4, '#efe6d0');
   ctx.fillStyle = '#2a2118';
   ctx.fillText('حي', notice.x + notice.w / 2, notice.y + 28);
+  const connector = FURNITURE.workshop.connector;
+  fillRound(ctx, connector.x + 4, connector.y + 6, connector.w - 8, connector.h - 10, 4, '#dce8f4');
+  ctx.fillStyle = '#163238';
+  ctx.fillText('موصل', connector.x + connector.w / 2, connector.y + 28);
+  const civicBrowser = FURNITURE.workshop.civicBrowser;
+  fillRound(ctx, civicBrowser.x + 4, civicBrowser.y + 6, civicBrowser.w - 8, civicBrowser.h - 10, 4, '#efe6d0');
+  ctx.fillStyle = '#2a2118';
+  ctx.fillText('سجل', civicBrowser.x + civicBrowser.w / 2, civicBrowser.y + 28);
   const counter = FURNITURE.workshop.counter;
   fillRound(ctx, counter.x + 2, counter.y + 6, counter.w - 4, counter.h - 10, 6, PALETTE.workshop);
   ctx.fillStyle = '#ead9c0';

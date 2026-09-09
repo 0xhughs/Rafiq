@@ -4,7 +4,7 @@ import type { GameAction, MapId, SerializedTestState } from '../src/engine/types
 
 export async function waitForGame(page: Page): Promise<void> {
   await page.waitForFunction(() => Boolean(window.__RAFIQ_TEST__));
-  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '11');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '12');
 }
 
 export async function getState(page: Page): Promise<SerializedTestState> {
@@ -507,4 +507,41 @@ export async function playToLabDone(page: Page, name = 'علي حسن'): Promise
   expect(done.evidence['5.1']).toBeUndefined();
   expect(done.evidence['5.2']).toBeUndefined();
   expect(done.agentQuest.agentReady).toBe(false);
+}
+
+export async function playToAgentDone(page: Page, name = 'علي حسن'): Promise<void> {
+  await playToLabDone(page, name);
+  await interactAt(page, 'workshop', WORLD_POS.agentBoard.x, WORLD_POS.agentBoard.y);
+  await expect(page.getByTestId('agent-board-text')).toBeVisible();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'workshop', WORLD_POS.agentConsole.x, WORLD_POS.agentConsole.y);
+  await page.getByTestId('agent-chat-plan').click();
+  await page.getByTestId('agent-job-slots').click();
+  await page.getByTestId('agent-goal-slots').click();
+  await page.getByTestId('agent-tool-read').click();
+  await page.getByTestId('agent-tool-write').click();
+  await page.getByTestId('agent-tool-verify').click();
+  await page.getByTestId('agent-success-slots').click();
+  await page.getByTestId('agent-stop-budget3').click();
+  await page.getByTestId('agent-job-shelf').click();
+  await page.getByTestId('agent-run').click();
+  await page.getByTestId('agent-job-slots').click();
+  await page.getByTestId('agent-run').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'workshop', WORLD_POS.agentBoard.x, WORLD_POS.agentBoard.y);
+  await expect(page.getByTestId('agent-board-text')).toContainText('sun-pm');
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'workshop', WORLD_POS.agentConsole.x, WORLD_POS.agentConsole.y);
+  await page.getByTestId('agent-extra-step').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  const done = await getState(page);
+  expect(done.evidence['5.1']).toBe('demonstrated');
+  expect(done.evidence['5.2']).toBe('demonstrated');
+  expect(done.agentQuest.agentReady).toBe(true);
+  expect(done.evidence['5.3']).toBeUndefined();
+  expect(done.bridgeQuest.bridgeReady).toBe(false);
 }

@@ -208,7 +208,7 @@ const WORKSHOP_LEGEND = [
   '#u.z...a..m.j..#',
   '#k.q......t....#',
   '#.......d......#',
-  '#..w..h...x.l..#',
+  '#..w.fh..vx.l..#',
   '################',
 ];
 
@@ -562,6 +562,8 @@ export const FURNITURE = {
     prod: mergeRects(collectKind(WORKSHOP, ['l']))[0],
     console: mergeRects(collectKind(WORKSHOP, ['h']))[0],
     neighborNotice: mergeRects(collectKind(WORKSHOP, ['x']))[0],
+    connector: mergeRects(collectKind(WORKSHOP, ['f']))[0],
+    civicBrowser: mergeRects(collectKind(WORKSHOP, ['v']))[0],
     walls: collectKind(WORKSHOP, ['#']),
   },
 };
@@ -793,6 +795,8 @@ export const WORLD_POS = {
   labProd: letterCenter(WORKSHOP, 'l'),
   agentConsole: letterCenter(WORKSHOP, 'h'),
   agentBoard: letterCenter(WORKSHOP, 'x'),
+  bridgeHost: letterCenter(WORKSHOP, 'f'),
+  bridgeBrowser: letterCenter(WORKSHOP, 'v'),
   workshopTalk: cellCenter(4, 6),
   workshopWestWallInside: cellCenter(1, 4),
 };

@@ -114,6 +114,11 @@ export function Hud({ state, onHelp, onDismissRestore }: Props) {
           نواة التخطيط
         </p>
       ) : null}
+      {state.bridgeQuest.bridgeReady ? (
+        <p className="inventory cassette-chip" data-testid="civic-connector">
+          موصل السجل
+        </p>
+      ) : null}
     </header>
   );
 }

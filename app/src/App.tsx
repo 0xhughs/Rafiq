@@ -32,6 +32,7 @@ import { BoardOverlay } from './ui/BoardOverlay';
 import { KioskOverlay } from './ui/KioskOverlay';
 import { LabOverlay } from './ui/LabOverlay';
 import { AgentOverlay } from './ui/AgentOverlay';
+import { BridgeOverlay } from './ui/BridgeOverlay';
 import { evidenceAttr } from './engine/shop';
 
 function reducer(state: GameState, action: GameAction): GameState {
@@ -133,7 +134,7 @@ export default function App() {
       data-dialogue={state.dialogueNode ?? ''}
       data-save={state.saveStatus}
       data-evidence={evidenceAttr(state.evidence)}
-      data-slice="11"
+      data-slice="12"
       data-shop-quest={state.shopQuest.phase}
       data-parcel-quest={state.parcelQuest.phase}
       data-comms-repaired={state.parcelQuest.commsRepaired ? 'true' : 'false'}
@@ -150,6 +151,8 @@ export default function App() {
       data-lab-ready={state.labQuest.labReady ? 'true' : 'false'}
       data-agent-quest={state.agentQuest.phase}
       data-agent-ready={state.agentQuest.agentReady ? 'true' : 'false'}
+      data-bridge-quest={state.bridgeQuest.phase}
+      data-bridge-ready={state.bridgeQuest.bridgeReady ? 'true' : 'false'}
       data-context-window={state.libraryQuest.windowSlots.join(',')}
       data-cassette={state.libraryQuest.contextModule ? 'contextModule' : ''}
       data-workshop-lead={state.newsroomQuest.workshopLead ? 'true' : 'false'}
@@ -174,6 +177,7 @@ export default function App() {
         kioskReady={state.kioskQuest.kioskReady}
         labReady={state.labQuest.labReady}
         agentReady={state.agentQuest.agentReady}
+        bridgeReady={state.bridgeQuest.bridgeReady}
       />
       {naming ? (
         <NameEntry
@@ -372,6 +376,24 @@ export default function App() {
           onRefuse={(command) => dispatch({ type: 'LAB_REFUSE', command })}
           onRobotDone={() => dispatch({ type: 'LAB_ROBOT_DONE' })}
           onCmd={(text) => dispatch({ type: 'LAB_CMD', text })}
+          onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+        />
+      ) : null}
+      {state.mode === 'bridge' ? (
+        <BridgeOverlay
+          state={state}
+          onConnect={() => dispatch({ type: 'BRIDGE_CONNECT' })}
+          onListTools={() => dispatch({ type: 'BRIDGE_LIST_TOOLS' })}
+          onListResources={() => dispatch({ type: 'BRIDGE_LIST_RESOURCES' })}
+          onGrant={(grant) => dispatch({ type: 'BRIDGE_GRANT', grant })}
+          onLookup={() => dispatch({ type: 'BRIDGE_LOOKUP' })}
+          onLookupPayroll={() => dispatch({ type: 'BRIDGE_LOOKUP_PAYROLL' })}
+          onSaveDraft={() => dispatch({ type: 'BRIDGE_SAVE_DRAFT' })}
+          onInvokeRewrite={() => dispatch({ type: 'BRIDGE_INVOKE_REWRITE' })}
+          onInvokePay={() => dispatch({ type: 'BRIDGE_INVOKE_PAY' })}
+          onLoadSkill={() => dispatch({ type: 'BRIDGE_LOAD_SKILL' })}
+          onRobotDone={() => dispatch({ type: 'BRIDGE_ROBOT_DONE' })}
+          onBrowserSave={() => dispatch({ type: 'BRIDGE_BROWSER_SAVE' })}
           onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
         />
       ) : null}

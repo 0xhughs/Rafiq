@@ -98,6 +98,10 @@ function workshopRect(id: InteractableId): { x: number; y: number; w: number; h:
       return room.console;
     case 'agent_board':
       return room.neighborNotice;
+    case 'bridge_host':
+      return room.connector;
+    case 'bridge_browser':
+      return room.civicBrowser;
     default:
       return null;
   }
@@ -586,6 +590,23 @@ export function listInteractables(state: GameState): Actionable[] {
         label: HINT_LABELS.agentBoard,
         x: WORLD_POS.agentBoard.x,
         y: WORLD_POS.agentBoard.y,
+      },
+    );
+  }
+
+  if (state.map === 'workshop' && state.agentQuest.agentReady) {
+    items.push(
+      {
+        id: 'bridge_host',
+        label: HINT_LABELS.bridgeHost,
+        x: WORLD_POS.bridgeHost.x,
+        y: WORLD_POS.bridgeHost.y,
+      },
+      {
+        id: 'bridge_browser',
+        label: HINT_LABELS.bridgeBrowser,
+        x: WORLD_POS.bridgeBrowser.x,
+        y: WORLD_POS.bridgeBrowser.y,
       },
     );
   }

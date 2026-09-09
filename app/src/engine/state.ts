@@ -127,6 +127,27 @@ import {
   skipAgentExplain,
 } from './agent';
 import {
+  closeBridgeOverlay,
+  createBridgeQuest,
+  isBridgeExplain,
+  isBridgeOverlay,
+  openBridgeBrowser,
+  openBridgeHost,
+  reduceBridgeBrowserSave,
+  reduceBridgeConnect,
+  reduceBridgeGrant,
+  reduceBridgeInvokePay,
+  reduceBridgeInvokeRewrite,
+  reduceBridgeListResources,
+  reduceBridgeListTools,
+  reduceBridgeLoadSkill,
+  reduceBridgeLookup,
+  reduceBridgeLookupPayroll,
+  reduceBridgeRobotDone,
+  reduceBridgeSaveDraft,
+  skipBridgeExplain,
+} from './bridge';
+import {
   closeNewsroomDialogue,
   closeNewsroomOverlay,
   createNewsroomQuest,
@@ -221,6 +242,7 @@ export function createInitialState(): GameState {
     kioskQuest: createKioskQuest(),
     labQuest: createLabQuest(),
     agentQuest: createAgentQuest(),
+    bridgeQuest: createBridgeQuest(),
     calculator: createCalculator(),
     inspectTarget: null,
     explainTopic: null,
@@ -548,6 +570,7 @@ export function reduce(state: GameState, action: GameAction): GameState {
         kioskQuest: createKioskQuest(),
         labQuest: createLabQuest(),
         agentQuest: createAgentQuest(),
+        bridgeQuest: createBridgeQuest(),
         calculator: createCalculator(),
         inspectTarget: null,
         explainTopic: null,
@@ -705,6 +728,10 @@ export function reduce(state: GameState, action: GameAction): GameState {
           return openAgentConsole(state);
         case 'agent_board':
           return openAgentBoard(state);
+        case 'bridge_host':
+          return openBridgeHost(state);
+        case 'bridge_browser':
+          return openBridgeBrowser(state);
         default:
           return state;
       }
@@ -725,6 +752,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
     case 'CLOSE_OVERLAY':
       if (state.mode === 'dialogue') return closeDialogue(state);
       if (state.mode === 'paused') return { ...state, mode: 'playing' };
+      if (isBridgeOverlay(state.mode)) {
+        return closeBridgeOverlay(state);
+      }
       if (isAgentOverlay(state.mode)) {
         return closeAgentOverlay(state);
       }
@@ -753,6 +783,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
           }
           if (isLabExplain(state.explainTopic)) {
             return skipLabExplain(state);
+          }
+          if (isBridgeExplain(state.explainTopic)) {
+            return skipBridgeExplain(state);
           }
           if (isAgentExplain(state.explainTopic)) {
             return skipAgentExplain(state);
@@ -830,6 +863,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
       }
       if (isLabExplain(state.explainTopic)) {
         return skipLabExplain(state);
+      }
+      if (isBridgeExplain(state.explainTopic)) {
+        return skipBridgeExplain(state);
       }
       if (isAgentExplain(state.explainTopic)) {
         return skipAgentExplain(state);
@@ -990,6 +1026,30 @@ export function reduce(state: GameState, action: GameAction): GameState {
       return reduceAgentRobotDone(state);
     case 'AGENT_INVOKE':
       return reduceAgentInvoke(state, action.tool);
+    case 'BRIDGE_CONNECT':
+      return reduceBridgeConnect(state);
+    case 'BRIDGE_LIST_TOOLS':
+      return reduceBridgeListTools(state);
+    case 'BRIDGE_LIST_RESOURCES':
+      return reduceBridgeListResources(state);
+    case 'BRIDGE_GRANT':
+      return reduceBridgeGrant(state, action.grant);
+    case 'BRIDGE_LOOKUP':
+      return reduceBridgeLookup(state);
+    case 'BRIDGE_LOOKUP_PAYROLL':
+      return reduceBridgeLookupPayroll(state);
+    case 'BRIDGE_SAVE_DRAFT':
+      return reduceBridgeSaveDraft(state);
+    case 'BRIDGE_INVOKE_REWRITE':
+      return reduceBridgeInvokeRewrite(state);
+    case 'BRIDGE_INVOKE_PAY':
+      return reduceBridgeInvokePay(state);
+    case 'BRIDGE_LOAD_SKILL':
+      return reduceBridgeLoadSkill(state);
+    case 'BRIDGE_ROBOT_DONE':
+      return reduceBridgeRobotDone(state);
+    case 'BRIDGE_BROWSER_SAVE':
+      return reduceBridgeBrowserSave(state);
     case 'CONFIRM_NEW_ADVENTURE':
       return createInitialState();
     case 'DISMISS_RESTORE_NOTICE':
@@ -1056,6 +1116,7 @@ export function serializeState(state: GameState): SerializedTestState {
     kioskQuest: { ...state.kioskQuest },
     labQuest: { ...state.labQuest },
     agentQuest: { ...state.agentQuest },
+    bridgeQuest: { ...state.bridgeQuest },
     inspectTarget: state.inspectTarget,
     explainTopic: state.explainTopic,
     robotUnderstood: state.robotUnderstood,

@@ -47,7 +47,8 @@ export type Mode =
   | 'board'
   | 'kiosk'
   | 'lab'
-  | 'agent';
+  | 'agent'
+  | 'bridge';
 
 export type TrashState = 'home' | 'carried' | 'disposed';
 
@@ -93,6 +94,7 @@ export const EVIDENCE_IDS = [
   '4.6',
   '5.1',
   '5.2',
+  '5.3',
   '5.4',
 ] as const;
 export type EvidenceId = (typeof EVIDENCE_IDS)[number];
@@ -160,7 +162,10 @@ export type ExplainTopic =
   | 'shell_limits'
   | 'chat_vs_agent'
   | 'job_contract'
-  | 'runner_limits';
+  | 'runner_limits'
+  | 'connector_roles'
+  | 'limited_grant'
+  | 'browser_vs_connector';
 export type ContextNoteId = 'constraint' | 'hold' | 'festival' | 'mango';
 export type PackFileId = 'spec' | 'delivery' | 'festival' | 'news_draft';
 export type PackStampId = 'rafiq_repair' | 'festival' | 'unnamed';
@@ -441,6 +446,36 @@ export interface AgentQuest {
   view: AgentView;
 }
 
+export const BRIDGE_PHASES = ['unstarted', 'working', 'ready'] as const;
+export type BridgePhase = (typeof BRIDGE_PHASES)[number];
+export type BridgeView = 'host' | 'browser';
+export type BridgeGrantId = 'lookup' | 'draft' | 'week' | 'rewrite' | 'payroll' | 'all';
+
+export interface BridgeQuest {
+  phase: BridgePhase;
+  openedHost: boolean;
+  openedBrowser: boolean;
+  connected: boolean;
+  listedTools: boolean;
+  listedResources: boolean;
+  grantLookup: boolean;
+  grantDraft: boolean;
+  grantWeek: boolean;
+  grantRewrite: boolean;
+  grantPayroll: boolean;
+  grantAll: boolean;
+  lookedUp: boolean;
+  draftSaved: boolean;
+  inspectedDraft: boolean;
+  deniedRewrite: boolean;
+  missingPay: boolean;
+  browserSeen: boolean;
+  browserSaveFailed: boolean;
+  bridgeReady: boolean;
+  pendingExplain: ExplainTopic | null;
+  view: BridgeView;
+}
+
 export type ParcelId = 'r17' | 'r19' | 'r71';
 export type ParcelPick = ParcelId | 'gray' | null;
 export type LocationPick = 'west' | 'east' | 'any' | null;
@@ -588,7 +623,15 @@ export type JournalEventId =
   | 'board_posted'
   | 'missing_stopped'
   | 'extra_stopped'
-  | 'agent_ready';
+  | 'agent_ready'
+  | 'bridge_opened'
+  | 'server_connected'
+  | 'tools_listed'
+  | 'grant_limited'
+  | 'civic_lookup'
+  | 'draft_saved'
+  | 'capability_denied'
+  | 'bridge_ready';
 
 export interface JournalEvent {
   id: JournalEventId;
@@ -679,10 +722,12 @@ export type DialogueNodeId =
   | 'manager_kiosk_thanks'
   | 'manager_lab_thanks'
   | 'manager_agent_thanks'
+  | 'manager_bridge_thanks'
   | 'companion_after_workshop'
   | 'companion_after_kiosk'
   | 'companion_after_lab'
-  | 'companion_after_agent';
+  | 'companion_after_agent'
+  | 'companion_after_bridge';
 
 export type DialogueChoiceId =
   | 'agree'
@@ -762,7 +807,9 @@ export type InteractableId =
   | 'lab_terminal'
   | 'lab_prod'
   | 'agent_console'
-  | 'agent_board';
+  | 'agent_board'
+  | 'bridge_host'
+  | 'bridge_browser';
 
 export type PortalId =
   | 'home'
@@ -829,6 +876,7 @@ export interface GameState {
   kioskQuest: KioskQuest;
   labQuest: LabQuest;
   agentQuest: AgentQuest;
+  bridgeQuest: BridgeQuest;
   calculator: CalculatorState;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
@@ -930,7 +978,19 @@ export type GameAction =
   | { type: 'AGENT_SET_SUCCESS'; test: AgentSuccessTest }
   | { type: 'AGENT_SET_STOP'; rule: AgentStopRule }
   | { type: 'AGENT_ROBOT_DONE' }
-  | { type: 'AGENT_INVOKE'; tool: AgentInvokeTool };
+  | { type: 'AGENT_INVOKE'; tool: AgentInvokeTool }
+  | { type: 'BRIDGE_CONNECT' }
+  | { type: 'BRIDGE_LIST_TOOLS' }
+  | { type: 'BRIDGE_LIST_RESOURCES' }
+  | { type: 'BRIDGE_GRANT'; grant: BridgeGrantId }
+  | { type: 'BRIDGE_LOOKUP' }
+  | { type: 'BRIDGE_LOOKUP_PAYROLL' }
+  | { type: 'BRIDGE_SAVE_DRAFT' }
+  | { type: 'BRIDGE_INVOKE_REWRITE' }
+  | { type: 'BRIDGE_INVOKE_PAY' }
+  | { type: 'BRIDGE_LOAD_SKILL' }
+  | { type: 'BRIDGE_ROBOT_DONE' }
+  | { type: 'BRIDGE_BROWSER_SAVE' };
 
 export interface DialogueChoice {
   id: DialogueChoiceId;
@@ -996,6 +1056,7 @@ export interface SerializedTestState {
   kioskQuest: KioskQuest;
   labQuest: LabQuest;
   agentQuest: AgentQuest;
+  bridgeQuest: BridgeQuest;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
   robotUnderstood: string | null;
@@ -1032,6 +1093,7 @@ export interface SaveEnvelope {
   kioskQuest: KioskQuest;
   labQuest: LabQuest;
   agentQuest: AgentQuest;
+  bridgeQuest: BridgeQuest;
   robot: { companion: boolean };
   endingState: EndingState;
   mapsVisited: MapId[];
