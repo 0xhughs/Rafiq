@@ -183,7 +183,6 @@ Approved contract: `a192c6eca98845b4ee79ec30489bd0d17c2f1d89f829c344f8c44b173410
 Approved candidate: `51ee56d805700a58f3377f812c7ed404b861844bed62ca4ede71ba30f150c957`
 Implementation approval dispatch: `d-20260908-023-implrev-06`
 
-## Now
 ### 07 The missing festival numbers
 Goal: Help the festival office plan from honest records and a permitted use of AI.
 Provides:
@@ -191,10 +190,12 @@ Provides:
 - A corrected manifest that supplies workshop materials. Covers 3.4, 3.5.
 Depends on: 06
 Target membership: inside
+Archive: `slices/07-the-missing-festival-numbers.md`
+Approved contract: `f521d4d6bbfceeb572750066fb9c5044443f7beb784c7b1c630ad4634c910ea1`
+Approved candidate: `b21f3762b9f113adc83d93718a92addde8524c443862bcddba68f664a168c650`
+Implementation approval dispatch: `d-20260908-027-implrev-07`
 
-## Later
-
-
+## Now
 ### 08 One small service
 Goal: Help the workshop build a narrowly scoped service for one neighborhood need.
 Provides:
@@ -202,6 +203,9 @@ Provides:
 - Deliberate handling of feature requests that exceed the brief. Covers 4.1, 4.2.
 Depends on: 07
 Target membership: inside
+
+## Later
+
 
 ### 09 The kiosk speaks Arabic
 Goal: Make the workshop service usable through a correct interface contract and readable Arabic UI.
