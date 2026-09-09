@@ -1,0 +1,32 @@
+T01 state tests — Rafiq slice 04
+cwd: /workspace/app
+date: 2026-09-09T03:31:02Z
+command: npm test (vitest run)
+
+66 tests passed (4 files). Coverage of AC01–AC08 unit claims:
+
+- parcel office locked until shop_helped; slice 01 robot/dumpster WORLD_POS unchanged
+- inspect/enter/talk do not award 2.1
+- 2.1 only after delegated retrieval AND stop of «سآخذ كل الطرود الرمادية وأدفع ثمنها»; allow fails recoverably
+- 2.2 after four-field instruction (parcel, location, constraints, return) retrieves ر-١٧; incomplete or decoy ر-٧١ does not award
+- هات الطرد الرمادي fails observably, stages ر-١٩; failed send cannot flip; 2.4 only on a fresh complete send of ر-١٩
+- robot cannot pay; paying decoy awards no evidence
+- hydrate missing parcelQuest; saveVersion 1; unknown evidence keys dropped; 1.1–1.6 kept
+- optional Arabic NL understood/clarify; physical UI sufficient
+- library inner stays locked; robot still unsupported after success; comms repair visible
+
+----- raw vitest -----
+
+
+> app@0.0.0 test
+> vitest run
+
+
+ RUN  v5.0.0 /workspace/app
+
+
+ Test Files  4 passed (4)
+      Tests  66 passed (66)
+   Start at  03:31:08
+   Duration  359ms (transform 76%, import 12%, tests 10%, worker 2%)
+
