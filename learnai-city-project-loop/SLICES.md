@@ -255,7 +255,6 @@ Approved contract: `0ff46be3707c88cc9d283045710b455f5c78f379cea710c517419b5bf49d
 Approved candidate: `bcf132db68e8047cc451af252f2fc3ec4ce4c881e5a202d41b2aaa13317cae5b`
 Implementation approval dispatch: `d-20260909-048-implrev-12`
 
-## Now
 ### 13 A skill worth repeating
 Goal: Make a corrected procedure reusable and run it only when intended.
 Provides:
@@ -263,9 +262,12 @@ Provides:
 - An in-game routine using that skill, pause/cancel behavior and visible skill storage. Covers 5.5, 5.6.
 Depends on: 12
 Target membership: inside
+Archive: `slices/13-a-skill-worth-repeating.md`
+Approved contract: `8a9aea48eb6b70ada4fe0a79f97acd0388af396fd1827e123bbfb8e522506d04`
+Approved candidate: `2c6b74d809f5ef24180183524179624c81d2f05b774bf0c8d79efe5ec44b6881`
+Implementation approval dispatch: `d-20260909-052-implrev-13`
 
-## Later
-
+## Now
 ### 14 The decision stays with you
 Goal: Keep consequential choices with a responsible person.
 Provides:
@@ -273,6 +275,8 @@ Provides:
 - Fictional high-stakes case routed to a human; the robot supplies useful context and waits. Covers 5.7, 6.3.
 Depends on: 13
 Target membership: inside
+
+## Later
 
 ### 15 One result, several helpers
 Goal: Coordinate distinct helper roles and accept one verified city output.
