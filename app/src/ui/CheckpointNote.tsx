@@ -4,14 +4,25 @@ interface Props {
   parcelDone: boolean;
   moduleReady: boolean;
   workshopLead: boolean;
+  newsroomStarted: boolean;
 }
 
-export function CheckpointNote({ visible, shopHelped, parcelDone, moduleReady, workshopLead }: Props) {
+export function CheckpointNote({
+  visible,
+  shopHelped,
+  parcelDone,
+  moduleReady,
+  workshopLead,
+  newsroomStarted,
+}: Props) {
   if (!visible) return null;
   let text =
     'رفيق أصبح رفيقك في الحي. البقالة عند الزاوية مفتوحة الآن، وبعدها واجهة المكتبة. بقية ألغاز المغامرة ما زالت قيد التطوير.';
   if (workshopLead) {
     text = 'المحررة شكرتك. خيط المعاينة يقود إلى ورشة الإصلاح. داخل الورشة لم يُفتح بعد.';
+  } else if (newsroomStarted) {
+    text =
+      'قاعة الأخبار: قارن المصدرين، اتبع القصاصة إلى أصلها، راجع المسودة، طابق صوت المحررة، ثم راجع خطاب المعاينة.';
   } else if (moduleReady) {
     text = 'وحدة السياق جاهزة. ادخل قاعة أخبار الحي بين البقالة والمكتبة.';
   } else if (parcelDone) {

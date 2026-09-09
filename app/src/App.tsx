@@ -148,6 +148,7 @@ export default function App() {
         parcelDone={state.parcelQuest.commsRepaired}
         moduleReady={state.libraryQuest.contextModule}
         workshopLead={state.newsroomQuest.workshopLead}
+        newsroomStarted={state.map === 'newsroom' || state.newsroomQuest.briefed}
       />
       {naming ? (
         <NameEntry

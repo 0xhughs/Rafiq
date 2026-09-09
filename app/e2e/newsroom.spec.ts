@@ -153,7 +153,7 @@ test('archive-success through newsroom success with physical actions', async ({ 
   await page.getByTestId('dialogue-advance').click();
 
   await page.getByTestId('help-button').click();
-  await expect(page.getByTestId('journal-events')).toContainText('مقارن');
+  await expect(page.getByTestId('journal-events')).toContainText('قارنت');
   await expect(page.getByTestId('journal-events')).toContainText('ق-٢٠٤');
   await expect(page.getByTestId('journal-events')).toContainText('خطاب');
   await expect(page.getByTestId('journal-events')).toContainText('ورشة');
