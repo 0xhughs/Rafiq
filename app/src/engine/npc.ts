@@ -5,6 +5,7 @@ import { librarianNode } from './library';
 import { editorNode } from './newsroom';
 import { officerNode } from './festival';
 import { managerNode } from './workshop';
+import { openPassportOverlay } from './passport';
 import type { DialogueNodeId, GameState, NpcId } from './types';
 import { WORLD_POS } from './maps';
 
@@ -98,6 +99,11 @@ export function openingNode(state: GameState, id: NpcId): DialogueNodeId | null 
 }
 
 export function openNpc(state: GameState, id: NpcId): GameState {
+  if (id === 'robot' && state.encounter === 'help_accepted' && state.pathQuest.restored) {
+    if (state.passportQuest.thanksHeard || state.endingState === 'invited' || state.endingState === 'issued') {
+      return openPassportOverlay(state);
+    }
+  }
   const node = openingNode(state, id);
   if (!node) return state;
   if (id === 'robot') {

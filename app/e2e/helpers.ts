@@ -1,10 +1,11 @@
 import { expect, type Page } from '@playwright/test';
 import { WORLD_POS } from '../src/engine/maps';
 import type { GameAction, MapId, SerializedTestState } from '../src/engine/types';
+import { EVIDENCE_IDS } from '../src/engine/types';
 
 export async function waitForGame(page: Page): Promise<void> {
   await page.waitForFunction(() => Boolean(window.__RAFIQ_TEST__));
-  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '16');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '17');
 }
 
 export async function getState(page: Page): Promise<SerializedTestState> {
@@ -198,7 +199,8 @@ export async function playToParcelDone(page: Page, name = 'علي حسن'): Prom
   await page.getByTestId('dialogue-advance').click();
   await skipExplainIfOpen(page);
   await interactAt(page, 'parcel', WORLD_POS.instructionDesk.x, WORLD_POS.instructionDesk.y);
-  await fillCompleteInstruction(page, 'r17');
+  await page.getByTestId('instruction-ambiguous').click();
+  await fillCompleteInstruction(page, 'r19');
   await page.getByTestId('instruction-send').click();
   await page.getByTestId('dialogue-advance').click();
   await skipExplainIfOpen(page);
@@ -667,3 +669,45 @@ export async function playToCrewDone(page: Page, name = 'علي حسن'): Promis
   expect(done.evidence['6.4']).toBeUndefined();
   expect(done.pathQuest.restored).toBe(false);
 }
+
+export async function completePathQuest(page: Page): Promise<void> {
+  await interactAt(page, 'workshop', WORLD_POS.pathDesk.x, WORLD_POS.pathDesk.y);
+  await page.getByTestId('path-inspect-source').click();
+  await page.getByTestId('path-refuse-rumor').click();
+  await page.getByTestId('path-goal-reading').click();
+  await page.getByTestId('path-tools-safe').click();
+  await page.getByTestId('path-stop-budget').click();
+  await page.getByTestId('path-load-reading').click();
+  await page.getByTestId('path-run-skill').click();
+  await page.getByTestId('path-extra-step').click();
+  await closeOverlay(page);
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'workshop', WORLD_POS.sealDesk.x, WORLD_POS.sealDesk.y);
+  await page.getByTestId('path-prepare').click();
+  await page.getByTestId('path-inspect-send').click();
+  await page.getByTestId('path-reject').click();
+  await page.getByTestId('path-recipient-librarian').click();
+  await page.getByTestId('path-payload-exact').click();
+  await page.getByTestId('path-confirm').click();
+  await page.getByTestId('path-inspect-send').click();
+  await page.getByTestId('path-confirm').click();
+  await closeOverlay(page);
+  await skipExplainIfOpen(page);
+}
+
+export async function playToPathDone(page: Page, name = 'علي حسن'): Promise<void> {
+  await playToCrewDone(page, name);
+  await completePathQuest(page);
+  const done = await getState(page);
+  expect(done.pathQuest.restored).toBe(true);
+  expect(done.evidence['6.4']).toBe('demonstrated');
+  for (const id of EVIDENCE_IDS) {
+    expect(done.evidence[id], id).toBe('demonstrated');
+  }
+  expect(done.endingState).toBe('in_progress');
+  expect(done.passportQuest.issued).toBe(false);
+  expect(done.passportQuest.thanksHeard).toBe(false);
+  await expect(page.getByTestId('certificate')).toHaveCount(0);
+  await expect(page.getByTestId('open-passport')).toHaveCount(0);
+}
+

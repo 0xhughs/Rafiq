@@ -261,6 +261,23 @@ import {
   skipPathExplain,
 } from './path';
 import {
+  closePassportOverlay,
+  createPassportQuest,
+  isPassportExplain,
+  reducePassportConfirmName,
+  reducePassportDownload,
+  reducePassportDownloadFail,
+  reducePassportExam,
+  reducePassportLegacy,
+  reducePassportNetwork,
+  reducePassportOpen,
+  reducePassportPercent,
+  reducePassportRegistry,
+  reducePassportRobotDone,
+  reducePassportVerifyPublic,
+  skipPassportExplain,
+} from './passport';
+import {
   closeNewsroomDialogue,
   closeNewsroomOverlay,
   createNewsroomQuest,
@@ -360,6 +377,7 @@ export function createInitialState(): GameState {
     approvalQuest: createApprovalQuest(),
     crewQuest: createCrewQuest(),
     pathQuest: createPathQuest(),
+    passportQuest: createPassportQuest(),
     calculator: createCalculator(),
     inspectTarget: null,
     explainTopic: null,
@@ -692,6 +710,7 @@ export function reduce(state: GameState, action: GameAction): GameState {
         approvalQuest: createApprovalQuest(),
         crewQuest: createCrewQuest(),
         pathQuest: createPathQuest(),
+        passportQuest: createPassportQuest(),
         calculator: createCalculator(),
         inspectTarget: null,
         explainTopic: null,
@@ -889,6 +908,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
     case 'CLOSE_OVERLAY':
       if (state.mode === 'dialogue') return closeDialogue(state);
       if (state.mode === 'paused') return { ...state, mode: 'playing' };
+      if (state.mode === 'ending') {
+        return closePassportOverlay(state);
+      }
       if (isPathOverlay(state.mode)) {
         return closePathOverlay(state);
       }
@@ -935,6 +957,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
           }
           if (isPathExplain(state.explainTopic)) {
             return skipPathExplain(state);
+          }
+          if (isPassportExplain(state.explainTopic)) {
+            return skipPassportExplain(state);
           }
           if (isCrewExplain(state.explainTopic)) {
             return skipCrewExplain(state);
@@ -1027,6 +1052,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
       }
       if (isPathExplain(state.explainTopic)) {
         return skipPathExplain(state);
+      }
+      if (isPassportExplain(state.explainTopic)) {
+        return skipPassportExplain(state);
       }
       if (isCrewExplain(state.explainTopic)) {
         return skipCrewExplain(state);
@@ -1377,6 +1405,28 @@ export function reduce(state: GameState, action: GameAction): GameState {
       return reducePathConfirm(state);
     case 'PATH_RESEND_OLD':
       return reducePathResendOld(state);
+    case 'PASSPORT_OPEN':
+      return reducePassportOpen(state);
+    case 'PASSPORT_CONFIRM_NAME':
+      return reducePassportConfirmName(state);
+    case 'PASSPORT_DOWNLOAD':
+      return reducePassportDownload(state, action.format);
+    case 'PASSPORT_DOWNLOAD_FAIL':
+      return reducePassportDownloadFail(state);
+    case 'PASSPORT_EXAM':
+      return reducePassportExam(state);
+    case 'PASSPORT_PERCENT':
+      return reducePassportPercent(state);
+    case 'PASSPORT_VERIFY_PUBLIC':
+      return reducePassportVerifyPublic(state);
+    case 'PASSPORT_REGISTRY':
+      return reducePassportRegistry(state);
+    case 'PASSPORT_LEGACY':
+      return reducePassportLegacy(state);
+    case 'PASSPORT_NETWORK':
+      return reducePassportNetwork(state);
+    case 'PASSPORT_ROBOT_DONE':
+      return reducePassportRobotDone(state);
     case 'CONFIRM_NEW_ADVENTURE':
       return createInitialState();
     case 'DISMISS_RESTORE_NOTICE':
@@ -1448,6 +1498,7 @@ export function serializeState(state: GameState): SerializedTestState {
     approvalQuest: { ...state.approvalQuest },
     crewQuest: { ...state.crewQuest },
     pathQuest: { ...state.pathQuest },
+    passportQuest: { ...state.passportQuest },
     inspectTarget: state.inspectTarget,
     explainTopic: state.explainTopic,
     robotUnderstood: state.robotUnderstood,

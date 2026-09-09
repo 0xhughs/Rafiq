@@ -7,6 +7,7 @@ interface Props {
   state: GameState;
   onHelp: () => void;
   onDismissRestore: () => void;
+  onOpenPassport: () => void;
 }
 
 function Banners({
@@ -35,7 +36,7 @@ function Banners({
   );
 }
 
-export function Hud({ state, onHelp, onDismissRestore }: Props) {
+export function Hud({ state, onHelp, onDismissRestore, onOpenPassport }: Props) {
   if (state.mode === 'name_entry' || state.mode === 'confirm_name') {
     if (state.saveStatus !== 'unavailable' && !state.restoreNotice) return null;
     return (
@@ -70,6 +71,16 @@ export function Hud({ state, onHelp, onDismissRestore }: Props) {
       <button type="button" className="ghost hud-help" data-testid="help-button" onClick={onHelp}>
         دفتر / مساعدة
       </button>
+      {state.endingState === 'invited' || state.endingState === 'issued' ? (
+        <button
+          type="button"
+          className="ghost hud-help"
+          data-testid="open-passport"
+          onClick={onOpenPassport}
+        >
+          الجواز
+        </button>
+      ) : null}
       {nearby ? (
         <p className="interact-hint" data-testid="interact-hint">
           <span dir="ltr">E</span>

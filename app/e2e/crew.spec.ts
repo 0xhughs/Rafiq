@@ -58,7 +58,7 @@ test('approval-success through crew roles and quality review', async ({ page }) 
   expect(afterApproval.approvalQuest.receiptText).toBe(SEND_RECEIPT);
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-approval-ready', 'true');
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-crew-ready', 'false');
-  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '16');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '17');
   await expect(page.getByTestId('hud-objective')).toHaveText(OBJECTIVES.crewWork);
   await expect(page.getByTestId('planning-core')).toHaveText('نواة التخطيط');
   await expect(page.getByTestId('civic-connector')).toHaveText('موصل السجل');

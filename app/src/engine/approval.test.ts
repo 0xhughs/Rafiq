@@ -804,7 +804,7 @@ describe('approval stations after skillReady', () => {
     expect(playerHitsSolid('workshop', WORLD_POS.decisionDesk.x, WORLD_POS.decisionDesk.y)).toBe(true);
     expect(playerHitsSolid('workshop', WORLD_POS.skillBench.x, WORLD_POS.skillBench.y)).toBe(true);
     expect(playerHitsSolid('workshop', WORKSHOP.spawn.x, WORKSHOP.spawn.y)).toBe(false);
-    expect(JOURNAL_CAP).toBe(104);
+    expect(JOURNAL_CAP).toBe(112);
     expect(`${BRIDGE_EXPLAIN.connector_roles} ${MCP_NOTE}`).toMatch(/MCP/);
     expect(`${APPROVE_EXPLAIN.human_before_send} ${APPROVE_EXPLAIN.what_not_to_automate}`).not.toMatch(
       /MCP|harness/,

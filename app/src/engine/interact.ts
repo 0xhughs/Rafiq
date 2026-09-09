@@ -281,7 +281,10 @@ export function listInteractables(state: GameState): Actionable[] {
     const robot = npcPosition(state, 'robot');
     items.push({
       id: 'robot',
-      label: HINT_LABELS.robot,
+      label:
+        state.pathQuest.restored && state.passportQuest.thanksHeard
+          ? HINT_LABELS.robotPassport
+          : HINT_LABELS.robot,
       x: robot.x,
       y: robot.y,
     });

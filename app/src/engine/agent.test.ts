@@ -561,7 +561,7 @@ describe('agent stations after labReady', () => {
     expect(playerHitsSolid('workshop', WORLD_POS.agentBoard.x, WORLD_POS.agentBoard.y)).toBe(true);
     expect(playerHitsSolid('workshop', WORLD_POS.labTerminal.x, WORLD_POS.labTerminal.y)).toBe(true);
     expect(playerHitsSolid('workshop', WORKSHOP.spawn.x, WORKSHOP.spawn.y)).toBe(false);
-    expect(JOURNAL_CAP).toBe(104);
+    expect(JOURNAL_CAP).toBe(112);
 
     let state = playToKioskDone(checkpoint());
     const beforeReady = listInteractables(state).map((item) => item.id);

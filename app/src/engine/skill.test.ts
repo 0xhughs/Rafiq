@@ -727,7 +727,7 @@ describe('skill stations after bridgeReady', () => {
     expect(playerHitsSolid('workshop', WORLD_POS.agentConsole.x, WORLD_POS.agentConsole.y)).toBe(true);
     expect(playerHitsSolid('workshop', WORLD_POS.labTerminal.x, WORLD_POS.labTerminal.y)).toBe(true);
     expect(playerHitsSolid('workshop', WORKSHOP.spawn.x, WORKSHOP.spawn.y)).toBe(false);
-    expect(JOURNAL_CAP).toBe(104);
+    expect(JOURNAL_CAP).toBe(112);
     expect(`${BRIDGE_EXPLAIN.connector_roles} ${MCP_NOTE}`).toMatch(/MCP/);
     expect(`${SKILL_EXPLAIN.oneshot_vs_skill} ${SKILL_EXPLAIN.standing_vs_skill} ${SKILL_EXPLAIN.routine_clock}`).not.toMatch(
       /MCP|harness/,

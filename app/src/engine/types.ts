@@ -52,7 +52,8 @@ export type Mode =
   | 'skill'
   | 'approve'
   | 'crew'
-  | 'path';
+  | 'path'
+  | 'ending';
 
 export type TrashState = 'home' | 'carried' | 'disposed';
 
@@ -70,7 +71,7 @@ export type NpcGreeting = 'unmet' | 'talking' | 'greeted';
 
 export type SaveStatus = 'absent' | 'ok' | 'unavailable' | 'recovered';
 
-export type EndingState = 'in_progress';
+export type EndingState = 'in_progress' | 'invited' | 'issued';
 
 export const EVIDENCE_IDS = [
   '1.1',
@@ -184,7 +185,8 @@ export type ExplainTopic =
   | 'what_not_to_automate'
   | 'roles_and_owner'
   | 'quality_before_accept'
-  | 'integrated_path';
+  | 'integrated_path'
+  | 'educational_passport';
 export type ContextNoteId = 'constraint' | 'hold' | 'festival' | 'mango';
 export type PackFileId = 'spec' | 'delivery' | 'festival' | 'news_draft';
 export type PackStampId = 'rafiq_repair' | 'festival' | 'unnamed';
@@ -640,6 +642,25 @@ export interface PathQuest {
   view: PathView;
 }
 
+export const PASSPORT_PHASES = ['unstarted', 'working', 'ready'] as const;
+export type PassportPhase = (typeof PASSPORT_PHASES)[number];
+export type PassportView = 'ending';
+
+export interface PassportQuest {
+  phase: PassportPhase;
+  thanksHeard: boolean;
+  opened: boolean;
+  invited: boolean;
+  nameConfirmed: boolean;
+  pngDownloaded: boolean;
+  pdfDownloaded: boolean;
+  issued: boolean;
+  completionDate: string;
+  downloadError: string | null;
+  pendingExplain: ExplainTopic | null;
+  view: PassportView;
+}
+
 export type ParcelId = 'r17' | 'r19' | 'r71';
 export type ParcelPick = ParcelId | 'gray' | null;
 export type LocationPick = 'west' | 'east' | 'any' | null;
@@ -823,7 +844,10 @@ export type JournalEventId =
   | 'skill_ran'
   | 'night_rejected'
   | 'night_sent'
-  | 'restored';
+  | 'restored'
+  | 'passport_opened'
+  | 'name_confirmed'
+  | 'passport_issued';
 
 export interface JournalEvent {
   id: JournalEventId;
@@ -1089,6 +1113,7 @@ export interface GameState {
   approvalQuest: ApprovalQuest;
   crewQuest: CrewQuest;
   pathQuest: PathQuest;
+  passportQuest: PassportQuest;
   calculator: CalculatorState;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
@@ -1279,7 +1304,18 @@ export type GameAction =
   | { type: 'PATH_INSPECT_SEND' }
   | { type: 'PATH_REJECT' }
   | { type: 'PATH_CONFIRM' }
-  | { type: 'PATH_RESEND_OLD' };
+  | { type: 'PATH_RESEND_OLD' }
+  | { type: 'PASSPORT_OPEN' }
+  | { type: 'PASSPORT_CONFIRM_NAME' }
+  | { type: 'PASSPORT_DOWNLOAD'; format: 'png' | 'pdf' }
+  | { type: 'PASSPORT_DOWNLOAD_FAIL' }
+  | { type: 'PASSPORT_EXAM' }
+  | { type: 'PASSPORT_PERCENT' }
+  | { type: 'PASSPORT_VERIFY_PUBLIC' }
+  | { type: 'PASSPORT_REGISTRY' }
+  | { type: 'PASSPORT_LEGACY' }
+  | { type: 'PASSPORT_NETWORK' }
+  | { type: 'PASSPORT_ROBOT_DONE' };
 
 export interface DialogueChoice {
   id: DialogueChoiceId;
@@ -1350,6 +1386,7 @@ export interface SerializedTestState {
   approvalQuest: ApprovalQuest;
   crewQuest: CrewQuest;
   pathQuest: PathQuest;
+  passportQuest: PassportQuest;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
   robotUnderstood: string | null;
@@ -1391,6 +1428,7 @@ export interface SaveEnvelope {
   approvalQuest: ApprovalQuest;
   crewQuest: CrewQuest;
   pathQuest: PathQuest;
+  passportQuest: PassportQuest;
   robot: { companion: boolean };
   endingState: EndingState;
   mapsVisited: MapId[];

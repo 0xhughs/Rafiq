@@ -1,4 +1,4 @@
-import { OBJECTIVES, recordEvent } from './dialogue';
+import { endingObjective, OBJECTIVES, recordEvent } from './dialogue';
 import type {
   AppointmentSlot,
   EvidenceMap,
@@ -175,7 +175,8 @@ function syncPhase(quest: KioskQuest): KioskQuest {
 }
 
 export function kioskObjective(state: GameState): string {
-  if (state.pathQuest?.restored) return OBJECTIVES.restored;
+  const ending = endingObjective(state);
+  if (ending) return ending;
   if (state.crewQuest?.crewReady) return OBJECTIVES.pathWork;
   if (state.approvalQuest?.approvalReady) return OBJECTIVES.crewWork;
   if (state.skillQuest?.skillReady) return OBJECTIVES.approvalWork;

@@ -1,4 +1,4 @@
-import { OBJECTIVES, recordEvent } from './dialogue';
+import { endingObjective, OBJECTIVES, recordEvent } from './dialogue';
 import type {
   CupsMark,
   DialogueNodeId,
@@ -256,7 +256,8 @@ function syncPhase(quest: FestivalQuest): FestivalQuest {
 
 export function festivalObjective(state: GameState): string {
   const quest = state.festivalQuest;
-  if (state.pathQuest?.restored) return OBJECTIVES.restored;
+  const ending = endingObjective(state);
+  if (ending) return ending;
   if (state.crewQuest?.crewReady) return OBJECTIVES.pathWork;
   if (state.approvalQuest?.approvalReady) return OBJECTIVES.crewWork;
   if (state.skillQuest?.skillReady) return OBJECTIVES.approvalWork;

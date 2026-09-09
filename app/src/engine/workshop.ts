@@ -1,4 +1,5 @@
-import { OBJECTIVES, recordEvent } from './dialogue';
+import { endingObjective, OBJECTIVES, recordEvent } from './dialogue';
+import { markThanksHeard } from './passport';
 import type {
   AppointmentSlot,
   BoardKind,
@@ -297,7 +298,8 @@ function syncPhase(quest: WorkshopQuest): WorkshopQuest {
 
 export function workshopObjective(state: GameState): string {
   const quest = state.workshopQuest;
-  if (state.pathQuest?.restored) return OBJECTIVES.restored;
+  const ending = endingObjective(state);
+  if (ending) return ending;
   if (state.crewQuest?.crewReady) return OBJECTIVES.pathWork;
   if (state.approvalQuest?.approvalReady) return OBJECTIVES.crewWork;
   if (state.skillQuest?.skillReady) return OBJECTIVES.approvalWork;
@@ -385,6 +387,9 @@ export function closeWorkshopDialogue(state: GameState): GameState | null {
     node === 'companion_after_crew' ||
     node === 'companion_after_restore'
   ) {
+    if (node === 'companion_after_restore') {
+      return markThanksHeard(state);
+    }
     return {
       ...state,
       mode: 'playing',

@@ -1,6 +1,7 @@
 import type {
   DialogueLine,
   DialogueNodeId,
+  EndingState,
   JournalEvent,
   JournalEventId,
   MapId,
@@ -64,7 +65,27 @@ export const OBJECTIVES = {
     'منصة المسار مفتوحة: تحقق من سند السهرة، اضبط خطة محدودة، جهّز الحزمة، شغّل المهارة، ثم اختم الإرسال بموافقة بشرية.',
   restored:
     'أُنجزت سهرة القراءة تحت إشراف، والروبوت صار جاهزاً للعمل في الحي. مدير الورشة شكرك.',
+  passportReady: 'الجواز جاهز. أكّد الاسم ثم نزّل الصورة أو الملف من شاشة الوداع.',
+  passportIssued:
+    'حُفظ جواز مدينة الذكاء الاصطناعي محلياً. يمكنك تنزيله من جديد من الروبوت أو من الشريط.',
 } as const;
+
+export function endingObjective(state: {
+  endingState: EndingState;
+  pathQuest?: { restored?: boolean };
+  passportQuest?: { issued?: boolean };
+}): string | null {
+  if (state.passportQuest?.issued || state.endingState === 'issued') {
+    return OBJECTIVES.passportIssued;
+  }
+  if (state.endingState === 'invited') {
+    return OBJECTIVES.passportReady;
+  }
+  if (state.pathQuest?.restored) {
+    return OBJECTIVES.restored;
+  }
+  return null;
+}
 
 export const SPEAKER = {
   player: (name: string) => name,
@@ -164,6 +185,9 @@ export const JOURNAL_TEXT: Record<JournalEventId, string> = {
   night_rejected: 'رُفض إرسال سهرة خاطئ قبل الموافقة.',
   night_sent: 'وُوفق على إرسال سهرة القراءة بعد مراجعة بشرية.',
   restored: 'صار الروبوت جاهزاً للعمل تحت إشراف في الحي.',
+  passport_opened: 'فُتحت شاشة الوداع لجواز مدينة الذكاء الاصطناعي.',
+  name_confirmed: 'أُكّد الاسم على جواز المدينة.',
+  passport_issued: 'حُفظ جواز مدينة الذكاء الاصطناعي محلياً.',
 };
 
 export const LOCKED_COPY = {
@@ -878,7 +902,7 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     speaker: 'manager',
     speakerLabel: () => SPEAKER.manager(),
     text: () =>
-      'سُهرة القراءة نُشرت بعد سند NH-3301 وخطة محدودة وحزمة سياق ومهارة وموافقة بشرية، والروبوت صار جاهزاً تحت إشراف.',
+      'سُهرة القراءة نُشرت بعد سند NH-3301 وخطة محدودة وحزمة سياق ومهارة وموافقة بشرية، والروبوت صار جاهزاً تحت إشراف. تحدّث إلى الروبوت لاستلام جواز المدينة.',
     next: null,
   },
   companion_after_workshop: {

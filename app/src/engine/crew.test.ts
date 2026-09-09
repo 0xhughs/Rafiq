@@ -867,7 +867,7 @@ describe('crew stations after approvalReady', () => {
     expect(playerHitsSolid('workshop', WORLD_POS.qualityDesk.x, WORLD_POS.qualityDesk.y)).toBe(true);
     expect(playerHitsSolid('workshop', WORLD_POS.approveDesk.x, WORLD_POS.approveDesk.y)).toBe(true);
     expect(playerHitsSolid('workshop', WORKSHOP.spawn.x, WORKSHOP.spawn.y)).toBe(false);
-    expect(JOURNAL_CAP).toBe(104);
+    expect(JOURNAL_CAP).toBe(112);
     expect(`${BRIDGE_EXPLAIN.connector_roles} ${MCP_NOTE}`).toMatch(/MCP/);
     expect(`${CREW_EXPLAIN.roles_and_owner} ${CREW_EXPLAIN.quality_before_accept}`).not.toMatch(
       /MCP|harness/,

@@ -52,7 +52,7 @@ test('crew-success through reading-night path and seal', async ({ page }) => {
   expect(afterCrew.approvalQuest.receiptText).toBe(SEND_RECEIPT);
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-crew-ready', 'true');
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-restored', 'false');
-  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '16');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '17');
   await expect(page.getByTestId('hud-objective')).toHaveText(OBJECTIVES.pathWork);
   await expect(page.getByTestId('planning-core')).toHaveText('نواة التخطيط');
   await expect(page.getByTestId('civic-connector')).toHaveText('موصل السجل');

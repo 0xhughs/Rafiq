@@ -37,6 +37,7 @@ import { SkillOverlay } from './ui/SkillOverlay';
 import { ApproveOverlay } from './ui/ApproveOverlay';
 import { CrewOverlay } from './ui/CrewOverlay';
 import { PathOverlay } from './ui/PathOverlay';
+import { CertificateOverlay } from './ui/CertificateOverlay';
 import { evidenceAttr } from './engine/shop';
 
 function reducer(state: GameState, action: GameAction): GameState {
@@ -138,7 +139,7 @@ export default function App() {
       data-dialogue={state.dialogueNode ?? ''}
       data-save={state.saveStatus}
       data-evidence={evidenceAttr(state.evidence)}
-      data-slice="16"
+      data-slice="17"
       data-shop-quest={state.shopQuest.phase}
       data-parcel-quest={state.parcelQuest.phase}
       data-comms-repaired={state.parcelQuest.commsRepaired ? 'true' : 'false'}
@@ -165,6 +166,7 @@ export default function App() {
       data-crew-ready={state.crewQuest.crewReady ? 'true' : 'false'}
       data-path-quest={state.pathQuest.phase}
       data-restored={state.pathQuest.restored ? 'true' : 'false'}
+      data-ending={state.endingState}
       data-context-window={state.libraryQuest.windowSlots.join(',')}
       data-cassette={state.libraryQuest.contextModule ? 'contextModule' : ''}
       data-workshop-lead={state.newsroomQuest.workshopLead ? 'true' : 'false'}
@@ -173,6 +175,7 @@ export default function App() {
         state={state}
         onHelp={() => dispatch({ type: 'OPEN_HELP' })}
         onDismissRestore={() => dispatch({ type: 'DISMISS_RESTORE_NOTICE' })}
+        onOpenPassport={() => dispatch({ type: 'PASSPORT_OPEN' })}
       />
       <WorldCanvas state={state} />
       <CheckpointNote
@@ -194,6 +197,8 @@ export default function App() {
         approvalReady={state.approvalQuest.approvalReady}
         crewReady={state.crewQuest.crewReady}
         restored={state.pathQuest.restored}
+        invited={state.endingState === 'invited'}
+        issued={state.endingState === 'issued' || state.passportQuest.issued}
       />
       {naming ? (
         <NameEntry
@@ -467,6 +472,22 @@ export default function App() {
           onReject={() => dispatch({ type: 'PATH_REJECT' })}
           onConfirm={() => dispatch({ type: 'PATH_CONFIRM' })}
           onResendOld={() => dispatch({ type: 'PATH_RESEND_OLD' })}
+          onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+        />
+      ) : null}
+      {state.mode === 'ending' ? (
+        <CertificateOverlay
+          state={state}
+          onConfirmName={() => dispatch({ type: 'PASSPORT_CONFIRM_NAME' })}
+          onDownload={(format) => dispatch({ type: 'PASSPORT_DOWNLOAD', format })}
+          onDownloadFail={() => dispatch({ type: 'PASSPORT_DOWNLOAD_FAIL' })}
+          onExam={() => dispatch({ type: 'PASSPORT_EXAM' })}
+          onPercent={() => dispatch({ type: 'PASSPORT_PERCENT' })}
+          onVerifyPublic={() => dispatch({ type: 'PASSPORT_VERIFY_PUBLIC' })}
+          onRegistry={() => dispatch({ type: 'PASSPORT_REGISTRY' })}
+          onLegacy={() => dispatch({ type: 'PASSPORT_LEGACY' })}
+          onNetwork={() => dispatch({ type: 'PASSPORT_NETWORK' })}
+          onRobotDone={() => dispatch({ type: 'PASSPORT_ROBOT_DONE' })}
           onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
         />
       ) : null}

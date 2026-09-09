@@ -19,6 +19,8 @@ interface Props {
   approvalReady: boolean;
   crewReady: boolean;
   restored: boolean;
+  invited: boolean;
+  issued: boolean;
 }
 
 export function CheckpointNote({
@@ -40,11 +42,17 @@ export function CheckpointNote({
   approvalReady,
   crewReady,
   restored,
+  invited,
+  issued,
 }: Props) {
   if (!visible) return null;
   let text =
     'رفيق أصبح رفيقك في الحي. البقالة عند الزاوية مفتوحة الآن، وبعدها واجهة المكتبة. بقية ألغاز المغامرة ما زالت قيد التطوير.';
-  if (restored) {
+  if (issued) {
+    text = OBJECTIVES.passportIssued;
+  } else if (invited) {
+    text = OBJECTIVES.passportReady;
+  } else if (restored) {
     text = OBJECTIVES.restored;
   } else if (crewReady) {
     text = OBJECTIVES.pathWork;
