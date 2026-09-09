@@ -243,7 +243,6 @@ Approved contract: `d3177010296a62ed75ad2e9d5a3d03a0524bc7ee0bf315d7f134242c5cc6
 Approved candidate: `4f375e9d461727666a465d2f9de132e3fbed7ab4a422f526fb4b3851a15e57ea`
 Implementation approval dispatch: `d-20260909-044-implrev-11`
 
-## Now
 ### 12 The bridge between systems
 Goal: Connect the robot to a narrowly permitted civic information service.
 Provides:
@@ -251,9 +250,12 @@ Provides:
 - A contrasting browser interaction and explicit denied/missing-capability recovery. Covers 5.3 and MCP.
 Depends on: 11
 Target membership: inside
+Archive: `slices/12-the-bridge-between-systems.md`
+Approved contract: `0ff46be3707c88cc9d283045710b455f5c78f379cea710c517419b5bf49db399`
+Approved candidate: `bcf132db68e8047cc451af252f2fc3ec4ce4c881e5a202d41b2aaa13317cae5b`
+Implementation approval dispatch: `d-20260909-048-implrev-12`
 
-## Later
-
+## Now
 ### 13 A skill worth repeating
 Goal: Make a corrected procedure reusable and run it only when intended.
 Provides:
@@ -261,6 +263,8 @@ Provides:
 - An in-game routine using that skill, pause/cancel behavior and visible skill storage. Covers 5.5, 5.6.
 Depends on: 12
 Target membership: inside
+
+## Later
 
 ### 14 The decision stays with you
 Goal: Keep consequential choices with a responsible person.
