@@ -342,6 +342,30 @@ input {
   font-weight: 700;
 }
 
+.kiosk-face {
+  border: 1px dashed rgba(42, 33, 24, 0.22);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  background: rgba(255, 250, 240, 0.7);
+}
+
+.kiosk-face[dir='ltr'] {
+  direction: ltr;
+  text-align: left;
+}
+
+.kiosk-face[dir='rtl'] {
+  direction: rtl;
+  text-align: right;
+}
+
+.slot-id-ltr {
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-family: ui-monospace, 'Cascadia Code', 'Noto Sans Mono', monospace;
+}
+
 
 .stage {
   position: absolute;

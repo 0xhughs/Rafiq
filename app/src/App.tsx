@@ -29,6 +29,7 @@ import { ReconcileOverlay } from './ui/ReconcileOverlay';
 import { SubmitOverlay } from './ui/SubmitOverlay';
 import { BriefOverlay } from './ui/BriefOverlay';
 import { BoardOverlay } from './ui/BoardOverlay';
+import { KioskOverlay } from './ui/KioskOverlay';
 import { evidenceAttr } from './engine/shop';
 
 function reducer(state: GameState, action: GameAction): GameState {
@@ -130,7 +131,7 @@ export default function App() {
       data-dialogue={state.dialogueNode ?? ''}
       data-save={state.saveStatus}
       data-evidence={evidenceAttr(state.evidence)}
-      data-slice="08"
+      data-slice="09"
       data-shop-quest={state.shopQuest.phase}
       data-parcel-quest={state.parcelQuest.phase}
       data-comms-repaired={state.parcelQuest.commsRepaired ? 'true' : 'false'}
@@ -141,6 +142,8 @@ export default function App() {
       data-workshop-door={state.festivalQuest.workshopDoorOpen ? 'open' : 'locked'}
       data-workshop-quest={state.workshopQuest.phase}
       data-service-posted={state.workshopQuest.servicePosted ? 'true' : 'false'}
+      data-kiosk-quest={state.kioskQuest.phase}
+      data-kiosk-ready={state.kioskQuest.kioskReady ? 'true' : 'false'}
       data-context-window={state.libraryQuest.windowSlots.join(',')}
       data-cassette={state.libraryQuest.contextModule ? 'contextModule' : ''}
       data-workshop-lead={state.newsroomQuest.workshopLead ? 'true' : 'false'}
@@ -162,6 +165,7 @@ export default function App() {
         workshopMaterials={state.festivalQuest.workshopMaterials}
         workshopStarted={state.map === 'workshop' || state.workshopQuest.briefed}
         servicePosted={state.workshopQuest.servicePosted}
+        kioskReady={state.kioskQuest.kioskReady}
       />
       {naming ? (
         <NameEntry
@@ -191,6 +195,8 @@ export default function App() {
           onBuilderBuild={() => dispatch({ type: 'BUILDER_BUILD' })}
           onBuilderDone={() => dispatch({ type: 'BUILDER_DONE' })}
           onResultMatch={(part) => dispatch({ type: 'RESULT_MATCH', part })}
+          onVaultPut={() => dispatch({ type: 'KIOSK_VAULT_PUT' })}
+          onVaultEmpty={() => dispatch({ type: 'KIOSK_VAULT_EMPTY' })}
         />
       ) : null}
       {state.mode === 'calculator' ? (
@@ -328,6 +334,21 @@ export default function App() {
           state={state}
           onBook={(slot) => dispatch({ type: 'BOARD_BOOK', slot })}
           onExtra={(control) => dispatch({ type: 'BOARD_EXTRA', control })}
+          onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
+        />
+      ) : null}
+      {state.mode === 'kiosk' ? (
+        <KioskOverlay
+          state={state}
+          onStrip={() => dispatch({ type: 'KIOSK_STRIP' })}
+          onEmbed={() => dispatch({ type: 'KIOSK_EMBED' })}
+          onMoveVault={() => dispatch({ type: 'KIOSK_MOVE_VAULT' })}
+          onSend={() => dispatch({ type: 'KIOSK_SEND' })}
+          onSetRtl={() => dispatch({ type: 'KIOSK_SET_RTL' })}
+          onIsolate={() => dispatch({ type: 'KIOSK_ISOLATE' })}
+          onLookup={(slot) => dispatch({ type: 'KIOSK_LOOKUP', slot })}
+          onCheck={(item) => dispatch({ type: 'KIOSK_CHECK', item })}
+          onRobotDone={() => dispatch({ type: 'KIOSK_ROBOT_DONE' })}
           onClose={() => dispatch({ type: 'CLOSE_OVERLAY' })}
         />
       ) : null}

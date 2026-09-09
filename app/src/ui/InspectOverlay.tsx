@@ -20,6 +20,7 @@ import {
   NEED_TEXT,
   SCREENS_OK,
 } from '../engine/workshop';
+import { DEMO_SLOT_KEY, DOCS_TEXT, KIOSK_FEEDBACK } from '../engine/kiosk';
 
 interface Props {
   state: GameState;
@@ -30,6 +31,8 @@ interface Props {
   onBuilderBuild?: () => void;
   onBuilderDone?: () => void;
   onResultMatch?: (part: 'screens' | 'constraints' | 'exclusions' | 'acceptance') => void;
+  onVaultPut?: () => void;
+  onVaultEmpty?: () => void;
 }
 
 export function InspectOverlay({
@@ -41,6 +44,8 @@ export function InspectOverlay({
   onBuilderBuild,
   onBuilderDone,
   onResultMatch,
+  onVaultPut,
+  onVaultEmpty,
 }: Props) {
   const target = state.inspectTarget;
   if (!target) return null;
@@ -323,6 +328,47 @@ export function InspectOverlay({
             >
               {ACCEPTANCE_OK}
             </button>
+          </div>
+        </article>
+      ) : null}
+      {target === 'kiosk_docs' ? (
+        <article className="paper-card" data-testid="docs-card">
+          <p className="card-stamp">ورقة عقد الواجهة</p>
+          <pre className="notice-body" data-testid="docs-text">
+            {DOCS_TEXT}
+          </pre>
+          <p className="card-note" data-testid="docs-dummy">
+            {DEMO_SLOT_KEY} — وهمي
+          </p>
+        </article>
+      ) : null}
+      {target === 'kiosk_vault' ? (
+        <article className="paper-card instruction-card" data-testid="vault-card">
+          <p className="card-stamp">خزنة الخادم</p>
+          <h2>المفتاح الوهمي</h2>
+          {state.kioskQuest.vaultHasKey ? (
+            <p className="robot-understood" data-testid="vault-key">
+              {KIOSK_FEEDBACK.vaultHas}
+            </p>
+          ) : (
+            <p className="card-note" data-testid="vault-empty">
+              {KIOSK_FEEDBACK.vaultEmpty}
+            </p>
+          )}
+          <div className="button-row wrap-choices">
+            <button type="button" className="primary" data-testid="vault-put" onClick={() => onVaultPut?.()}>
+              ضع المفتاح الوهمي في الخزنة
+            </button>
+            {state.kioskQuest.vaultHasKey ? (
+              <button
+                type="button"
+                className="ghost"
+                data-testid="vault-empty"
+                onClick={() => onVaultEmpty?.()}
+              >
+                أفرغ الخزنة
+              </button>
+            ) : null}
           </div>
         </article>
       ) : null}

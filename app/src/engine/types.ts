@@ -44,7 +44,8 @@ export type Mode =
   | 'reconcile'
   | 'submit'
   | 'brief'
-  | 'board';
+  | 'board'
+  | 'kiosk';
 
 export type TrashState = 'home' | 'carried' | 'disposed';
 
@@ -84,6 +85,8 @@ export const EVIDENCE_IDS = [
   '3.5',
   '4.1',
   '4.2',
+  '4.3',
+  '4.4',
 ] as const;
 export type EvidenceId = (typeof EVIDENCE_IDS)[number];
 export type EvidenceStatus = 'demonstrated';
@@ -120,7 +123,9 @@ export type InspectTarget =
   | 'workshop_need'
   | 'workshop_extras'
   | 'workshop_builder'
-  | 'workshop_result';
+  | 'workshop_result'
+  | 'kiosk_docs'
+  | 'kiosk_vault';
 export type ExplainTopic =
   | 'lookup'
   | 'notice'
@@ -140,7 +145,9 @@ export type ExplainTopic =
   | 'reconcile'
   | 'policy'
   | 'product'
-  | 'appointments';
+  | 'appointments'
+  | 'api_contract'
+  | 'arabic_rtl';
 export type ContextNoteId = 'constraint' | 'hold' | 'festival' | 'mango';
 export type PackFileId = 'spec' | 'delivery' | 'festival' | 'news_draft';
 export type PackStampId = 'rafiq_repair' | 'festival' | 'unnamed';
@@ -316,6 +323,29 @@ export interface WorkshopQuest {
   pendingExplain: ExplainTopic | null;
 }
 
+export const KIOSK_PHASES = ['unstarted', 'working', 'ready'] as const;
+export type KioskPhase = (typeof KIOSK_PHASES)[number];
+export type KioskCheckItem = 'title' | 'slot' | 'lookup';
+
+export interface KioskQuest {
+  phase: KioskPhase;
+  inspectedDocs: boolean;
+  faceHasKey: boolean;
+  vaultHasKey: boolean;
+  sawMissingKey: boolean;
+  sawExposure: boolean;
+  requestOk: boolean;
+  openedBroken: boolean;
+  layoutRtl: boolean;
+  slotIdLtr: boolean;
+  lookupDone: boolean;
+  manualTitleRtl: boolean;
+  manualSlotLtr: boolean;
+  manualLookup: boolean;
+  kioskReady: boolean;
+  pendingExplain: ExplainTopic | null;
+}
+
 export type ParcelId = 'r17' | 'r19' | 'r71';
 export type ParcelPick = ParcelId | 'gray' | null;
 export type LocationPick = 'west' | 'east' | 'any' | null;
@@ -448,7 +478,10 @@ export type JournalEventId =
   | 'statement_submitted'
   | 'workshop_materials'
   | 'workshop_visit'
-  | 'service_posted';
+  | 'service_posted'
+  | 'kiosk_opened'
+  | 'api_wired'
+  | 'kiosk_ready';
 
 export interface JournalEvent {
   id: JournalEventId;
@@ -536,7 +569,9 @@ export type DialogueNodeId =
   | 'manager_brief'
   | 'manager_revisit'
   | 'manager_thanks'
-  | 'companion_after_workshop';
+  | 'manager_kiosk_thanks'
+  | 'companion_after_workshop'
+  | 'companion_after_kiosk';
 
 export type DialogueChoiceId =
   | 'agree'
@@ -609,7 +644,10 @@ export type InteractableId =
   | 'brief_desk'
   | 'builder_bench'
   | 'result_check'
-  | 'appointment_board';
+  | 'appointment_board'
+  | 'kiosk_docs'
+  | 'kiosk_vault'
+  | 'kiosk_face';
 
 export type PortalId =
   | 'home'
@@ -673,6 +711,7 @@ export interface GameState {
   newsroomQuest: NewsroomQuest;
   festivalQuest: FestivalQuest;
   workshopQuest: WorkshopQuest;
+  kioskQuest: KioskQuest;
   calculator: CalculatorState;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
@@ -744,7 +783,18 @@ export type GameAction =
   | { type: 'BUILDER_DONE' }
   | { type: 'RESULT_MATCH'; part: ResultPart }
   | { type: 'BOARD_BOOK'; slot: AppointmentSlot }
-  | { type: 'BOARD_EXTRA'; control: ExtraControl };
+  | { type: 'BOARD_EXTRA'; control: ExtraControl }
+  | { type: 'KIOSK_STRIP' }
+  | { type: 'KIOSK_VAULT_PUT' }
+  | { type: 'KIOSK_VAULT_EMPTY' }
+  | { type: 'KIOSK_MOVE_VAULT' }
+  | { type: 'KIOSK_EMBED' }
+  | { type: 'KIOSK_SEND' }
+  | { type: 'KIOSK_SET_RTL' }
+  | { type: 'KIOSK_ISOLATE' }
+  | { type: 'KIOSK_LOOKUP'; slot: AppointmentSlot }
+  | { type: 'KIOSK_CHECK'; item: KioskCheckItem }
+  | { type: 'KIOSK_ROBOT_DONE' };
 
 export interface DialogueChoice {
   id: DialogueChoiceId;
@@ -807,6 +857,7 @@ export interface SerializedTestState {
   newsroomQuest: NewsroomQuest;
   festivalQuest: FestivalQuest;
   workshopQuest: WorkshopQuest;
+  kioskQuest: KioskQuest;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
   robotUnderstood: string | null;
@@ -840,6 +891,7 @@ export interface SaveEnvelope {
   newsroomQuest: NewsroomQuest;
   festivalQuest: FestivalQuest;
   workshopQuest: WorkshopQuest;
+  kioskQuest: KioskQuest;
   robot: { companion: boolean };
   endingState: EndingState;
   mapsVisited: MapId[];

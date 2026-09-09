@@ -29,4 +29,4 @@ npm run lint
 
 ## Current slice
 
-Apartment, street, corner-store visit, parcel office, library exterior, the inner reading room, قاعة أخبار الحي, مكتب المهرجان, and ورشة الإصلاح are playable after agreeing to help the robot. After festival materials, the south-street workshop door portals into the workshop: write a product brief for a tiny appointment board, hand it to the builder, inspect the result, and book one posted slot. Festival success does not award 4.1/4.2.
+Apartment, street, corner-store visit, parcel office, library exterior, the inner reading room, قاعة أخبار الحي, مكتب المهرجان, and ورشة الإصلاح are playable after agreeing to help the robot. After festival materials, the south-street workshop door portals into the workshop: write a product brief for a tiny appointment board, hand it to the builder, inspect the result, and book one posted slot. After the board is posted, three workshop stations unlock: a documented fictional API slip, a server-side vault, and a neighborhood kiosk. Wire the dummy key in the vault (not on the kiosk face), repair RTL, isolate `slot-id`, and test a posted-slot lookup. Workshop success does not award 4.3/4.4.

@@ -68,6 +68,28 @@ import {
   workshopObjective,
 } from './workshop';
 import {
+  closeKioskOverlay,
+  createKioskQuest,
+  inspectKioskDocs,
+  inspectKioskVault,
+  isKioskExplain,
+  isKioskInspect,
+  isKioskOverlay,
+  openKiosk,
+  reduceKioskCheck,
+  reduceKioskEmbed,
+  reduceKioskIsolate,
+  reduceKioskLookup,
+  reduceKioskMoveVault,
+  reduceKioskRobotDone,
+  reduceKioskSend,
+  reduceKioskSetRtl,
+  reduceKioskStrip,
+  reduceKioskVaultEmpty,
+  reduceKioskVaultPut,
+  skipKioskExplain,
+} from './kiosk';
+import {
   closeNewsroomDialogue,
   closeNewsroomOverlay,
   createNewsroomQuest,
@@ -159,6 +181,7 @@ export function createInitialState(): GameState {
     newsroomQuest: createNewsroomQuest(),
     festivalQuest: createFestivalQuest(),
     workshopQuest: createWorkshopQuest(),
+    kioskQuest: createKioskQuest(),
     calculator: createCalculator(),
     inspectTarget: null,
     explainTopic: null,
@@ -483,6 +506,7 @@ export function reduce(state: GameState, action: GameAction): GameState {
         newsroomQuest: createNewsroomQuest(),
         festivalQuest: createFestivalQuest(),
         workshopQuest: createWorkshopQuest(),
+        kioskQuest: createKioskQuest(),
         calculator: createCalculator(),
         inspectTarget: null,
         explainTopic: null,
@@ -626,6 +650,12 @@ export function reduce(state: GameState, action: GameAction): GameState {
           return inspectWorkshop(state, 'workshop_result');
         case 'appointment_board':
           return openBoard(state);
+        case 'kiosk_docs':
+          return inspectKioskDocs(state);
+        case 'kiosk_vault':
+          return inspectKioskVault(state);
+        case 'kiosk_face':
+          return openKiosk(state);
         default:
           return state;
       }
@@ -646,6 +676,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
     case 'CLOSE_OVERLAY':
       if (state.mode === 'dialogue') return closeDialogue(state);
       if (state.mode === 'paused') return { ...state, mode: 'playing' };
+      if (isKioskOverlay(state.mode) || (state.mode === 'inspect' && isKioskInspect(state.inspectTarget))) {
+        return closeKioskOverlay(state);
+      }
       if (isWorkshopOverlay(state.mode) || (state.mode === 'inspect' && isWorkshopInspect(state.inspectTarget))) {
         return closeWorkshopOverlay(state);
       }
@@ -662,6 +695,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
           }
           if (isWorkshopExplain(state.explainTopic)) {
             return skipWorkshopExplain(state);
+          }
+          if (isKioskExplain(state.explainTopic)) {
+            return skipKioskExplain(state);
           }
           if (
             state.explainTopic === 'delegate' ||
@@ -730,6 +766,9 @@ export function reduce(state: GameState, action: GameAction): GameState {
       }
       if (isWorkshopExplain(state.explainTopic)) {
         return skipWorkshopExplain(state);
+      }
+      if (isKioskExplain(state.explainTopic)) {
+        return skipKioskExplain(state);
       }
       if (
         state.explainTopic === 'delegate' ||
@@ -824,6 +863,28 @@ export function reduce(state: GameState, action: GameAction): GameState {
       return reduceBoardBook(state, action.slot);
     case 'BOARD_EXTRA':
       return reduceBoardExtra(state, action.control);
+    case 'KIOSK_STRIP':
+      return reduceKioskStrip(state);
+    case 'KIOSK_VAULT_PUT':
+      return reduceKioskVaultPut(state);
+    case 'KIOSK_VAULT_EMPTY':
+      return reduceKioskVaultEmpty(state);
+    case 'KIOSK_MOVE_VAULT':
+      return reduceKioskMoveVault(state);
+    case 'KIOSK_EMBED':
+      return reduceKioskEmbed(state);
+    case 'KIOSK_SEND':
+      return reduceKioskSend(state);
+    case 'KIOSK_SET_RTL':
+      return reduceKioskSetRtl(state);
+    case 'KIOSK_ISOLATE':
+      return reduceKioskIsolate(state);
+    case 'KIOSK_LOOKUP':
+      return reduceKioskLookup(state, action.slot);
+    case 'KIOSK_CHECK':
+      return reduceKioskCheck(state, action.item);
+    case 'KIOSK_ROBOT_DONE':
+      return reduceKioskRobotDone(state);
     case 'CONFIRM_NEW_ADVENTURE':
       return createInitialState();
     case 'DISMISS_RESTORE_NOTICE':
@@ -887,6 +948,7 @@ export function serializeState(state: GameState): SerializedTestState {
     newsroomQuest: { ...state.newsroomQuest },
     festivalQuest: { ...state.festivalQuest },
     workshopQuest: { ...state.workshopQuest },
+    kioskQuest: { ...state.kioskQuest },
     inspectTarget: state.inspectTarget,
     explainTopic: state.explainTopic,
     robotUnderstood: state.robotUnderstood,

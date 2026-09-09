@@ -84,6 +84,12 @@ function workshopRect(id: InteractableId): { x: number; y: number; w: number; h:
       return room.result;
     case 'appointment_board':
       return room.board;
+    case 'kiosk_docs':
+      return room.docs;
+    case 'kiosk_vault':
+      return room.vault;
+    case 'kiosk_face':
+      return room.kiosk;
     default:
       return null;
   }
@@ -515,6 +521,29 @@ export function listInteractables(state: GameState): Actionable[] {
         label: HINT_LABELS.appointmentBoard,
         x: WORLD_POS.appointmentBoard.x,
         y: WORLD_POS.appointmentBoard.y,
+      },
+    );
+  }
+
+  if (state.map === 'workshop' && state.workshopQuest.servicePosted) {
+    items.push(
+      {
+        id: 'kiosk_docs',
+        label: HINT_LABELS.kioskDocs,
+        x: WORLD_POS.kioskDocs.x,
+        y: WORLD_POS.kioskDocs.y,
+      },
+      {
+        id: 'kiosk_vault',
+        label: HINT_LABELS.kioskVault,
+        x: WORLD_POS.kioskVault.x,
+        y: WORLD_POS.kioskVault.y,
+      },
+      {
+        id: 'kiosk_face',
+        label: HINT_LABELS.kioskFace,
+        x: WORLD_POS.kioskFace.x,
+        y: WORLD_POS.kioskFace.y,
       },
     );
   }

@@ -4,7 +4,7 @@ import type { GameAction, MapId, SerializedTestState } from '../src/engine/types
 
 export async function waitForGame(page: Page): Promise<void> {
   await page.waitForFunction(() => Boolean(window.__RAFIQ_TEST__));
-  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '08');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '09');
 }
 
 export async function getState(page: Page): Promise<SerializedTestState> {
@@ -411,4 +411,39 @@ export function collectConsoleText(page: Page): string[] {
     lines.push(message.text());
   });
   return lines;
+}
+
+export async function playToWorkshopDone(page: Page, name = 'علي حسن'): Promise<void> {
+  await playToFestivalDone(page, name);
+  await enterWorkshop(page);
+  await interactAt(page, 'workshop', WORLD_POS.needSlip.x, WORLD_POS.needSlip.y);
+  await page.getByTestId('inspect-close').click();
+  await interactAt(page, 'workshop', WORLD_POS.briefDesk.x, WORLD_POS.briefDesk.y);
+  await page.getByTestId('brief-screens-ok').click();
+  await page.getByTestId('brief-constraints-ok').click();
+  await page.getByTestId('brief-exclusions-ok').click();
+  await page.getByTestId('brief-acceptance-ok').click();
+  await page.getByTestId('brief-close').click();
+  await interactAt(page, 'workshop', WORLD_POS.builderBench.x, WORLD_POS.builderBench.y);
+  await page.getByTestId('builder-hand').click();
+  await page.getByTestId('builder-build').click();
+  await page.getByTestId('inspect-close').click();
+  await interactAt(page, 'workshop', WORLD_POS.resultCheck.x, WORLD_POS.resultCheck.y);
+  await page.getByTestId('result-screens').click();
+  await page.getByTestId('result-constraints').click();
+  await page.getByTestId('result-exclusions').click();
+  await page.getByTestId('result-acceptance').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'workshop', WORLD_POS.appointmentBoard.x, WORLD_POS.appointmentBoard.y);
+  await page.getByTestId('board-book-sunday').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  const done = await getState(page);
+  expect(done.workshopQuest.servicePosted).toBe(true);
+  expect(done.evidence['4.1']).toBe('demonstrated');
+  expect(done.evidence['4.2']).toBe('demonstrated');
+  expect(done.evidence['4.3']).toBeUndefined();
+  expect(done.evidence['4.4']).toBeUndefined();
+  expect(done.kioskQuest.kioskReady).toBe(false);
 }

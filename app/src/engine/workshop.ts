@@ -297,7 +297,8 @@ function syncPhase(quest: WorkshopQuest): WorkshopQuest {
 
 export function workshopObjective(state: GameState): string {
   const quest = state.workshopQuest;
-  if (quest.servicePosted) return OBJECTIVES.servicePosted;
+  if (state.kioskQuest.kioskReady) return OBJECTIVES.kioskReady;
+  if (quest.servicePosted) return OBJECTIVES.kioskWork;
   if (state.map === 'workshop' || quest.briefed || state.festivalQuest.workshopMaterials) {
     return OBJECTIVES.workshopWork;
   }
@@ -316,10 +317,15 @@ export function awardWorkshopEvidence(state: GameState): GameState {
     events = recordEvent(events, 'service_posted');
   }
   nextQuest = syncPhase(nextQuest);
+  const kioskQuest =
+    nextQuest.servicePosted && state.kioskQuest.phase === 'unstarted' && !state.kioskQuest.faceHasKey
+      ? { ...state.kioskQuest, faceHasKey: true }
+      : state.kioskQuest;
   const next: GameState = {
     ...state,
     evidence,
     workshopQuest: nextQuest,
+    kioskQuest,
     journalEvents: events,
   };
   return {
@@ -330,6 +336,7 @@ export function awardWorkshopEvidence(state: GameState): GameState {
 
 export function managerNode(state: GameState): DialogueNodeId {
   const quest = state.workshopQuest;
+  if (state.kioskQuest.kioskReady) return 'manager_kiosk_thanks';
   if (quest.servicePosted) return 'manager_thanks';
   if (quest.briefed) return 'manager_revisit';
   return 'manager_hello';
@@ -352,7 +359,11 @@ export function closeWorkshopDialogue(state: GameState): GameState | null {
   if (node === 'manager_hello' || node === 'manager_brief') {
     return finishManagerBrief(state);
   }
-  if (node.startsWith('manager') || node === 'companion_after_workshop') {
+  if (
+    node.startsWith('manager') ||
+    node === 'companion_after_workshop' ||
+    node === 'companion_after_kiosk'
+  ) {
     return {
       ...state,
       mode: 'playing',

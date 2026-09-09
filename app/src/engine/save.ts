@@ -10,6 +10,7 @@ import { parseLibraryQuest } from './library';
 import { parseNewsroomQuest } from './newsroom';
 import { parseFestivalQuest } from './festival';
 import { parseWorkshopQuest } from './workshop';
+import { parseKioskQuest } from './kiosk';
 import type {
   EndingState,
   Facing,
@@ -97,6 +98,9 @@ const JOURNAL_IDS: readonly JournalEventId[] = [
   'workshop_materials',
   'workshop_visit',
   'service_posted',
+  'kiosk_opened',
+  'api_wired',
+  'kiosk_ready',
 ];
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -152,6 +156,7 @@ export function toEnvelope(state: GameState): SaveEnvelope {
     newsroomQuest: parseNewsroomQuest(state.newsroomQuest),
     festivalQuest: parseFestivalQuest(state.festivalQuest),
     workshopQuest: parseWorkshopQuest(state.workshopQuest),
+    kioskQuest: parseKioskQuest(state.kioskQuest),
     robot: { companion },
     endingState: 'in_progress',
     mapsVisited: state.mapsVisited.length > 0 ? [...state.mapsVisited] : [state.map],
@@ -289,6 +294,7 @@ export function validateSave(raw: unknown): SaveEnvelope | null {
     newsroomQuest: parseNewsroomQuest(data.newsroomQuest),
     festivalQuest: parseFestivalQuest(data.festivalQuest),
     workshopQuest: parseWorkshopQuest(data.workshopQuest),
+    kioskQuest: parseKioskQuest(data.kioskQuest),
     robot: { companion },
     endingState: 'in_progress' satisfies EndingState,
     mapsVisited: mapsVisited.length > 0 ? mapsVisited : [data.map],
@@ -333,6 +339,7 @@ export function hydrateSave(
     newsroomQuest: parseNewsroomQuest(envelope.newsroomQuest),
     festivalQuest: parseFestivalQuest(envelope.festivalQuest),
     workshopQuest: parseWorkshopQuest(envelope.workshopQuest),
+    kioskQuest: parseKioskQuest(envelope.kioskQuest),
     calculator: createCalculator(),
     inspectTarget: null,
     explainTopic: null,
@@ -437,6 +444,7 @@ export function shouldPersist(prev: GameState, next: GameState, action: GameActi
   if (JSON.stringify(prev.newsroomQuest) !== JSON.stringify(next.newsroomQuest)) return true;
   if (JSON.stringify(prev.festivalQuest) !== JSON.stringify(next.festivalQuest)) return true;
   if (JSON.stringify(prev.workshopQuest) !== JSON.stringify(next.workshopQuest)) return true;
+  if (JSON.stringify(prev.kioskQuest) !== JSON.stringify(next.kioskQuest)) return true;
   if (persistableGreeting(prev.librarian) !== persistableGreeting(next.librarian)) return true;
   if (persistableGreeting(prev.editor) !== persistableGreeting(next.editor)) return true;
   if (persistableGreeting(prev.officer) !== persistableGreeting(next.officer)) return true;

@@ -99,6 +99,11 @@ export function Hud({ state, onHelp, onDismissRestore }: Props) {
           لوحة المواعيد
         </p>
       ) : null}
+      {state.kioskQuest.kioskReady ? (
+        <p className="inventory cassette-chip" data-testid="kiosk-ready">
+          كiosk صالح
+        </p>
+      ) : null}
     </header>
   );
 }

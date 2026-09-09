@@ -9,6 +9,7 @@ interface Props {
   workshopMaterials: boolean;
   workshopStarted: boolean;
   servicePosted: boolean;
+  kioskReady: boolean;
 }
 
 export function CheckpointNote({
@@ -22,12 +23,16 @@ export function CheckpointNote({
   workshopMaterials,
   workshopStarted,
   servicePosted,
+  kioskReady,
 }: Props) {
   if (!visible) return null;
   let text =
     'رفيق أصبح رفيقك في الحي. البقالة عند الزاوية مفتوحة الآن، وبعدها واجهة المكتبة. بقية ألغاز المغامرة ما زالت قيد التطوير.';
-  if (servicePosted) {
-    text = 'لوحة مواعيد المعاينة معلّقة. مدير الورشة شكرك.';
+  if (kioskReady) {
+    text = 'الكiosk صار صالحاً للجيران. مدير الورشة شكرك.';
+  } else if (servicePosted) {
+    text =
+      'الكiosk معلّق بجانب اللوحة: اقرأ عقد الواجهة، أبقِ المفتاح الوهمي في الخزنة، ثم أصلح اتجاه العربية واختبر الحجز.';
   } else if (workshopStarted) {
     text =
       'ورشة الإصلاح: اكتب وصف المنتج للوحة المواعيد، سلمه للبنّاء، طابق اللوحة، ثم احجز فترة معلّقة.';

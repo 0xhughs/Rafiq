@@ -68,6 +68,7 @@ export function openingNode(state: GameState, id: NpcId): DialogueNodeId | null 
   if (id === 'robot') {
     if (state.encounter === 'unseen') return null;
     if (state.encounter === 'help_accepted') {
+      if (state.kioskQuest.kioskReady) return 'companion_after_kiosk';
       if (state.workshopQuest.servicePosted) return 'companion_after_workshop';
       if (state.festivalQuest.workshopMaterials) return 'companion_after_festival';
       if (state.newsroomQuest.workshopLead) return 'companion_after_newsroom';

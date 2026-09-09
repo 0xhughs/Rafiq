@@ -3,19 +3,20 @@ import { playerHitsSolid } from './collision';
 import { JOURNAL_CAP, TILE } from './constants';
 import { DIALOGUE, OBJECTIVES } from './dialogue';
 import {
-  ACCEPTANCE_OK,
-  CONSTRAINTS_OK,
-  EXCLUSIONS_OK,
-  EXTRAS_TEXT,
-  NEED_TEXT,
-  SCREENS_OK,
-  SLOT_LABELS,
-  WORKSHOP_FEEDBACK,
-  canAward41,
-  canAward42,
-  createWorkshopQuest,
-  parseWorkshopQuest,
-} from './workshop';
+  API_HEADER,
+  API_PATH,
+  CHECKLIST,
+  DEMO_SLOT_KEY,
+  DOCS_TEXT,
+  KIOSK_FEEDBACK,
+  KIOSK_TITLE,
+  canAward43,
+  canAward44,
+  createKioskQuest,
+  faceLeaking,
+  parseKioskQuest,
+} from './kiosk';
+import { listInteractables } from './interact';
 import { STREET, WORKSHOP, WORLD_POS } from './maps';
 import { robotPosition } from './npc';
 import { createInitialState, reduce } from './state';
@@ -405,164 +406,233 @@ function bookSunday(state: GameState): GameState {
   return next;
 }
 
-describe('workshop access', () => {
-  it('locks until workshopMaterials, then portals without awarding 4.1/4.2', () => {
+function playToWorkshopDone(state: GameState): GameState {
+  let next = enterWorkshop(playFestivalDone(state));
+  next = inspectNeed(next);
+  next = fillSlimBrief(next);
+  next = handAndBuild(next);
+  next = matchResult(next);
+  next = playing(next);
+  next = bookSunday(next);
+  next = playing(next);
+  expect(next.workshopQuest.servicePosted).toBe(true);
+  expect(next.evidence['4.1']).toBe('demonstrated');
+  expect(next.evidence['4.2']).toBe('demonstrated');
+  expect(next.evidence['4.3']).toBeUndefined();
+  expect(next.evidence['4.4']).toBeUndefined();
+  expect(next.kioskQuest.kioskReady).toBe(false);
+  return next;
+}
+
+function openDocs(state: GameState): GameState {
+  let next = playing(state);
+  next = act(at(next, WORLD_POS.kioskDocs.x, WORLD_POS.kioskDocs.y, 'workshop'), { type: 'INTERACT' });
+  next = act(next, { type: 'CLOSE_OVERLAY' });
+  return skipExplain(next);
+}
+
+function openVault(state: GameState): GameState {
+  const next = playing(state);
+  return act(at(next, WORLD_POS.kioskVault.x, WORLD_POS.kioskVault.y, 'workshop'), { type: 'INTERACT' });
+}
+
+function openFace(state: GameState): GameState {
+  const next = playing(state);
+  return act(at(next, WORLD_POS.kioskFace.x, WORLD_POS.kioskFace.y, 'workshop'), { type: 'INTERACT' });
+}
+
+describe('kiosk stations after servicePosted', () => {
+  it('unlocks q a e on empty cells, keeps landmarks, and does not award 4.3/4.4 on workshop success', () => {
     expect(WORLD_POS.robot).toEqual({ x: 12 * TILE + 24, y: 5 * TILE + 24 });
-    expect(WORLD_POS.workshopDoor).toEqual(WORLD_POS.workshopDoor);
     expect(MAP_IDS).toContain('workshop');
-    let state = act(at(checkpoint(), WORLD_POS.workshopDoor.x, WORLD_POS.workshopDoor.y, 'street'), {
-      type: 'INTERACT',
-    });
-    expect(state.map).toBe('street');
-    expect(state.dialogueNode).toBe('locked_workshop');
-    state = playFestivalDone(checkpoint());
-    expect(state.evidence['4.1']).toBeUndefined();
-    expect(state.evidence['4.2']).toBeUndefined();
-    expect(state.workshopQuest.servicePosted).toBe(false);
-    state = enterWorkshop(state);
-    expect(state.map).toBe('workshop');
-    expect(playerHitsSolid('workshop', state.position.x, state.position.y)).toBe(false);
-    expect(state.journalEvents.some((event) => event.id === 'workshop_visit')).toBe(true);
-    expect(state.evidence['4.1']).toBeUndefined();
-    expect(state.evidence['4.2']).toBeUndefined();
-    expect(state.workshopQuest.servicePosted).toBe(false);
-    expect(new Set(WORKSHOP.legend.map((row) => row.length))).toEqual(new Set([16]));
-    expect(STREET.legend[5]).toContain('o');
+    expect(WORKSHOP.legend[4]).toBe('#...........e..#');
+    expect(WORKSHOP.legend[5]).toBe('#u.z...a..m.j..#');
+    expect(WORKSHOP.legend[6]).toBe('#k.q......t....#');
     expect(JSON.stringify(WORKSHOP.legend.join(''))).not.toMatch(/[PEIRFDGY]/);
-  });
-});
-
-describe('4.2 product brief', () => {
-  it('inspect-only does not award; missing parts fail; build without brief refuses; four-part inspect awards', () => {
-    expect(NEED_TEXT).toContain('لوحة مواعيد المعاينة');
-    expect(SCREENS_OK).toContain('لوحة الفترات الثلاث المعلّقة');
-    expect(CONSTRAINTS_OK).toContain('فترات معلّقة على الورق فقط');
-    expect(EXCLUSIONS_OK).toContain('لا كiosk ولا مفتاح API');
-    expect(ACCEPTANCE_OK).toContain('محجوز');
+    expect(STREET.legend[5]).toContain('o');
+    const street = STREET.legend.join('');
+    expect(street).toContain('P');
+    expect(street).toContain('R');
+    expect(street).toContain('I');
+    expect(street).toContain('E');
+    expect(street).toContain('G');
+    expect(street).toContain('Y');
+    expect(WORLD_POS.libraryInner).toEqual(WORLD_POS.libraryInner);
+    expect(playerHitsSolid('workshop', WORLD_POS.kioskDocs.x, WORLD_POS.kioskDocs.y)).toBe(true);
+    expect(playerHitsSolid('workshop', WORLD_POS.kioskVault.x, WORLD_POS.kioskVault.y)).toBe(true);
+    expect(playerHitsSolid('workshop', WORLD_POS.kioskFace.x, WORLD_POS.kioskFace.y)).toBe(true);
+    expect(playerHitsSolid('workshop', WORKSHOP.spawn.x, WORKSHOP.spawn.y)).toBe(false);
     let state = enterWorkshop(playFestivalDone(checkpoint()));
-    state = inspectNeed(state);
-    expect(state.evidence['4.2']).toBeUndefined();
-    state = openBuilder(state);
-    state = act(state, { type: 'BUILDER_BUILD' });
-    expect(state.workshopQuest.builtWithoutBrief).toBe(true);
-    expect(state.workshopQuest.boardKind).toBe('none');
-    expect(state.shopFeedback).toBe(WORKSHOP_FEEDBACK.buildWithoutBrief);
-    expect(state.evidence['4.2']).toBeUndefined();
-    state = act(state, { type: 'CLOSE_OVERLAY' });
-    state = playing(state);
-    state = act(at(state, WORLD_POS.briefDesk.x, WORLD_POS.briefDesk.y, 'workshop'), {
-      type: 'INTERACT',
-    });
-    state = act(state, { type: 'BRIEF_SET', field: 'constraints', value: 'paper_one_no_pay_chat' });
-    state = act(state, { type: 'BRIEF_SET', field: 'exclusions', value: 'no_extras' });
-    state = act(state, { type: 'BRIEF_SET', field: 'acceptance', value: 'slot_shows_booked' });
-    state = act(state, { type: 'CLOSE_OVERLAY' });
-    state = openBuilder(state);
-    state = act(state, { type: 'BUILDER_HAND' });
-    expect(state.shopFeedback).toBe(WORKSHOP_FEEDBACK.needScreens);
-    expect(state.workshopQuest.handedOff).toBe(false);
-    expect(state.evidence['4.2']).toBeUndefined();
-    state = act(state, { type: 'CLOSE_OVERLAY' });
-    state = fillSlimBrief(state);
-    state = handAndBuild(state);
-    expect(state.workshopQuest.handedOff).toBe(true);
-    expect(state.workshopQuest.boardKind).toBe('slim');
-    expect(state.evidence['4.2']).toBeUndefined();
-    state = matchResult(state);
-    expect(canAward42(state.workshopQuest)).toBe(true);
-    expect(state.evidence['4.2']).toBe('demonstrated');
-    expect(state.evidence['4.1']).toBeUndefined();
-  });
-});
-
-describe('4.1 appointment board', () => {
-  it('extras in brief and extra controls fail; booking a posted slot on the slim board awards', () => {
-    expect(EXTRAS_TEXT).toContain('دفع إلكتروني');
-    expect(SLOT_LABELS.sunday).toBe('الأحد — بعد العصر');
-    expect(SLOT_LABELS.monday).toBe('الاثنين — ضحى');
-    expect(SLOT_LABELS.tuesday).toBe('الثلاثاء — عصراً');
-    let state = enterWorkshop(playFestivalDone(checkpoint()));
-    state = inspectNeed(state);
-    state = fillSlimBrief(state);
-    state = playing(state);
-    state = act(at(state, WORLD_POS.briefDesk.x, WORLD_POS.briefDesk.y, 'workshop'), {
-      type: 'INTERACT',
-    });
-    state = act(state, { type: 'BRIEF_SET', field: 'extra', value: 'pay' });
-    expect(state.workshopQuest.extrasInBrief).toBe(true);
-    state = act(state, { type: 'CLOSE_OVERLAY' });
-    state = openBuilder(state);
-    state = act(state, { type: 'BUILDER_HAND' });
-    state = act(state, { type: 'BUILDER_BUILD' });
-    expect(state.workshopQuest.boardKind).toBe('bloated');
-    expect(state.shopFeedback).toBe(WORKSHOP_FEEDBACK.builtBloated);
-    state = act(state, { type: 'CLOSE_OVERLAY' });
-    state = skipExplain(state);
-    state = bookSunday(state);
-    expect(state.evidence['4.1']).toBeUndefined();
-    state = act(state, { type: 'BOARD_EXTRA', control: 'pay' });
-    expect(state.workshopQuest.extraControlUsed).toBe(true);
-    expect(state.shopFeedback).toBe(WORKSHOP_FEEDBACK.extraControl);
-    expect(canAward41(state.workshopQuest)).toBe(false);
-    state = act(state, { type: 'CLOSE_OVERLAY' });
-    state = fillSlimBrief(state);
-    expect(state.workshopQuest.extrasInBrief).toBe(false);
-    state = handAndBuild(state);
-    expect(state.workshopQuest.boardKind).toBe('slim');
-    state = bookSunday(state);
-    expect(state.workshopQuest.bookedSlot).toBe('sunday');
-    expect(canAward41(state.workshopQuest)).toBe(true);
-    expect(state.evidence['4.1']).toBe('demonstrated');
-  });
-});
-
-describe('workshop success', () => {
-  it('thanks the manager, posts the board, and keeps the robot unsupported', () => {
-    let state = enterWorkshop(playFestivalDone(checkpoint()));
-    state = inspectNeed(state);
-    state = fillSlimBrief(state);
-    state = handAndBuild(state);
-    state = matchResult(state);
-    expect(state.evidence['4.2']).toBe('demonstrated');
-    state = act(state, { type: 'CLOSE_OVERLAY' });
-    state = skipExplain(state);
-    state = bookSunday(state);
-    expect(state.evidence['4.1']).toBe('demonstrated');
-    expect(state.workshopQuest.servicePosted).toBe(true);
+    const before = listInteractables(state).map((item) => item.id);
+    expect(before).not.toContain('kiosk_docs');
+    expect(before).not.toContain('kiosk_vault');
+    expect(before).not.toContain('kiosk_face');
+    state = playToWorkshopDone(checkpoint());
     expect(state.storyObjective).toBe(OBJECTIVES.kioskWork);
+    expect(state.kioskQuest.kioskReady).toBe(false);
     expect(state.evidence['4.3']).toBeUndefined();
     expect(state.evidence['4.4']).toBeUndefined();
-    expect(state.kioskQuest.kioskReady).toBe(false);
-    expect(state.journalEvents.some((event) => event.id === 'service_posted')).toBe(true);
+    const after = listInteractables(state).map((item) => item.id);
+    expect(after).toContain('kiosk_docs');
+    expect(after).toContain('kiosk_vault');
+    expect(after).toContain('kiosk_face');
+    expect(JOURNAL_CAP).toBe(48);
+  });
+});
+
+describe('4.3 dummy key and simulated request', () => {
+  it('starts leaking, fails exposure and missing-key, and awards only after inspect + both fails + vault + clean face + 200', () => {
+    expect(DOCS_TEXT).toContain(API_PATH);
+    expect(DOCS_TEXT).toContain(API_HEADER);
+    expect(DOCS_TEXT).toContain(DEMO_SLOT_KEY);
+    expect(DOCS_TEXT).toContain('وهمي');
+    expect(KIOSK_FEEDBACK.missing).toBe('المفتاح غير موجود');
+    let state = playToWorkshopDone(checkpoint());
+    expect(faceLeaking(state)).toBe(true);
+    expect(state.kioskQuest.vaultHasKey).toBe(false);
+    state = openDocs(state);
+    expect(state.kioskQuest.inspectedDocs).toBe(true);
+    expect(state.evidence['4.3']).toBeUndefined();
+    state = openVault(state);
+    expect(state.kioskQuest.vaultHasKey).toBe(false);
+    state = act(state, { type: 'CLOSE_OVERLAY' });
+    state = openFace(state);
+    expect(state.mode).toBe('kiosk');
+    expect(state.kioskQuest.faceHasKey).toBe(true);
+    expect(state.kioskQuest.openedBroken).toBe(true);
+    state = act(state, { type: 'KIOSK_SEND' });
+    expect(state.kioskQuest.sawExposure).toBe(true);
+    expect(state.shopFeedback).toBe(KIOSK_FEEDBACK.exposure);
+    expect(state.evidence['4.3']).toBeUndefined();
+    state = act(state, { type: 'KIOSK_STRIP' });
+    expect(state.kioskQuest.faceHasKey).toBe(false);
+    state = act(state, { type: 'KIOSK_SEND' });
+    expect(state.kioskQuest.sawMissingKey).toBe(true);
+    expect(state.shopFeedback).toBe(KIOSK_FEEDBACK.missing);
+    expect(canAward43(state.kioskQuest)).toBe(false);
     state = act(state, { type: 'CLOSE_OVERLAY' });
     state = skipExplain(state);
+    state = openVault(state);
+    state = act(state, { type: 'KIOSK_VAULT_PUT' });
+    expect(state.kioskQuest.vaultHasKey).toBe(true);
+    state = act(state, { type: 'CLOSE_OVERLAY' });
+    state = openFace(state);
+    state = act(state, { type: 'KIOSK_SEND' });
+    expect(state.shopFeedback).toBe(KIOSK_FEEDBACK.ok200);
+    expect(state.kioskQuest.requestOk).toBe(true);
+    expect(canAward43(state.kioskQuest)).toBe(true);
+    expect(state.evidence['4.3']).toBe('demonstrated');
+    expect(state.evidence['4.4']).toBeUndefined();
+  });
+
+  it('inspect-only, vault-without-send, manager-talk, and robot تم do not award 4.3', () => {
+    let state = playToWorkshopDone(checkpoint());
+    state = openDocs(state);
+    expect(state.evidence['4.3']).toBeUndefined();
+    state = openVault(state);
+    state = act(state, { type: 'KIOSK_VAULT_PUT' });
+    state = act(state, { type: 'CLOSE_OVERLAY' });
+    expect(state.evidence['4.3']).toBeUndefined();
     state = act(at(state, WORLD_POS.manager.x, WORLD_POS.manager.y, 'workshop'), { type: 'INTERACT' });
     expect(state.dialogueNode).toBe('manager_thanks');
-    expect(DIALOGUE.manager_thanks.text(state.playerName)).toMatch(/شكراً/);
+    expect(state.evidence['4.3']).toBeUndefined();
+    state = act(state, { type: 'ADVANCE_DIALOGUE' });
+    state = openFace(state);
+    state = act(state, { type: 'KIOSK_ROBOT_DONE' });
+    expect(state.shopFeedback).toBe(KIOSK_FEEDBACK.robotDone);
+    expect(state.evidence['4.3']).toBeUndefined();
+  });
+});
+
+describe('4.4 RTL repair and manual lookup', () => {
+  it('starts LTR-broken, fails lookup until RTL, and awards only after isolate + lookup + checklist', () => {
+    expect(KIOSK_TITLE).toBe('احجز موعد المعاينة');
+    expect(CHECKLIST.title).toBe('العنوان من اليمين');
+    expect(CHECKLIST.slot).toContain('slot-id');
+    expect(CHECKLIST.lookup).toContain('التأكيد');
+    expect(KIOSK_FEEDBACK.fixRtl).toBe('أصلح اتجاه الواجهة أولاً');
+    let state = playToWorkshopDone(checkpoint());
+    state = openFace(state);
+    expect(state.kioskQuest.layoutRtl).toBe(false);
+    expect(state.kioskQuest.openedBroken).toBe(true);
+    state = act(state, { type: 'KIOSK_LOOKUP', slot: 'sunday' });
+    expect(state.shopFeedback).toBe(KIOSK_FEEDBACK.fixRtl);
+    expect(state.kioskQuest.lookupDone).toBe(false);
+    expect(state.evidence['4.4']).toBeUndefined();
+    state = act(state, { type: 'CLOSE_OVERLAY' });
+    expect(state.evidence['4.4']).toBeUndefined();
+    state = openFace(state);
+    state = act(state, { type: 'KIOSK_SET_RTL' });
+    state = act(state, { type: 'KIOSK_ISOLATE' });
+    state = act(state, { type: 'KIOSK_LOOKUP', slot: 'monday' });
+    expect(state.kioskQuest.lookupDone).toBe(true);
+    expect(state.shopFeedback).toContain('slot-id: mon-am');
+    expect(canAward44(state.kioskQuest)).toBe(false);
+    state = act(state, { type: 'CLOSE_OVERLAY' });
+    expect(state.evidence['4.4']).toBeUndefined();
+    state = openFace(state);
+    state = act(state, { type: 'KIOSK_CHECK', item: 'title' });
+    state = act(state, { type: 'KIOSK_CHECK', item: 'slot' });
+    state = act(state, { type: 'KIOSK_CHECK', item: 'lookup' });
+    expect(canAward44(state.kioskQuest)).toBe(true);
+    expect(state.evidence['4.4']).toBe('demonstrated');
+  });
+});
+
+describe('kiosk success', () => {
+  it('awards both ids, thanks the manager for the usable kiosk, and keeps the robot unsupported', () => {
+    let state = playToWorkshopDone(checkpoint());
+    state = openDocs(state);
+    state = openFace(state);
+    state = act(state, { type: 'KIOSK_SEND' });
+    state = act(state, { type: 'KIOSK_STRIP' });
+    state = act(state, { type: 'KIOSK_SEND' });
+    state = act(state, { type: 'CLOSE_OVERLAY' });
+    state = skipExplain(state);
+    state = openVault(state);
+    state = act(state, { type: 'KIOSK_VAULT_PUT' });
+    state = act(state, { type: 'CLOSE_OVERLAY' });
+    state = openFace(state);
+    state = act(state, { type: 'KIOSK_SEND' });
+    expect(state.evidence['4.3']).toBe('demonstrated');
+    state = act(state, { type: 'KIOSK_SET_RTL' });
+    state = act(state, { type: 'KIOSK_ISOLATE' });
+    state = act(state, { type: 'KIOSK_LOOKUP', slot: 'tuesday' });
+    state = act(state, { type: 'KIOSK_CHECK', item: 'title' });
+    state = act(state, { type: 'KIOSK_CHECK', item: 'slot' });
+    state = act(state, { type: 'KIOSK_CHECK', item: 'lookup' });
+    expect(state.evidence['4.4']).toBe('demonstrated');
+    expect(state.kioskQuest.kioskReady).toBe(true);
+    expect(state.storyObjective).toBe(OBJECTIVES.kioskReady);
+    expect(state.journalEvents.some((event) => event.id === 'kiosk_ready')).toBe(true);
+    expect(state.journalEvents.some((event) => event.id === 'service_posted')).toBe(true);
+    state = playing(state);
+    state = act(at(state, WORLD_POS.manager.x, WORLD_POS.manager.y, 'workshop'), { type: 'INTERACT' });
+    expect(state.dialogueNode).toBe('manager_kiosk_thanks');
+    expect(DIALOGUE.manager_kiosk_thanks.text(state.playerName)).toMatch(/كiosk/);
     state = act(state, { type: 'ADVANCE_DIALOGUE' });
     state = act(at(state, WORLD_POS.robot.x, WORLD_POS.robot.y, 'street'), { type: 'INTERACT' });
-    expect(state.dialogueNode).toBe('companion_after_workshop');
-    expect(DIALOGUE.companion_after_workshop.text(state.playerName)).toMatch(/مفتوحة دائماً|الدفع/);
+    expect(state.dialogueNode).toBe('companion_after_kiosk');
+    expect(DIALOGUE.companion_after_kiosk.text(state.playerName)).toMatch(/ضع المفتاح على الشاشة|Book appointment/);
     expect(robotPosition(state).x).toBe(state.position.x - 32);
     expect(JSON.stringify(state)).not.toMatch(/امتحان|اختبار نهائي|MCP|harness|شهادة/);
     expect(state.journalEvents.length).toBeLessThanOrEqual(JOURNAL_CAP);
-    expect(Object.keys(state.evidence).sort()).toEqual(
-      ['1.1', '1.2', '1.3', '1.4', '1.5', '1.6', '2.1', '2.2', '2.3', '2.4', '2.5', '2.6', '3.1', '3.2', '3.3', '3.4', '3.5', '4.1', '4.2'].filter(
-        (id) => state.evidence[id as keyof typeof state.evidence] === 'demonstrated',
-      ),
-    );
+    expect(state.evidence['4.3']).toBe('demonstrated');
+    expect(state.evidence['4.4']).toBe('demonstrated');
   });
 
-  it('hydrates missing workshopQuest as unstarted and keeps saveVersion 1', () => {
-    const state = playFestivalDone(checkpoint());
+  it('hydrates missing kioskQuest as unstarted with face leaking after posted, saveVersion 1', () => {
+    const state = playToWorkshopDone(checkpoint());
     const envelope = toEnvelope(state);
     expect(envelope.saveVersion).toBe(1);
-    const legacy = { ...envelope, workshopQuest: undefined, manager: undefined };
+    const legacy = { ...envelope, kioskQuest: undefined };
     const parsed = validateSave(JSON.stringify(legacy));
     expect(parsed).not.toBeNull();
     const hydrated = hydrateSave(parsed!, 'ok', false);
-    expect(hydrated.workshopQuest).toEqual(createWorkshopQuest());
-    expect(hydrated.manager).toBe('unmet');
-    expect(parseWorkshopQuest(undefined).phase).toBe('unstarted');
+    expect(hydrated.kioskQuest).toEqual(createKioskQuest());
+    expect(hydrated.kioskQuest.faceHasKey).toBe(false);
+    expect(hydrated.workshopQuest.servicePosted).toBe(true);
+    expect(faceLeaking(hydrated)).toBe(true);
+    expect(parseKioskQuest(undefined).phase).toBe('unstarted');
   });
 });

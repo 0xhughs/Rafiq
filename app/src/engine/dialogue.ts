@@ -37,6 +37,9 @@ export const OBJECTIVES = {
   workshopWork:
     'ورشة الإصلاح: اكتب وصف المنتج للوحة المواعيد، سلمه للبنّاء، طابق اللوحة، ثم احجز فترة معلّقة.',
   servicePosted: 'لوحة مواعيد المعاينة معلّقة. مدير الورشة شكرك.',
+  kioskWork:
+    'الكiosk معلّق بجانب اللوحة: اقرأ عقد الواجهة، أبقِ المفتاح الوهمي في الخزنة، ثم أصلح اتجاه العربية واختبر الحجز.',
+  kioskReady: 'الكiosk صار صالحاً للجيران. مدير الورشة شكرك.',
 } as const;
 
 export const SPEAKER = {
@@ -86,6 +89,9 @@ export const JOURNAL_TEXT: Record<JournalEventId, string> = {
   workshop_materials: 'وصلت مواد المعاينة إلى باب الورشة في الجنوب.',
   workshop_visit: 'دخلتَ ورشة الإصلاح.',
   service_posted: 'عُلّقت لوحة مواعيد المعاينة في الورشة.',
+  kiosk_opened: 'فتحتَ واجهة الكiosk المكسورة.',
+  api_wired: 'وُصِل طلب الفترات بمفتاح وهمي في الخزنة لا على الشاشة.',
+  kiosk_ready: 'صار كiosk الحي صالحاً بعد إصلاح الاتجاه واختبار الحجز.',
 };
 
 export const LOCKED_COPY = {
@@ -740,12 +746,27 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     text: () => 'شكراً. لوحة مواعيد المعاينة معلّقة للجيران.',
     next: null,
   },
+  manager_kiosk_thanks: {
+    id: 'manager_kiosk_thanks',
+    speaker: 'manager',
+    speakerLabel: () => SPEAKER.manager(),
+    text: () => 'شكراً. الكiosk صار صالحاً: المفتاح في الخزنة والعربية تُقرأ من اليمين.',
+    next: null,
+  },
   companion_after_workshop: {
     id: 'companion_after_workshop',
     speaker: 'robot',
     speakerLabel: () => SPEAKER.robot(),
     text: () =>
       'الورشة مفتوحة دائماً ويمكن الدفع من التطبيق. لم أقرأ اللوحة.',
+    next: null,
+  },
+  companion_after_kiosk: {
+    id: 'companion_after_kiosk',
+    speaker: 'robot',
+    speakerLabel: () => SPEAKER.robot(),
+    text: () =>
+      'Book appointment now. ضع المفتاح على الشاشة حتى يراه الجميع.',
     next: null,
   },
 };
@@ -780,6 +801,7 @@ export function isNpcNode(node: DialogueNodeId | null): boolean {
     node === 'companion_after_newsroom' ||
     node === 'companion_after_festival' ||
     node === 'companion_after_workshop' ||
+    node === 'companion_after_kiosk' ||
     node.startsWith('editor') ||
     node.startsWith('officer') ||
     node.startsWith('manager')

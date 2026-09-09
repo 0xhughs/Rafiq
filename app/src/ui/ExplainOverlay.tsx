@@ -4,6 +4,7 @@ import { LIBRARY_EXPLAIN } from '../engine/library';
 import { NEWSROOM_EXPLAIN } from '../engine/newsroom';
 import { FESTIVAL_EXPLAIN } from '../engine/festival';
 import { WORKSHOP_EXPLAIN } from '../engine/workshop';
+import { KIOSK_EXPLAIN } from '../engine/kiosk';
 import type { GameState } from '../engine/types';
 
 const NOTES = {
@@ -13,6 +14,7 @@ const NOTES = {
   ...NEWSROOM_EXPLAIN,
   ...FESTIVAL_EXPLAIN,
   ...WORKSHOP_EXPLAIN,
+  ...KIOSK_EXPLAIN,
 };
 
 interface Props {

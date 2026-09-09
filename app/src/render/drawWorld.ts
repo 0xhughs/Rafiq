@@ -708,6 +708,18 @@ function drawWorkshop(ctx: CanvasRenderingContext2D): void {
   fillRound(ctx, board.x + 4, board.y + 6, board.w - 8, board.h - 10, 4, '#ead9c0');
   ctx.fillStyle = '#163238';
   ctx.fillText('مواعيد', board.x + board.w / 2, board.y + 28);
+  const docs = FURNITURE.workshop.docs;
+  fillRound(ctx, docs.x + 4, docs.y + 6, docs.w - 8, docs.h - 10, 4, '#efe6d0');
+  ctx.fillStyle = '#2a2118';
+  ctx.fillText('عقد', docs.x + docs.w / 2, docs.y + 28);
+  const vault = FURNITURE.workshop.vault;
+  fillRound(ctx, vault.x + 4, vault.y + 6, vault.w - 8, vault.h - 10, 4, '#d7efe4');
+  ctx.fillStyle = '#163238';
+  ctx.fillText('خزنة', vault.x + vault.w / 2, vault.y + 28);
+  const kiosk = FURNITURE.workshop.kiosk;
+  fillRound(ctx, kiosk.x + 4, kiosk.y + 6, kiosk.w - 8, kiosk.h - 10, 4, '#f6d6c8');
+  ctx.fillStyle = '#7a241c';
+  ctx.fillText('كiosk', kiosk.x + kiosk.w / 2, kiosk.y + 28);
   const counter = FURNITURE.workshop.counter;
   fillRound(ctx, counter.x + 2, counter.y + 6, counter.w - 4, counter.h - 10, 6, PALETTE.workshop);
   ctx.fillStyle = '#ead9c0';
