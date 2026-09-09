@@ -1,0 +1,22 @@
+T01 state tests — Rafiq slice 07
+cwd: /workspace/app
+date: 2026-09-09T06:50:05Z
+command: npx vitest run
+
+87 tests passed (7 files). Coverage of AC01–AC03 predicates, hydrate, and fail paths:
+
+- street door G locked until newsroomQuest.workshopLead; after newsroom success G enters map festival without awarding 3.4/3.5 or workshopMaterials; 01–06 landmarks unchanged; WORLD_POS.robot remains {x:12*48+24,y:5*48+24}; MAP_IDS does not include workshop
+- 3.4 only after inspecting table+receipts, matching flags+cloth, water from receipt ٢٠ not table ١٥, cups غير معروف — لا إيصال, then اجمع المؤيَّد = ٤٠; inventing cups ٦/١٠, table water ١٥, robot total ٤٦, inspect-only all fail
+- 3.5 only after inspecting posted سياسة العمل والدراسة, stamp «صيغ بمساعدة الروبوت», human figures ٤٠ + cups unknown, human send not officer signature; robot cover already on desk; no stamp / robot figures ٤٦+cups ٦ / inspect-policy-only fail
+- both ids → officer thanks, workshopMaterials, street workshopDoorOpen; no workshop mapId; robot still invents عشرة/ستة وأربعون; hydrate missing festivalQuest as unstarted; saveVersion 1; JOURNAL_CAP 32
+
+----- raw vitest -----
+
+
+ RUN  v5.0.0 /workspace/app
+
+
+ Test Files  7 passed (7)
+      Tests  87 passed (87)
+   Start at  06:50:05
+   Duration  564ms (transform 67%, import 18%, tests 13%, worker 2%)

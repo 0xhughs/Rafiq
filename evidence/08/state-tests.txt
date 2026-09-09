@@ -1,0 +1,22 @@
+T01 state tests — Rafiq slice 08
+cwd: /workspace/app
+date: 2026-09-09T07:45:18Z
+command: npx vitest run
+
+92 tests passed (8 files). Coverage of AC01–AC03 predicates, hydrate, portal lock/open, and fail paths:
+
+- street door Y locked with locked_workshop until festivalQuest.workshopMaterials; after festival success Y portals into map workshop without awarding 4.1/4.2 or setting servicePosted; WORLD_POS landmarks unchanged (apartment door, dumpster, robot {x:12*48+24,y:5*48+24}, shop P, parcel R, library I, inner F, newsroom E, festival G); WORLD_POS.workshopDoor stays street Y; MAP_IDS includes workshop; JOURNAL_CAP 40
+- 4.2 only after inspect need + four authored brief parts (شاشات / قيود / استثناءات / قبول ملاحظ) + handoff + inspect-result match on the slim board; missing screens fails with specific retryable Arabic; build without brief refuses (no board); inspect-need-only does not award
+- 4.1 only after inspect need + extras excluded + one posted slot booked on the slim board (الأحد — بعد العصر / الاثنين — ضحى / الثلاثاء — عصراً → محجوز); extra in brief (دفع إلكتروني) builds bloated board and fails; extra control ادفع الآن fails visibly; then exclude, rebuild slim, book awards
+- both ids → manager thanks, servicePosted; evidence adds 4.1 and 4.2 only; robot still invents مفتوحة دائماً / الدفع; hydrate missing workshopQuest as unstarted and manager unmet; saveVersion 1
+
+----- raw vitest -----
+
+
+ RUN  v5.0.0 /workspace/app
+
+
+ Test Files  8 passed (8)
+      Tests  92 passed (92)
+   Start at  07:45:18
+   Duration  673ms (transform 66%, import 19%, tests 13%, worker 2%)

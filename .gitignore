@@ -1,0 +1,15 @@
+node_modules/
+dist/
+coverage/
+test-results/
+playwright-report/
+blob-report/
+.vite/
+app/node_modules/
+app/dist/
+.loop/snapshots/
+.loop/contract/
+.DS_Store
+*.log
+.env
+.env.local

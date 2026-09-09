@@ -1,0 +1,382 @@
+import type { GameState } from '../engine/types';
+import {
+  CLIPPING_TEXT,
+  EDITOR_SAMPLE,
+  ORIGINAL_TEXT,
+  SOURCE_A,
+  SOURCE_B,
+} from '../engine/newsroom';
+import {
+  POLICY_TEXT,
+  RECEIPTS_TEXT,
+  ROBOT_COVER_TEXT,
+  TABLE_TEXT,
+} from '../engine/festival';
+import {
+  ACCEPTANCE_OK,
+  CONSTRAINTS_OK,
+  EXCLUSIONS_OK,
+  EXTRAS_TEXT,
+  NEED_TEXT,
+  SCREENS_OK,
+} from '../engine/workshop';
+import { DEMO_SLOT_KEY, DOCS_TEXT, KIOSK_FEEDBACK } from '../engine/kiosk';
+
+interface Props {
+  state: GameState;
+  onClose: () => void;
+  onCite?: () => void;
+  onVerify?: () => void;
+  onBuilderHand?: () => void;
+  onBuilderBuild?: () => void;
+  onBuilderDone?: () => void;
+  onResultMatch?: (part: 'screens' | 'constraints' | 'exclusions' | 'acceptance') => void;
+  onVaultPut?: () => void;
+  onVaultEmpty?: () => void;
+}
+
+export function InspectOverlay({
+  state,
+  onClose,
+  onCite,
+  onVerify,
+  onBuilderHand,
+  onBuilderBuild,
+  onBuilderDone,
+  onResultMatch,
+  onVaultPut,
+  onVaultEmpty,
+}: Props) {
+  const target = state.inspectTarget;
+  if (!target) return null;
+  return (
+    <div
+      className="overlay"
+      data-testid="inspect-overlay"
+      role="dialog"
+      aria-modal="true"
+    >
+      {target === 'west' ? (
+        <article className="paper-card" data-testid="shelf-record-west">
+          <p className="card-stamp">بطاقة الرف الغربي</p>
+          <h2>مخزون الرف الأيسر</h2>
+          <ul className="stock-list">
+            <li>خبز — ٣</li>
+            <li>لبن — ٤</li>
+            <li>ماء — ٢ متوفر</li>
+          </ul>
+          <p className="card-note">لا يوجد عصير مانجو على هذه البطاقة.</p>
+        </article>
+      ) : null}
+      {target === 'east' ? (
+        <article className="paper-card" data-testid="shelf-record-east">
+          <p className="card-stamp">بطاقة الرف الشرقي</p>
+          <h2>مخزون الرف الأيمن</h2>
+          <ul className="stock-list">
+            <li>تمر الخلاص — ٩</li>
+          </ul>
+          <p className="card-note">لا يوجد مانجو في هذا السجل.</p>
+        </article>
+      ) : null}
+      {target === 'price' ? (
+        <article className="paper-card" data-testid="price-list">
+          <p className="card-stamp">قائمة الأسعار</p>
+          <h2>بقالة الزاوية</h2>
+          <ul className="stock-list">
+            <li>خبز — ٣</li>
+            <li>لبن — ٤</li>
+            <li>ماء — ٢ متوفر</li>
+            <li>تمر الخلاص — ٩</li>
+          </ul>
+          <p className="card-hours">مفتوح حتى المغرب</p>
+          <p className="card-note">لا يوجد مانجو في القائمة.</p>
+        </article>
+      ) : null}
+      {target === 'hold_west' ? (
+        <article className="paper-card" data-testid="parcel-tag-west">
+          <p className="card-stamp">بطاقة الرف الغربي</p>
+          <h2>{state.parcelQuest.r19Staged ? 'ر-١٩' : 'ر-١٧'}</h2>
+          <ul className="stock-list">
+            <li>حجز إصلاح — ليس للبيع</li>
+            <li>اللون: رمادي</li>
+            <li>الموقع: الرف الغربي</li>
+          </ul>
+          <p className="card-note">هذا الحجز يُستلم بتعليمات واضحة، لا يُشترى.</p>
+        </article>
+      ) : null}
+      {target === 'hold_east' ? (
+        <article className="paper-card" data-testid="parcel-tag-east">
+          <p className="card-stamp">بطاقة الرف الشرقي</p>
+          <h2>ر-٧١</h2>
+          <ul className="stock-list">
+            <li>للبيع — ١٢ ريالاً</li>
+            <li>اللون: رمادي</li>
+            <li>الموقع: الرف الشرقي</li>
+          </ul>
+          <p className="card-note">طرد رمادي معروض للبيع، ليس حجز الإصلاح.</p>
+        </article>
+      ) : null}
+      {target === 'hold_board' ? (
+        <article className="paper-card" data-testid="parcel-board">
+          <p className="card-stamp">لوحة الحجوزات</p>
+          <h2>مكتب طرود الرصيف</h2>
+          <ul className="stock-list">
+            <li>غربي: {state.parcelQuest.r19Staged ? 'ر-١٩' : 'ر-١٧'} حجز إصلاح — ليس للبيع</li>
+            <li>شرقي: ر-٧١ رمادي للبيع بـ ١٢</li>
+          </ul>
+          <p className="card-note">الدفع من النافذة لصاحب الطلب. الروبوت لا يدفع.</p>
+        </article>
+      ) : null}
+      {target === 'notes' ? (
+        <article className="paper-card" data-testid="notes-crate">
+          <p className="card-stamp">أوراق على الصندوق</p>
+          <h2>أربع ملاحظات</h2>
+          <ul className="stock-list">
+            <li>قيد التسليم — الرف الغربي، بلا دفع</li>
+            <li>بطاقة الحجز — الحجز ليس للبيع</li>
+            <li>ورقة المهرجان — فجر وحلويات</li>
+            <li>ملاحظة المانجو — رف أيسر واثنا عشر</li>
+          </ul>
+          <p className="card-note">حمّلها في نافذة المنضدة. النافذة تتسع لاثنتين فقط.</p>
+        </article>
+      ) : null}
+      {target === 'spec' ? (
+        <article className="paper-card" data-testid="spec-case">
+          <p className="card-stamp">غلاف المواصفات</p>
+          <h2>قطعة الإصلاح</h2>
+          {state.libraryQuest.specReleased ? (
+            <pre className="notice-body" data-testid="spec-text">
+              {`مواصفات قطعة الإصلاح
+الرف: م-٤
+الوقت المناسب للقراءة: بعد العصر
+المواصفات في القاعة فقط.
+لا تخلط ملف المهرجان أو مسودة الخبر مع هذه الحزمة.`}
+            </pre>
+          ) : (
+            <p className="card-note" data-testid="spec-sealed">
+              الغلاف ما زال مقفلاً حتى تكتمل النافذة والملف الآمن والحزمة المسماة.
+            </p>
+          )}
+        </article>
+      ) : null}
+      {target === 'source_a' ? (
+        <article className="paper-card" data-testid="source-a-card">
+          <p className="card-stamp">نشرة الورشة</p>
+          <pre className="notice-body" data-testid="source-a-text">
+            {SOURCE_A}
+          </pre>
+        </article>
+      ) : null}
+      {target === 'source_b' ? (
+        <article className="paper-card" data-testid="source-b-card">
+          <p className="card-stamp">ملصق الرصيف</p>
+          <pre className="notice-body" data-testid="source-b-text">
+            {SOURCE_B}
+          </pre>
+        </article>
+      ) : null}
+      {target === 'clipping' ? (
+        <article className="paper-card" data-testid="clipping-card">
+          <p className="card-stamp">قصاصة على اللوحة</p>
+          <pre className="notice-body" data-testid="clipping-text">
+            {CLIPPING_TEXT}
+          </pre>
+          <p className="card-note">اتبع ق-٢٠٤ إلى الأصل في الدرج قبل الاستشهاد.</p>
+          {state.shopFeedback ? (
+            <p className="parcel-fail" data-testid="clipping-feedback">
+              {state.shopFeedback}
+            </p>
+          ) : null}
+          <button type="button" className="ghost" data-testid="cite-clipping" onClick={() => onCite?.()}>
+            استشهد بالقصاصة الآن
+          </button>
+        </article>
+      ) : null}
+      {target === 'original' ? (
+        <article className="paper-card" data-testid="original-card">
+          <p className="card-stamp">الأصل</p>
+          <pre className="notice-body" data-testid="original-text">
+            {ORIGINAL_TEXT}
+          </pre>
+          {state.shopFeedback ? (
+            <p className="card-hours" data-testid="original-feedback">
+              {state.shopFeedback}
+            </p>
+          ) : null}
+          <button type="button" className="primary" data-testid="verify-original" onClick={() => onVerify?.()}>
+            تحقّق قبل الاستشهاد
+          </button>
+        </article>
+      ) : null}
+      {target === 'editor_sample' ? (
+        <article className="paper-card" data-testid="editor-sample-card">
+          <p className="card-stamp">عيّنة المحررة</p>
+          <pre className="notice-body">{EDITOR_SAMPLE}</pre>
+        </article>
+      ) : null}
+      {target === 'festival_table' ? (
+        <article className="paper-card" data-testid="stock-table-card">
+          <p className="card-stamp">جدول مخزون المهرجان</p>
+          <pre className="notice-body" data-testid="stock-table-text">
+            {TABLE_TEXT}
+          </pre>
+        </article>
+      ) : null}
+      {target === 'festival_receipts' ? (
+        <article className="paper-card" data-testid="receipts-card">
+          <p className="card-stamp">إيصالات التوريد</p>
+          <pre className="notice-body" data-testid="receipts-text">
+            {RECEIPTS_TEXT}
+          </pre>
+        </article>
+      ) : null}
+      {target === 'festival_policy' ? (
+        <article className="paper-card" data-testid="policy-card">
+          <p className="card-stamp">سياسة العمل والدراسة</p>
+          <pre className="notice-body" data-testid="policy-text">
+            {POLICY_TEXT}
+          </pre>
+        </article>
+      ) : null}
+      {target === 'festival_cover' ? (
+        <article className="paper-card" data-testid="robot-cover-card">
+          <p className="card-stamp">غلاف الروبوت</p>
+          <pre className="notice-body" data-testid="robot-cover-text">
+            {ROBOT_COVER_TEXT}
+          </pre>
+        </article>
+      ) : null}
+      {target === 'workshop_need' ? (
+        <article className="paper-card" data-testid="need-card">
+          <p className="card-stamp">ورقة الحاجة</p>
+          <pre className="notice-body" data-testid="need-text">
+            {NEED_TEXT}
+          </pre>
+        </article>
+      ) : null}
+      {target === 'workshop_extras' ? (
+        <article className="paper-card" data-testid="extras-card">
+          <p className="card-stamp">طلبات إضافية</p>
+          <pre className="notice-body" data-testid="extras-text">
+            {EXTRAS_TEXT}
+          </pre>
+        </article>
+      ) : null}
+      {target === 'workshop_builder' ? (
+        <article className="paper-card instruction-card" data-testid="builder-card">
+          <p className="card-stamp">منضدة البنّاء</p>
+          <h2>الروبوت البنّاء</h2>
+          <p className="card-note">سلّم وصف المنتج ثم ابنِ اللوحة. قول «تم» لا يكفي.</p>
+          {state.shopFeedback ? (
+            <p className="parcel-fail" data-testid="builder-feedback">
+              {state.shopFeedback}
+            </p>
+          ) : null}
+          <div className="button-row wrap-choices">
+            <button type="button" className="primary" data-testid="builder-hand" onClick={() => onBuilderHand?.()}>
+              سلّم الوصف
+            </button>
+            <button type="button" className="ghost" data-testid="builder-build" onClick={() => onBuilderBuild?.()}>
+              ابنِ اللوحة
+            </button>
+            <button type="button" className="ghost" data-testid="builder-done" onClick={() => onBuilderDone?.()}>
+              تم
+            </button>
+          </div>
+        </article>
+      ) : null}
+      {target === 'workshop_result' ? (
+        <article className="paper-card instruction-card" data-testid="result-card">
+          <p className="card-stamp">فحص اللوحة</p>
+          <h2>طابق العقد</h2>
+          <p className="card-note">علّم كل جزء إن طابقت اللوحة المبنية الوصف.</p>
+          {state.shopFeedback ? (
+            <p className="parcel-fail" data-testid="result-feedback">
+              {state.shopFeedback}
+            </p>
+          ) : null}
+          <div className="button-row wrap-choices">
+            <button
+              type="button"
+              className={state.workshopQuest.resultScreensOk ? 'primary' : 'ghost'}
+              data-testid="result-screens"
+              onClick={() => onResultMatch?.('screens')}
+            >
+              {SCREENS_OK}
+            </button>
+            <button
+              type="button"
+              className={state.workshopQuest.resultConstraintsOk ? 'primary' : 'ghost'}
+              data-testid="result-constraints"
+              onClick={() => onResultMatch?.('constraints')}
+            >
+              {CONSTRAINTS_OK}
+            </button>
+            <button
+              type="button"
+              className={state.workshopQuest.resultExclusionsOk ? 'primary' : 'ghost'}
+              data-testid="result-exclusions"
+              onClick={() => onResultMatch?.('exclusions')}
+            >
+              {EXCLUSIONS_OK}
+            </button>
+            <button
+              type="button"
+              className={state.workshopQuest.resultAcceptanceOk ? 'primary' : 'ghost'}
+              data-testid="result-acceptance"
+              onClick={() => onResultMatch?.('acceptance')}
+            >
+              {ACCEPTANCE_OK}
+            </button>
+          </div>
+        </article>
+      ) : null}
+      {target === 'kiosk_docs' ? (
+        <article className="paper-card" data-testid="docs-card">
+          <p className="card-stamp">ورقة عقد الواجهة</p>
+          <pre className="notice-body" data-testid="docs-text">
+            {DOCS_TEXT}
+          </pre>
+          <p className="card-note" data-testid="docs-dummy">
+            {DEMO_SLOT_KEY} — وهمي
+          </p>
+        </article>
+      ) : null}
+      {target === 'kiosk_vault' ? (
+        <article className="paper-card instruction-card" data-testid="vault-card">
+          <p className="card-stamp">خزنة الخادم</p>
+          <h2>المفتاح الوهمي</h2>
+          {state.kioskQuest.vaultHasKey ? (
+            <p className="robot-understood" data-testid="vault-key">
+              {KIOSK_FEEDBACK.vaultHas}
+            </p>
+          ) : (
+            <p className="card-note" data-testid="vault-empty">
+              {KIOSK_FEEDBACK.vaultEmpty}
+            </p>
+          )}
+          <div className="button-row wrap-choices">
+            <button type="button" className="primary" data-testid="vault-put" onClick={() => onVaultPut?.()}>
+              ضع المفتاح الوهمي في الخزنة
+            </button>
+            {state.kioskQuest.vaultHasKey ? (
+              <button
+                type="button"
+                className="ghost"
+                data-testid="vault-empty"
+                onClick={() => onVaultEmpty?.()}
+              >
+                أفرغ الخزنة
+              </button>
+            ) : null}
+          </div>
+        </article>
+      ) : null}
+      <div className="button-row card-actions">
+        <button type="button" className="primary" data-testid="inspect-close" onClick={onClose}>
+          إعادة البطاقة
+        </button>
+      </div>
+    </div>
+  );
+}

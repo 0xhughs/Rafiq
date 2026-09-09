@@ -1,0 +1,73 @@
+T05 project checks — Rafiq slice 07
+cwd: /workspace/app
+date: 2026-09-09T06:50:05Z
+node: v22.14.0
+npm: 10.9.7
+chrome: Google Chrome 148.0.7778.96    (/usr/bin/google-chrome)
+
+Note: this Cloud Agent environment had Vite already listening on 5173 (another
+checkout) and 5178. Playwright preview used port 4180 (free). Dev e2e used a
+fresh Vite on 5179 with BASE_URL=http://127.0.0.1:5179 and no reuseExistingServer.
+
+===== typecheck (npx tsc --noEmit) =====
+
+tsc_root_exit: 0
+
+===== typecheck (npx tsc --noEmit -p tsconfig.app.json) =====
+
+tsc_app_exit: 0
+
+===== lint (eslint .) =====
+
+
+> app@0.0.0 lint
+> eslint .
+
+
+lint exit: 0
+
+===== unit tests (npx vitest run) =====
+
+
+ RUN  v5.0.0 /workspace/app
+
+
+ Test Files  7 passed (7)
+      Tests  87 passed (87)
+   Start at  06:50:05
+   Duration  564ms (transform 67%, import 18%, tests 13%, worker 2%)
+
+
+test exit: 0
+
+===== production build (tsc -b && vite build) =====
+
+
+> app@0.0.0 build
+> tsc -b && vite build
+
+vite v6.4.3 building for production...
+transforming...
+✓ 74 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                                      0.64 kB │ gzip:   0.39 kB
+dist/assets/index-Dqy6jw9C.css                                      20.28 kB │ gzip:   4.36 kB
+dist/assets/index-DxQ7TB0m.js                                      416.39 kB │ gzip: 115.19 kB
+✓ built in 815ms
+
+build exit: 0
+
+===== playwright vs preview =====
+
+$ env -u BASE_URL npx playwright test
+webServer: npx vite preview --host 127.0.0.1 --port 4180 --strictPort
+36 passed (1.6m)
+exit: 0
+
+===== playwright vs vite dev =====
+
+$ npx vite --host 127.0.0.1 --port 5179
+$ BASE_URL=http://127.0.0.1:5179 npx playwright test
+36 passed (1.7m)
+exit: 0

@@ -30,17 +30,16 @@ These are explicit design proposals chosen to make the pack usable. They can be 
 - Reference projects inform design; they do not replace this product. See REFERENCES.md for the eight related game repositories, corrected LearnAI source, historical wrong-repo pointer and per-source reuse decisions.
 
 ## Loop target
-Proposed target for a future authorized run: complete and independently accept slices **01–17**, then satisfy the release gates below and stop.
-Current authorization: prepare and export this planning pack only. No build loop, deployment, repository modification, scheduler or background work has been authorized by this delivery.
-Before execution, confirm the user's authorized target; an explicit request to run this pack's full target may adopt 01–17. If the user authorizes only a subset, update target membership and milestone gates before dispatch. Slice 18 is outside the target.
+Authorized target for this run: complete and independently accept slices **01–17**, then satisfy the release gates below and stop.
+Current authorization: On 8 September 2026 the user asked to read the project files, start the loop, and complete each loop until the full website is fully built. That request adopts slices 01–17. Slice 18 remains outside the target. This checkout (`github.com/0xhughs/Rafiq`) is the implementation repository. The adventure is a separate Vite + React + TypeScript app under `app/`; joufbot/LearnAI is curriculum/reference only and is not modified.
 
 ## Run status
-Prepared
+Running
 
 ## Open decisions
 - Product name, robot name and final art treatment: working title and visual baseline are provisional; settle before production-art approval. They do not block the opening prototype.
 - Exact intended age range and reading level: beginners are specified, ages are not. Use clear Arabic without adult-only assumptions; resolve before broad user testing.
-- Runtime destination: a separate implementation project versus an isolated integration in joufbot/LearnAI must be identified when execution begins. This export changes neither repository.
+- Runtime destination: resolved 8 September 2026 under existing authority. Implement in this Rafiq checkout as `app/`. Do not integrate into joufbot/LearnAI. Do not replace any running LearnAI course.
 - Optional legacy services: public certificate verification, a locked server-side name registry and remote analytics exist in LearnAI, but are not requirements in the user's game concept. Baseline v1 uses local saves and local certificate downloads. Any retained public registry or new personal-data collection needs an explicit product decision before that service is implemented.
 - Browser release matrix proposed: current stable Chrome and Edge on Windows, Firefox on Windows, and Safari on macOS, with tested versions recorded at release. If a test environment is unavailable, retain the untested gap or obtain an explicit release-scope decision; do not claim support from code inspection alone.
 
@@ -111,9 +110,6 @@ Each row names the **primary earning action** and slice that owns its evidence. 
 - Existing lesson 6.4's review intent is preserved as a capstone. Its legacy 25-question/25-minute exam and percentage thresholds are deliberately replaced by game evidence under the user's new concept.
 
 ## Shipped
-- None. Existing LearnAI implementation is reference material, not work accepted under this new protocol.
-
-## Now
 ### 01 Wake up and meet the robot
 Goal: Play the complete opening and choose to help the robot.
 Provides:
@@ -122,8 +118,11 @@ Provides:
 Depends on: none
 Target membership: inside
 Out: persistent saves, store puzzle, full campaign, live AI and certificate.
+Archive: `slices/01-wake-up-and-meet-the-robot.md`
+Approved contract: `4db465f5267ec9d6deda0bfce6ef8277091d3e84d1d936736a7c90e1eed0ddc2`
+Approved candidate: `84a55200ef09c2d1ab29df0892a002ef291488986cc14560efa95647d94d0b1d`
+Implementation approval dispatch: `d-20260908-003-implrev-01`
 
-## Later
 ### 02 Return to a living neighborhood
 Goal: Continue a saved adventure reliably and navigate its shared city spaces.
 Provides:
@@ -131,6 +130,10 @@ Provides:
 - Reusable NPC interactions, doors, companion presence and idempotent story gates; original course saves remain separate.
 Depends on: 01
 Target membership: inside
+Archive: `slices/02-return-to-a-living-neighborhood.md`
+Approved contract: `b7f85a536ef8ae535e3892b6636b0a0a7cad70f3bdd2d27ae67590c14fa442d9`
+Approved candidate: `f1feab0147e6f41f01c86f58a8d05e136cce7c84a706e1508b3d8bfcb424eb4f`
+Implementation approval dispatch: `d-20260908-007-implrev-02`
 
 ### 03 The price that was never checked
 Goal: Help the shopkeeper using supported information instead of the robot's confidence.
@@ -139,6 +142,10 @@ Provides:
 - A repair lead and verification habit; the robot can still make unsupported claims later. Covers 1.1, 1.2, 1.3, 1.6.
 Depends on: 02
 Target membership: inside
+Archive: `slices/03-the-price-that-was-never-checked.md`
+Approved contract: `a609b8b90a350d89b672c4a997de338b496688cb8440d5428e23518b304ee8ca`
+Approved candidate: `92f284d762df78170e148633ff3eb9e82626225306a9b4807463de7380c89257`
+Implementation approval dispatch: `d-20260908-011-implrev-03`
 
 ### 04 The wrong parcel
 Goal: Guide the robot to retrieve the intended repair component through clear, revisable instructions.
@@ -147,6 +154,10 @@ Provides:
 - Player-retained purchase approval and a visible communication repair. Covers 2.1, 2.2, 2.4.
 Depends on: 03
 Target membership: inside
+Archive: `slices/04-the-wrong-parcel.md`
+Approved contract: `14ded8bd2eba6ee19c51093e7a790df7feb1bec1ce8718d1a15d7104d4a4e63d`
+Approved candidate: `7cba3a83b9f8733ca19d79f67624b3b477a53b9819a90e009d2c923ae719695f`
+Implementation approval dispatch: `d-20260908-015-implrev-04`
 
 ### 05 A place for the right memories
 Goal: Carry the relevant information forward without sharing private data.
@@ -155,6 +166,10 @@ Provides:
 - A visible context module and renewed access to a repair specification. Covers 1.4, 1.5, 2.5.
 Depends on: 04
 Target membership: inside
+Archive: `slices/05-a-place-for-the-right-memories.md`
+Approved contract: `4e7db2744f2ffb8738c9dcd015e207bef0313ef2df5e40618018f4451ed3b45a`
+Approved candidate: `158b856de69c486c49559dc92c27ab91a1822a0e132aba2d003448de648d0a8d`
+Implementation approval dispatch: `d-20260908-019-implrev-05`
 
 ### 06 A notice the neighborhood can trust
 Goal: Produce a useful, sourced community notice and repair-request draft.
@@ -163,6 +178,10 @@ Provides:
 - A reviewed notice/request that changes an NPC response and opens the workshop lead. Covers 2.3, 2.6, 3.1, 3.2, 3.3.
 Depends on: 05
 Target membership: inside
+Archive: `slices/06-a-notice-the-neighborhood-can-trust.md`
+Approved contract: `a192c6eca98845b4ee79ec30489bd0d17c2f1d89f829c344f8c44b173410a8b2`
+Approved candidate: `51ee56d805700a58f3377f812c7ed404b861844bed62ca4ede71ba30f150c957`
+Implementation approval dispatch: `d-20260908-023-implrev-06`
 
 ### 07 The missing festival numbers
 Goal: Help the festival office plan from honest records and a permitted use of AI.
@@ -171,6 +190,10 @@ Provides:
 - A corrected manifest that supplies workshop materials. Covers 3.4, 3.5.
 Depends on: 06
 Target membership: inside
+Archive: `slices/07-the-missing-festival-numbers.md`
+Approved contract: `f521d4d6bbfceeb572750066fb9c5044443f7beb784c7b1c630ad4634c910ea1`
+Approved candidate: `b21f3762b9f113adc83d93718a92addde8524c443862bcddba68f664a168c650`
+Implementation approval dispatch: `d-20260908-027-implrev-07`
 
 ### 08 One small service
 Goal: Help the workshop build a narrowly scoped service for one neighborhood need.
@@ -179,6 +202,10 @@ Provides:
 - Deliberate handling of feature requests that exceed the brief. Covers 4.1, 4.2.
 Depends on: 07
 Target membership: inside
+Archive: `slices/08-one-small-service.md`
+Approved contract: `efdcb5a71dd206fc5689e409b1f98d364851d495a0831fac1ae6c3cb69f02411`
+Approved candidate: `a0ea63ff03ad96eb3fd5fb90a6e326ee001e9097334da5caac8fcee2c80eff4d`
+Implementation approval dispatch: `d-20260908-031-implrev-08`
 
 ### 09 The kiosk speaks Arabic
 Goal: Make the workshop service usable through a correct interface contract and readable Arabic UI.
@@ -187,7 +214,12 @@ Provides:
 - RTL and mixed-text repair, keyboard/manual checks and a usable city kiosk. Covers 4.3, 4.4.
 Depends on: 08
 Target membership: inside
+Archive: `slices/09-the-kiosk-speaks-arabic.md`
+Approved contract: `45f68f8987d184ba72f15970270aa506737e5bd37ec2b7efdc3123d0bfc57601`
+Approved candidate: `a6c3018582acd8bf0737ff9e684ed063eeb4a9ed32a8d3362184e1af3bc248b6`
+Implementation approval dispatch: `d-20260908-035-implrev-09`
 
+## Now
 ### 10 Fix the version people actually use
 Goal: Diagnose and repair the kiosk's simulated deployed version within a safe scope.
 Provides:
@@ -195,6 +227,8 @@ Provides:
 - Rejection of an unsafe/out-of-scope command; no real shell or deployment is accessible. Covers 4.5, 4.6, 5.4.
 Depends on: 09
 Target membership: inside
+
+## Later
 
 ### 11 Give the robot a bounded job
 Goal: Turn the robot's plan into supervised action with visible limits.

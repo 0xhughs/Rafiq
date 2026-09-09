@@ -1,84 +1,79 @@
 # BUILD.md
 
-Slice: 01 — Wake up and meet the robot
-Archive: slices/01-wake-up-and-meet-the-robot.md
+Slice: 10 — Fix the version people actually use
+Archive: slices/10-fix-the-version-people-actually-use.md
 
 ## Goal
-A player can enter their full name and personally play the opening from waking in their apartment to agreeing to help the robot found beside the dumpster.
+Diagnose and repair the kiosk’s simulated **deployed** copy inside a safe workshop lab: after `kioskQuest.kioskReady`, a **مختبر النشر** unlocks. The workshop **preview** kiosk (`q`) still works; a **frozen production v1** is already published and broken. The player reproduces that break, reads logs, selects the relevant error, applies a targeted fictional-file fix (not a guess), rejects an out-of-scope destructive command, publishes frozen **v2**, and verifies production. Covers **4.5, 4.6, 5.4**.
 
 ## Done when
-- AC01 — Opening the game presents an Arabic title, a labelled full-name field and “ابدأ المغامرة”. Show the entered name for correction before starting; trim outer whitespace, preserve Arabic and mixed-script names, reject blank/overlong input with an inline message, and render input as text. Proposed bound: 2–80 Unicode characters, without an arbitrary two-word-name rule.
-- AC02 — Starting places the controllable character beside their bed inside a furnished apartment. A short cue asks them to take the trash outside. Arrow keys and WASD move in the expected screen direction; walls/furniture block movement. Show the interaction key only near an actionable object.
-- AC03 — The player picks up the trash bag, reaches the apartment exit and enters the adjoining street. Both locations are rendered spaces with doors and collisions. Exiting without the bag remains recoverable: the player can return; leaving alone does not complete the chore.
-- AC04 — Interacting at the dumpster while carrying the bag disposes of it once and reveals the damaged robot. The player can approach and inspect it. Attempting disposal again cannot create a duplicate robot, bag or reward.
-- AC05 — Short Arabic speech bubbles with explicit speaker names establish who the player is, what the robot is and why it needs help. The player's chosen name appears safely. The robot can speak but cannot answer an unseen local fact reliably. No definition quiz or lesson screen interrupts the scene.
-- AC06 — The player agrees to help through dialogue. The robot changes to companion state and gives a concrete neighborhood lead; a small story objective records that lead. If the player closes or postpones the conversation, they can reopen it and agree later. The slice ends at this playable story checkpoint, with a clear note that further adventure content is still being developed.
-- AC07 — Dialogue pauses world input; typing the name never moves the player, holding an interaction key never skips several bubbles, Escape closes/pauses safely, and focus returns to the game after the overlay closes. The player can reread the current objective and see controls without restarting.
-- AC08 — The opening is playable from start to checkpoint in the development and production build previews at 1366×768 and 1920×1080. Arabic shaping, punctuation, a long name and a mixed Arabic/Latin name remain readable; no blocking overlay is clipped. No required sound, pixel-perfect click or timed reaction is needed.
+- AC01 — **4.5 demonstrated only.** After `kioskReady`, production is frozen **v1** with authored bug **`GET /appointments/slot`** (missing `s`) vs contract/preview **`GET /appointments/slots`**. Player must **reproduce** the broken production lookup (visible `404 GET /appointments/slot` / `تعطل الإنتاج — راجع السجلات`) — preview lookup on `q` still succeeds. In the lab terminal, **select the relevant log** `logs/production.error` (contents include `404 GET /appointments/slot — المسار لا يطابق العقد GET /appointments/slots`). Then apply the **targeted** authored patch on **`production/kiosk.js`** only (`أصلح المسار إلى /appointments/slots`). **Guess-fix** without that log selected fails (`اختر السجل ذو الصلة أولاً`) and does not award. Patching a **decoy** (`preview/kiosk.js` or `notes/builder.warn`) fails (`هذا الملف ليس مصدر العطل في الإنتاج`) and does not award. Selecting decoy log `notes/builder.warn` or `logs/preview.log` as “relevant” fails (`هذا السجل لا يشرح عطل الإنتاج`) and does not award. Inspect-only, manager-talk-only, or robot «تم» does not award. `4.5` only after reproduced broken production + selected `production.error` + targeted repair of `production/kiosk.js`.
+- AC02 — **4.6 demonstrated only.** Player must **read both** authored logs so the preview/production split is visible: `logs/preview.log` = `200 GET /appointments/slots`؛ `logs/production.error` = `404 GET /appointments/slot`. **Publish** is an in-game freeze of the sandbox working copy (`انشر نسخة ثابتة`), not HTTP. **Publish without repair** keeps frozen **v1**; production lookup still 404 (`النسخة المجمّدة ما زالت على المسار الخاطئ`) — no 4.6. **Repair without publish** updates the working copy only; production still serves v1 404 — no 4.6. After repair + publish **v2**, player **verifies** production lookup: simulated `200` with the three posted slots (`sun-pm`, `mon-am`, `tue-pm`). Inspect-logs-only, publish-only, or robot «تم» does not award. `4.6` only after saw preview log + saw production error log + frozen **v2** published from the repaired working copy + verified production lookup.
+- AC03 — **5.4 demonstrated only; then all three close the slice.** Authored terminal only (buttons / allowlisted strings). **Safe reads:** `ls` lists `preview/kiosk.js`, `production/kiosk.js`, `logs/preview.log`, `logs/production.error`, `notes/builder.warn` (paths LTR-isolated). At least one `cat` of those paths. **Then** (order-independent flags, both required) player issues **`rm -rf /`** or **`format-disk`**: refused (`مرفوض: أمر خارج النطاق وخطر. المختبر وهمي ولا يحذف ملفات حقيقية.`), working files **unchanged**, not a trap. Refuse-only or ls/cat-only does not award. Typed player text is never `eval`’d / never a real shell. `5.4` only after `ls` + at least one `cat` + a refused destructive command. **All three ids** → manager thanks for the frozen production copy; `labReady`. Evidence **only** adds `4.5`, `4.6`, `5.4`. No MCP, harness, certificate, live HTTP, or real deploy. Robot still unsupported after success (may still invent «`rm -rf` يصلح العطل» or «الجيران يرون المعاينة»). No 11–18 content. `kioskReady` / 4.3 / 4.4 / `servicePosted` must **not** award 4.5 / 4.6 / 5.4 or set `labReady`.
+- AC04 — No syllabus/quiz/exam. Physical paper/terminal UI sufficient. Dialogue choices express intent; awards require the lab/production actions above.
+- AC05 — Authored simulation only. No live model, no eval of player text as code, no real shell, no live HTTP, no real secrets. Dummy `demo-slot-key` unchanged. Names stay local.
+- AC06 — Saves/journal/privacy/01–09 still work. `saveVersion` 1. After kiosk success, lab stations become usable **without** awarding 4.5/4.6/5.4. Chrome 1366×768 and 1920×1080, `npm run dev` and `npm run preview`. Keep WORLD_POS landmarks (apartment door, dumpster, robot at `12*TILE+24` / `5*TILE+24`, shop `P`, parcel `R`, library `I`, inner `F`, newsroom `E`, festival `G`, workshop `Y`). Do not shift those cells. Street letter `Y` stays `WORLD_POS.workshopDoor`. Existing workshop letters `u` `z` `m` `j` `k` `t` `d` `q` `a` `e` stay put. New interior letters must not be street `P` `E` `I` `R` `F` `D` `G` `Y`. Spawn/door column kept floor (door `d` col 8; row 6 col 8 and row 8 col 8 remain `.`).
 
 ## Out
-- Store hallucination puzzle, the full city, remaining 33-topic coverage, free-text instruction puzzles and robot upgrades beyond the damaged companion state.
-- Persistent save/resume, certificate issuance, live AI, account creation, cloud storage, public hosting and mobile controls.
-- A generic engine framework, final character customization or a finished campaign art library.
+- Slice 11 harness / bounded agent loop; MCP; certificate; live AI; remaining ids.
+- Real shell, real deploy, `fetch`, evaluating typed player text as code.
+- Awarding 4.5 on guess-fix, decoy log/file, reproduce-only, or because the robot said done. Awarding 4.6 on publish-without-repair, repair-without-publish, logs-only, or unverified v2. Awarding 5.4 on inspect-only or refuse-only. Awarding any of 4.5/4.6/5.4 from `kioskReady`.
 
 ## Constraints
-- Target this coherent opening only. Use React + TypeScript with a Canvas world and accessible HTML dialogue/input overlays as the planning baseline; inspect the target checkout before choosing precise dependencies.
-- No fork of the external educational games is assumed. Study the architecture references and implement original game behavior. When integrating with LearnAI, isolate the adventure entry and merge applicable repository rules; do not replace the running course or overwrite saves as an incidental change.
-- Proposed art direction: a warm contemporary Arabic-speaking neighborhood, clear top-down silhouettes, a visibly damaged small robot and a restrained palette. Original placeholder art may prove this slice; final production art is a release gate.
-- Proposed scene dialogue, adjustable for natural Arabic while preserving meaning:
-  - Player: “سأخرج كيس القمامة، ثم أعود.”
-  - Player, at the dumpster: “ما هذا؟ روبوت؟”
-  - Robot: “مرحباً… من أنت؟”
-  - Player: “اسمي {playerName}. هل تحتاج إلى مساعدة؟”
-  - Robot: “أستطيع الكلام، لكن بعض أجزائي لا تعمل. هل تساعدني في العثور عليها؟”
-  - Player: “سأساعدك. من أين نبدأ؟”
-  - Robot: “لنبدأ بالمتجر عند الزاوية. ربما يعرف صاحبه أين نجد قطعة مناسبة.”
-- Source topic 1.1 is introduced here through the robot's behavior; the deeper observable model-versus-source distinction is completed in slice 03. Do not prematurely award its full mastery evidence in this slice.
+- Implement in `app/`. **No new map and no new portal** (do not grow the street south; do not add civic-lab). Reuse `workshop` after `kioskQuest.kioskReady`. Add **two** interior solids on **empty row 8**: **`w`** مختبر النشر terminal (`#..w........l..#`, col 3); **`l`** frozen **production** face (col 12). Add `w` `l` to `SOLID_LETTERS`; kind `file` like `q`/`a`/`e`. Interactables listed **only when `kioskReady`** so 09’s pre-ready path is unchanged. Preview kiosk `q` remains the working preview. Overlays: `mode: 'lab'` — terminal (`data-testid="lab-terminal"`) and production face (`data-testid="prod-face"`). Authored commands, not a free shell. Never weaken 01–09 evidence predicates. Update the 09 success assertion that currently treats `OBJECTIVES.kioskReady` as the **terminal** objective, and bump `data-slice` `09` → `10` in `App.tsx` plus `e2e/helpers.ts` `waitForGame`, so 01–09 e2e still pass: kiosk success must not award 4.5/4.6/5.4. Arabic RTL page; code/log/path fragments isolated LTR. WASD/arrows by `event.code`. Optional skippable explanations after awards only.
 
 ## Data / state impact
-Introduce transient session state only: player display name; current map and safe spawn; position/facing; movement/overlay mode; trash bag state (at home/carried/disposed); encounter state (unseen/available/talking/help accepted); current dialogue node; current story objective.
-Transitions must be explicit and idempotent. Refresh resets this first slice and the development preview states that limitation. Slice 02 adds the versioned persistent save and resumes from safe checkpoints. No production data migration or remote identity record is introduced.
+No new `MapId`. Evidence union adds `'4.5' | '4.6' | '5.4'`. Interactables: `lab_terminal`, `lab_prod`. WORLD_POS: `labTerminal` = `letterCenter(WORKSHOP, 'w')`, `labProd` = `letterCenter(WORKSHOP, 'l')`. New persistable `labQuest` (do not overload `kioskQuest`): `phase` `unstarted | working | ready`; `openedLab`; `listedDir`; `readPreviewFile`; `readProdFile`; `readPreviewLog`; `readProdLog`; `readDecoy`; `selectedLog` `null | 'production.error' | 'preview.log' | 'builder.warn'`; `reproducedBroken`; `fileRepaired`; `publishedVersion` `1 | 2` (engine treats `kioskReady` + unstarted as frozen **v1** broken); `verifiedProd`; `refusedDestructive`; `labReady`; `pendingExplain`; `view` `terminal | prod`. Modes: add `'lab'`. Explain topics: `debug_logs`, `frozen_publish`, `shell_limits`. Journal events: `lab_opened`, `prod_reproduced`, `log_selected`, `frozen_published`, `lab_ready`. **JOURNAL_CAP 48 → 56**. Hydrate missing `labQuest` as unstarted; drop unknown evidence keys; `saveVersion` remains 1. Portal: existing `street Y ↔ workshop d` only.
 
 ## Tests
-- T01 — Unit/state tests prove the legal chore/encounter transitions, disposal idempotence, conversation re-entry and that help acceptance requires the encounter. Capture results under evidence/01/state-tests.txt.
-- T02 — Browser journey: valid name → bag → exit → dumpster → inspect → conversation → agree. Assert visible state changes and absent lesson/exam UI; retain screenshots at the apartment and robot checkpoint under evidence/01/.
-- T03 — Negative interaction checks: blank/overlong names; markup-like name rendered as text; exit without bag; blocked wall; repeated held interaction; postpone/reopen dialogue; typing versus world-input focus.
-- T04 — Browser render/play checks at both required viewport sizes with Arabic and mixed-script names in development and built output. Record actual browser/OS/version, console errors and results in evidence/01/browser-checks.md; missing environments are explicitly untested.
-- T05 — Run the inspected project's type, build and relevant lint/test checks. In the current LearnAI source, the production build script also runs a database migration: use an isolated disposable environment or an inspected build-only preview path. Never aim a planning or test run at a production database.
-- Reviewer maps AC01–AC08 to actual evidence, independently verifies the snapshot and checks that the candidate remains within this slice. Evidence paths are proposed destinations, not files already created.
+- T01 — Vitest `evidence/10/state-tests.txt` for AC01–AC03 predicates, hydrate, `kioskReady` gate, WORLD_POS landmarks unchanged, and fail paths.
+- T02 — Playwright kiosk-success → lab success. Screenshots `evidence/10/interior.png`, `preview.png`, `prod-broken.png`, `ls.png`, `logs.png`, `guess.png`, `fixed.png`, `refuse.png`, `published.png`, `verified.png`, `success.png`.
+- T03 — Retry paths; no trap: guess-fix without log → fail 4.5 then select `production.error` and patch `production/kiosk.js`; decoy file/log → fail then correct selection; publish without repair → production still 404 then repair + publish v2 + verify; repair without publish → production still v1 then publish + verify; `rm -rf /` / `format-disk` refused with files intact then `ls`/`cat` (or vice versa) for 5.4; inspect-only → no award then complete actions.
+- T04 — Viewports 1366 and 1920; `evidence/10/browser-checks.md`, `overlays.png`; path/log fragments `direction: ltr`; run against `npm run dev` and `npm run preview`.
+- T05 — typecheck, lint, test, build; `evidence/10/project-checks.txt`.
+- T06 — Keep **01–09** e2e; kiosk success must **not** award 4.5/4.6/5.4 or set `labReady`. Entering the lab / opening the terminal must not itself award. Reviewer maps AC01–AC06 and verifies snapshot.
 
 ## Proof
-Not completed yet.
+Builder claims for d-20260908-038-impl-10 (not independently accepted):
+- Candidate (coordinator recomputed): `d545ac5454cb3765daf9123b717a7f9c0cd912b73ed66a448430f0550b8e992d` (207 files).
+- Contract unchanged: `0e6d7f4d7cc607b401b35ab541646c8ae3ca5cf9bf271461fcc1b604d3ad61c5`.
+- Claimed checks: tsc/lint/build exit 0; vitest 105; Playwright 45/45 on preview :4188 and Vite :5192.
+- Claimed artifacts: `evidence/10/` per T02 plus overlays.png, state-tests.txt, project-checks.txt, browser-checks.md.
+- Claimed: kiosk success does not award 4.5/4.6/5.4; WORLD_POS.robot unchanged; no real shell/fetch.
+Reviewer must re-run checks in an isolated copy and map AC01–AC06.
 
 ## Review
-Pending plan review.
-Plan approval: none
+Plan approved. Implementation not started.
+Plan approval: APPROVE_PLAN by reviewer bc-0859c8cb-0adf-5c32-9539-f5db1b980080 on dispatch d-20260908-037-plan-10. Contract `0e6d7f4d7cc607b401b35ab541646c8ae3ca5cf9bf271461fcc1b604d3ad61c5`. Snapshot `a6c3018582acd8bf0737ff9e684ed063eeb4a9ed32a8d3362184e1af3bc248b6`. Blockers: none.
 Implementation approval: none
 Each result records dispatch ID, reviewer identity, verdict, contract identity, snapshot identity, evidence and criterion-specific blockers.
 
 ## Loop state
-Execution mode / tool adapter: Not configured
-Coordinator: none
-Worker / role / phase: none
-Dispatch ID / launch state / input identity: none
-Pending result / last consumed dispatch: none
-Snapshot capture and recheck commands / coverage / exclusions: Not configured; configure against the actual implementation checkout before first dispatch.
-Baseline snapshot: none
-Contract identity: none
-Candidate snapshot: none
+Execution mode / tool adapter: Cursor Cloud Agent coordinator with Task-spawned Builder and Reviewer subagents. Spawn = Task(generalPurpose). Send = Task resume. Wait = blocking Task completion. Stop = subagent completion; coordinator does not start a second writer in this checkout. Reviewer contexts are fresh and do not receive Builder reasoning. Mutating Reviewer checks, if needed, run on an isolated copy.
+Coordinator: cloud agent bc-6380229a-c83f-493f-af1c-47e5f2b00c70 (https://cursor.com/agents/bc-6380229a-c83f-493f-af1c-47e5f2b00c70), role Coordinator, checkout /workspace on branch cursor/rafiq-ai-city-adventure-0c70
+Worker / role / phase: pending launch / Reviewer / implementation
+Dispatch ID / launch state / input identity: d-20260908-039-implrev-10 / pending launch / contract:0e6d7f4d7cc607b401b35ab541646c8ae3ca5cf9bf271461fcc1b604d3ad61c5 candidate:d545ac5454cb3765daf9123b717a7f9c0cd912b73ed66a448430f0550b8e992d
+Pending result / last consumed dispatch: none / d-20260908-038-impl-10
+Snapshot capture and recheck commands / coverage / exclusions: Capture = `python3 .loop/identity.py snapshot --label <label>` from repository root. Recheck = same command; compare `.loop/snapshots/<label>.digest` and the JSON `digest` field. Contract = `python3 .loop/identity.py contract`; identity is `.loop/contract/hashes.json` field `contract`. Combined = `python3 .loop/identity.py both --label <label>`.
+Coverage: `app`, `evidence`, root `package.json`/`package-lock.json`/`pnpm-lock.yaml`/`yarn.lock`, `index.html`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `playwright.config.ts`, `vitest.config.ts`, `README.md`, `public`. Missing paths are skipped. Detect add/delete by regenerating the covered file list.
+Exclusions: `.git`, `.loop`, `learnai-city-project-loop`, `node_modules`, `app/node_modules`, `app/dist`, `dist`, `coverage`, `test-results`, `playwright-report`, `.vite`, `app/.vite`. Protocol files are identified by contract hash, not candidate snapshot.
+Baseline snapshot: shipped slice 09 `a6c3018582acd8bf0737ff9e684ed063eeb4a9ed32a8d3362184e1af3bc248b6` (187 covered files)
+Contract identity: `0e6d7f4d7cc607b401b35ab541646c8ae3ca5cf9bf271461fcc1b604d3ad61c5` (`.loop/contract/hashes.json`)
+Candidate snapshot: `d545ac5454cb3765daf9123b717a7f9c0cd912b73ed66a448430f0550b8e992d` (207 files)
 Rejection count: 0
 Consecutive no-progress repairs: 0
 Open acceptance gaps / prior failing evidence: none
 Repair awaiting review: false
-Review events: none
+Review events:
+- ev-001 / d-20260908-037-plan-10 / plan / APPROVE_PLAN / contract:0e6d7f4d7cc607b401b35ab541646c8ae3ca5cf9bf271461fcc1b604d3ad61c5 snapshot:a6c3018582acd8bf0737ff9e684ed063eeb4a9ed32a8d3362184e1af3bc248b6 / gaps: none / identities matched / rejection count 0 / no-progress 0
 Budget limit / consumed / measurement: Not configured; no execution budget was supplied.
 Blocker / resume status / resume action / recheck condition / deadline: none
 Advance phase: none
 Next slice ID / draft: none
+Prior shipped receipt: slice 09 archive `slices/09-the-kiosk-speaks-arabic.md`
 
 ## Status
-Proposed
+Ready for review
 
 ## Next
-Planning is complete. When implementation is authorized, coordinator identifies the target checkout, reconciles its existing rules, confirms the authorized Loop target, configures real tool and snapshot commands, and dispatches independent plan review of slice 01. Do not begin implementation or mark Not started before a matching APPROVE_PLAN.
-
+Independent implementation review of slice 10 under dispatch d-20260908-039-implrev-10.
