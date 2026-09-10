@@ -1,4 +1,4 @@
-import { OBJECTIVES } from '../engine/dialogue';
+import { CHECKPOINT_AFTER_HELP, OBJECTIVES } from '../engine/dialogue';
 
 interface Props {
   visible: boolean;
@@ -46,8 +46,7 @@ export function CheckpointNote({
   issued,
 }: Props) {
   if (!visible) return null;
-  let text =
-    'رفيق أصبح رفيقك في الحي. البقالة عند الزاوية مفتوحة الآن، وبعدها واجهة المكتبة. بقية ألغاز المغامرة ما زالت قيد التطوير.';
+  let text = CHECKPOINT_AFTER_HELP;
   if (issued) {
     text = OBJECTIVES.passportIssued;
   } else if (invited) {

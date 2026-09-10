@@ -70,6 +70,9 @@ export const OBJECTIVES = {
     'حُفظ جواز مدينة الذكاء الاصطناعي محلياً. يمكنك تنزيله من جديد من الروبوت أو من الشريط.',
 } as const;
 
+export const CHECKPOINT_AFTER_HELP =
+  'رفيق أصبح رفيقك في الحي. البقالة عند الزاوية مفتوحة الآن، وبعدها واجهة المكتبة.';
+
 export function endingObjective(state: {
   endingState: EndingState;
   pathQuest?: { restored?: boolean };

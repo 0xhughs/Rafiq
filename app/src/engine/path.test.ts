@@ -14,8 +14,8 @@ import { BRIDGE_EXPLAIN, MCP_NOTE } from './bridge';
 import { listInteractables } from './interact';
 import { STREET, WORKSHOP, WORLD_POS } from './maps';
 import { robotPosition } from './npc';
-import { createInitialState, reduce } from './state';
-import { hydrateSave, toEnvelope, validateSave } from './save';
+import { createInitialState, reduce, stepGame } from './state';
+import { hydrateSave, loadAdventure, MemoryStore, persistAdventure, toEnvelope, validateSave } from './save';
 import type { GameAction, GameState, MapId } from './types';
 import { EVIDENCE_IDS, MAP_IDS } from './types';
 import { SEND_RECEIPT } from './approval';
@@ -1240,6 +1240,74 @@ describe('AC02 restoration and AC03 6.4 closes the slice', () => {
     expect(hydrated.crewQuest.crewReady).toBe(true);
     expect(hydrated.storyObjective).toBe(OBJECTIVES.pathWork);
     expect(parsePathQuest(undefined).phase).toBe('unstarted');
+  });
+});
+
+describe('R1 unfinished path persist', () => {
+  it('hydrates inspect+refuse+reading-goal without awarding 6.4', () => {
+    let state = playToCrewDone(checkpoint());
+    state = openPrep(state);
+    state = act(state, { type: 'PATH_INSPECT_SOURCE' });
+    state = act(state, { type: 'PATH_REFUSE_RUMOR' });
+    state = act(state, { type: 'PATH_SET_GOAL', goal: 'reading' });
+    expect(state.pathQuest.sourceInspected).toBe(true);
+    expect(state.pathQuest.rumorRefused).toBe(true);
+    expect(state.pathQuest.goal).toBe('reading');
+    expect(state.pathQuest.tools).toBeNull();
+    expect(state.pathQuest.packReady).toBe(false);
+    expect(state.pathQuest.skillRan).toBe(false);
+    expect(state.pathQuest.restored).toBe(false);
+    expect(state.evidence['6.4']).toBeUndefined();
+    expect(state.endingState).toBe('in_progress');
+    expect(state.journalEvents.filter((event) => event.id === 'source_verified')).toHaveLength(1);
+    expect(state.journalEvents.filter((event) => event.id === 'path_opened')).toHaveLength(1);
+    expect(JSON.stringify(state)).not.toMatch(/MCP/);
+    expect(JSON.stringify(state)).not.toMatch(/harness/);
+
+    const envelope = toEnvelope(state);
+    const parsed = validateSave(JSON.stringify(envelope));
+    expect(parsed).not.toBeNull();
+    const hydrated = hydrateSave(parsed!, 'ok', false);
+    expect(hydrated.mode).toBe('playing');
+    expect(hydrated.pathQuest.sourceInspected).toBe(true);
+    expect(hydrated.pathQuest.rumorRefused).toBe(true);
+    expect(hydrated.pathQuest.goal).toBe('reading');
+    expect(hydrated.pathQuest.tools).toBeNull();
+    expect(hydrated.pathQuest.packReady).toBe(false);
+    expect(hydrated.pathQuest.skillRan).toBe(false);
+    expect(hydrated.pathQuest.restored).toBe(false);
+    expect(hydrated.evidence['6.4']).toBeUndefined();
+    expect(hydrated.endingState).toBe('in_progress');
+    expect(hydrated.journalEvents.filter((event) => event.id === 'source_verified')).toHaveLength(1);
+    expect(hydrated.journalEvents.filter((event) => event.id === 'path_opened')).toHaveLength(1);
+
+    const store = new MemoryStore();
+    persistAdventure(store, playing(playToCrewDone(checkpoint())));
+    const loaded = loadAdventure(store);
+    expect(loaded.status).toBe('ok');
+    if (loaded.status !== 'ok') throw new Error('expected ok save');
+    let live = loaded.state;
+    live = stepGame(store, live, {
+      type: 'DEBUG_TELEPORT',
+      map: 'workshop',
+      x: WORLD_POS.pathDesk.x,
+      y: WORLD_POS.pathDesk.y,
+    });
+    live = stepGame(store, live, { type: 'INTERACT' });
+    live = stepGame(store, live, { type: 'PATH_INSPECT_SOURCE' });
+    live = stepGame(store, live, { type: 'PATH_REFUSE_RUMOR' });
+    live = stepGame(store, live, { type: 'PATH_SET_GOAL', goal: 'reading' });
+    expect(live.pathQuest.goal).toBe('reading');
+    const reloaded = loadAdventure(store);
+    expect(reloaded.status).toBe('ok');
+    if (reloaded.status !== 'ok') throw new Error('expected ok save');
+    expect(reloaded.state.mode).toBe('playing');
+    expect(reloaded.state.pathQuest.sourceInspected).toBe(true);
+    expect(reloaded.state.pathQuest.rumorRefused).toBe(true);
+    expect(reloaded.state.pathQuest.goal).toBe('reading');
+    expect(reloaded.state.pathQuest.tools).toBeNull();
+    expect(reloaded.state.pathQuest.restored).toBe(false);
+    expect(reloaded.state.evidence['6.4']).toBeUndefined();
   });
 });
 

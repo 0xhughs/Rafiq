@@ -1103,6 +1103,8 @@ describe('slice 17 passport', () => {
     expect(hydrated.endingState).toBe('issued');
     expect(hydrated.passportQuest.issued).toBe(true);
     expect(hydrated.storyObjective).toBe(OBJECTIVES.passportIssued);
+    expect(hydrated.mode).toBe('playing');
+    expect(hydrated.journalEvents.filter((event) => event.id === 'passport_issued')).toHaveLength(1);
 
     const legacy = { ...toEnvelope(playToPathDone(checkpoint())), passportQuest: undefined };
     const parsedLegacy = validateSave(JSON.stringify(legacy));
