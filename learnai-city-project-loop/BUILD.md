@@ -43,17 +43,17 @@ No new `MapId`. Evidence union **unchanged** (34 ids). No new interactable lette
 Not completed yet.
 
 ## Review
-Pending plan review.
-Plan approval: none
+Plan approved. Implementation not started.
+Plan approval: APPROVE_PLAN by reviewer bc-2547096e-ec7e-5e46-944e-d7755bf810c8 on dispatch d-20260909-071-plan-r1. Contract `3611159b659f758cdea14412072b10733df4b9993ceeb894de461647b56f13a5`. Snapshot `b680867179a7973832bbe4e06a99a3f77a8cde3ede5a507902af9eee879e07c0`. Blockers: none.
 Implementation approval: none
 Each result records dispatch ID, reviewer identity, verdict, contract identity, snapshot identity, evidence and criterion-specific blockers.
 
 ## Loop state
 Execution mode / tool adapter: Cursor Cloud Agent coordinator with Task-spawned Builder and Reviewer subagents. Spawn = Task(generalPurpose). Send = Task resume. Wait = blocking Task completion. Stop = subagent completion; coordinator does not start a second writer in this checkout. Reviewer contexts are fresh and do not receive Builder reasoning. Mutating Reviewer checks, if needed, run on an isolated copy.
 Coordinator: cloud agent bc-6380229a-c83f-493f-af1c-47e5f2b00c70 (https://cursor.com/agents/bc-6380229a-c83f-493f-af1c-47e5f2b00c70), role Coordinator, checkout /workspace on branch cursor/rafiq-continue-slices-0c70
-Worker / role / phase: pending launch / Reviewer / plan
-Dispatch ID / launch state / input identity: d-20260909-071-plan-r1 / pending launch / contract:3611159b659f758cdea14412072b10733df4b9993ceeb894de461647b56f13a5 baseline:b680867179a7973832bbe4e06a99a3f77a8cde3ede5a507902af9eee879e07c0
-Pending result / last consumed dispatch: none / d-20260909-070-draft-r1
+Worker / role / phase: pending launch / Builder / implementation
+Dispatch ID / launch state / input identity: d-20260909-072-impl-r1 / pending launch / contract:3611159b659f758cdea14412072b10733df4b9993ceeb894de461647b56f13a5 baseline:b680867179a7973832bbe4e06a99a3f77a8cde3ede5a507902af9eee879e07c0
+Pending result / last consumed dispatch: none / d-20260909-071-plan-r1
 Snapshot capture and recheck commands / coverage / exclusions: Capture = `python3 .loop/identity.py snapshot --label <label>` from repository root. Recheck = same command; compare `.loop/snapshots/<label>.digest` and the JSON `digest` field. Contract = `python3 .loop/identity.py contract`; identity is `.loop/contract/hashes.json` field `contract`. Combined = `python3 .loop/identity.py both --label <label>`.
 Coverage: `app`, `evidence`, root `package.json`/`package-lock.json`/`pnpm-lock.yaml`/`yarn.lock`, `index.html`, `vite.config.ts`, `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`, `playwright.config.ts`, `vitest.config.ts`, `README.md`, `public`. Missing paths are skipped. Detect add/delete by regenerating the covered file list.
 Exclusions: `.git`, `.loop`, `learnai-city-project-loop`, `node_modules`, `app/node_modules`, `app/dist`, `dist`, `coverage`, `test-results`, `playwright-report`, `.vite`, `app/.vite`. Protocol files are identified by contract hash, not candidate snapshot.
@@ -64,15 +64,16 @@ Rejection count: 0
 Consecutive no-progress repairs: 0
 Open acceptance gaps / prior failing evidence: leftover checkpoint copy «بقية ألغاز المغامرة ما زالت قيد التطوير.»; no e2e save/reload of an unfinished later-arc puzzle; no e2e reload of an issued ending
 Repair awaiting review: false
-Review events: none
+Review events:
+- ev-001 / d-20260909-071-plan-r1 / plan / APPROVE_PLAN / contract:3611159b659f758cdea14412072b10733df4b9993ceeb894de461647b56f13a5 snapshot:b680867179a7973832bbe4e06a99a3f77a8cde3ede5a507902af9eee879e07c0 / gaps: none / identities matched / rejection count 0 / no-progress 0
 Budget limit / consumed / measurement: Not configured; no execution budget was supplied.
-Blocker / resume status / resume action / recheck condition / deadline: RG03 matrix and RG04 five-beginner pilot still unmet (not in this repair) / Running / independent plan review R1 / APPROVE_PLAN then Building; Complete still needs RG03/RG04 or an explicit scope decision / none
+Blocker / resume status / resume action / recheck condition / deadline: RG03 matrix and RG04 five-beginner pilot still unmet (not in this repair) / Running / Builder implementation R1 / Ready for review after proof; Complete still needs RG03/RG04 or an explicit scope decision / none
 Advance phase: none
 Next slice ID / draft: none
 Prior shipped receipt: slice 17 archive `slices/17-your-passport.md`
 
 ## Status
-Proposed
+Building
 
 ## Next
-Independent plan review of slice R1 under dispatch d-20260909-071-plan-r1. Do not implement before APPROVE_PLAN.
+Builder implements slice R1 under dispatch d-20260909-072-impl-r1. Do not edit protocol files.
