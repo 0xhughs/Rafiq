@@ -47,7 +47,7 @@ Independently accepted by d-20260909-073-implrev-r1.
 - Evidence: `evidence/r1/`.
 
 ## Review
-Plan approved. Implementation not started.
+Plan approved. Implementation accepted.
 Plan approval: APPROVE_PLAN by reviewer bc-2547096e-ec7e-5e46-944e-d7755bf810c8 on dispatch d-20260909-071-plan-r1. Contract `3611159b659f758cdea14412072b10733df4b9993ceeb894de461647b56f13a5`. Snapshot `b680867179a7973832bbe4e06a99a3f77a8cde3ede5a507902af9eee879e07c0`. Blockers: none.
 Implementation approval: APPROVE_IMPLEMENTATION by reviewer bc-2d225065-2316-5bb2-922e-72961a92fac0 on dispatch d-20260909-073-implrev-r1. Contract `3611159b659f758cdea14412072b10733df4b9993ceeb894de461647b56f13a5`. Snapshot `c3abdf149d10df285548c23525e96cd0769bb5cb1bf3481108d1a2a88d2cc44f`. Blockers: none.
 Each result records dispatch ID, reviewer identity, verdict, contract identity, snapshot identity, evidence and criterion-specific blockers.
