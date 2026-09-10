@@ -34,7 +34,7 @@ Authorized target for this run: complete and independently accept slices **01–
 Current authorization: On 8 September 2026 the user asked to read the project files, start the loop, and complete each loop until the full website is fully built. That request adopts slices 01–17. Slice 18 remains outside the target. This checkout (`github.com/0xhughs/Rafiq`) is the implementation repository. The adventure is a separate Vite + React + TypeScript app under `app/`; joufbot/LearnAI is curriculum/reference only and is not modified.
 
 ## Run status
-Finalizing
+Human required
 
 ## Open decisions
 - Product name, robot name and final art treatment: working title and visual baseline are provisional; settle before production-art approval. They do not block the opening prototype.
@@ -54,12 +54,13 @@ Finalizing
 - RG08 — LOOP finalization independently verifies accepted archives, current identities, an empty Now section, preserved outside-target work and no unresolved blockers. “Complete” is acceptance of the implementation target, not publication permission.
 
 ## Release evidence
-Release review d-20260909-069-release returned HUMAN_REQUIRED.
-Failed release reviews for this target: 1
+Release review d-20260909-074-release returned HUMAN_REQUIRED.
+Failed release reviews for this target: 2
 Pending release result: none
 Release review events / last consumed dispatch:
 - ev-r001 / d-20260909-069-release / release / HUMAN_REQUIRED / candidate:b680867179a7973832bbe4e06a99a3f77a8cde3ede5a507902af9eee879e07c0 impl-contract:b760de08209f685da8d8418cebe7d8bf6536e8c722ec1b4a583809ae75849a2e current-contract:8eeede8266fadcb2ac14081f4648fe8b6fbdf8a6a6ea0e1a95c109be8574a8f7 / reviewer:bc-e1991baa-e3d7-59d5-851d-f7f92d807cea / RG01 pass-with-limits; RG02 fail (no e2e reload of unfinished later puzzle or issued ending); RG03 fail (Chrome/Linux only; Edge/Firefox/Safari/Windows/macOS not run); RG04 fail (no five-beginner pilot; leftover checkpoint copy); RG05 pass; RG06 pass-with-notes; RG07 pass; RG08 bookkeeping pass / last consumed: d-20260909-069-release
-Target slices 01–17 and repair R1 independently accepted. Now empty. Pending release review d-20260909-074-release. RG03 matrix and RG04 beginner pilot still unmet unless this review retains the documented gap. Slice 18 preserved outside target. Shipped is not publication permission.
+- ev-r002 / d-20260909-074-release / release / HUMAN_REQUIRED / candidate:c3abdf149d10df285548c23525e96cd0769bb5cb1bf3481108d1a2a88d2cc44f impl-contract:3611159b659f758cdea14412072b10733df4b9993ceeb894de461647b56f13a5 current-contract:d7cfa81c195b954a03fec35624967ad5929f8f04c48d9f5a0720863aa102a3b4 / reviewer:bc-bea54416-7443-517c-af6e-fa7a8514a0a5 / RG01 pass-with-limits; RG02 pass after R1; RG03 fail (Chrome/Linux only; Edge/Firefox/Safari/Windows/macOS not run); RG04 fail (no five-beginner pilot; leftover copy closed); RG05 pass; RG06 pass-with-notes; RG07 pass; RG08 bookkeeping pass, cannot authorize Complete / last consumed: d-20260909-074-release
+Target slices 01–17 and repair R1 independently accepted. Now empty. Slice 18 preserved outside target. Shipped is not publication permission. Complete still needs RG03 matrix evidence or an explicit scope decision, plus RG04 beginner pilot.
 
 ## Curriculum translation
 The 34 IDs and Arabic titles below are taken from the actual [LearnAI curriculum](https://github.com/joufbot/LearnAI/blob/c4125df8c0490024715f21e21c78c9403e9cdf51/src/lib/curriculum.ts). The corresponding 34 Markdown lesson files were retrieved; their topics and teaching/exercise sections informed this map. This is a redesigned learning plan, not endorsement of every claim or product-specific statement in those lessons.
