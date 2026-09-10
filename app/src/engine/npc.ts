@@ -5,6 +5,7 @@ import { librarianNode } from './library';
 import { editorNode } from './newsroom';
 import { officerNode } from './festival';
 import { managerNode } from './workshop';
+import { openPassportOverlay } from './passport';
 import type { DialogueNodeId, GameState, NpcId } from './types';
 import { WORLD_POS } from './maps';
 
@@ -68,6 +69,12 @@ export function openingNode(state: GameState, id: NpcId): DialogueNodeId | null 
   if (id === 'robot') {
     if (state.encounter === 'unseen') return null;
     if (state.encounter === 'help_accepted') {
+      if (state.pathQuest.restored) return 'companion_after_restore';
+      if (state.crewQuest.crewReady) return 'companion_after_crew';
+      if (state.approvalQuest.approvalReady) return 'companion_after_approval';
+      if (state.skillQuest.skillReady) return 'companion_after_skill';
+      if (state.bridgeQuest.bridgeReady) return 'companion_after_bridge';
+      if (state.agentQuest.agentReady) return 'companion_after_agent';
       if (state.labQuest.labReady) return 'companion_after_lab';
       if (state.kioskQuest.kioskReady) return 'companion_after_kiosk';
       if (state.workshopQuest.servicePosted) return 'companion_after_workshop';
@@ -92,6 +99,11 @@ export function openingNode(state: GameState, id: NpcId): DialogueNodeId | null 
 }
 
 export function openNpc(state: GameState, id: NpcId): GameState {
+  if (id === 'robot' && state.encounter === 'help_accepted' && state.pathQuest.restored) {
+    if (state.passportQuest.thanksHeard || state.endingState === 'invited' || state.endingState === 'issued') {
+      return openPassportOverlay(state);
+    }
+  }
   const node = openingNode(state, id);
   if (!node) return state;
   if (id === 'robot') {

@@ -7,6 +7,7 @@ interface Props {
   state: GameState;
   onHelp: () => void;
   onDismissRestore: () => void;
+  onOpenPassport: () => void;
 }
 
 function Banners({
@@ -35,7 +36,7 @@ function Banners({
   );
 }
 
-export function Hud({ state, onHelp, onDismissRestore }: Props) {
+export function Hud({ state, onHelp, onDismissRestore, onOpenPassport }: Props) {
   if (state.mode === 'name_entry' || state.mode === 'confirm_name') {
     if (state.saveStatus !== 'unavailable' && !state.restoreNotice) return null;
     return (
@@ -52,7 +53,7 @@ export function Hud({ state, onHelp, onDismissRestore }: Props) {
   else if (carryingBag) inventoryLabel = 'كيس القمامة';
   else if (carryingParcel) inventoryLabel = 'طرد الإصلاح';
   return (
-    <header className="hud" data-testid="hud">
+    <header className="hud" data-testid="hud" data-restored={state.pathQuest.restored ? 'true' : 'false'}>
       <Banners state={state} onDismissRestore={onDismissRestore} />
       <div className="hud-main">
         <p className="hud-kicker">رفيق</p>
@@ -70,6 +71,16 @@ export function Hud({ state, onHelp, onDismissRestore }: Props) {
       <button type="button" className="ghost hud-help" data-testid="help-button" onClick={onHelp}>
         دفتر / مساعدة
       </button>
+      {state.endingState === 'invited' || state.endingState === 'issued' ? (
+        <button
+          type="button"
+          className="ghost hud-help"
+          data-testid="open-passport"
+          onClick={onOpenPassport}
+        >
+          الجواز
+        </button>
+      ) : null}
       {nearby ? (
         <p className="interact-hint" data-testid="interact-hint">
           <span dir="ltr">E</span>
@@ -107,6 +118,36 @@ export function Hud({ state, onHelp, onDismissRestore }: Props) {
       {state.labQuest.labReady ? (
         <p className="inventory cassette-chip" data-testid="lab-ready">
           إنتاج مُصلح
+        </p>
+      ) : null}
+      {state.agentQuest.agentReady ? (
+        <p className="inventory cassette-chip" data-testid="planning-core">
+          نواة التخطيط
+        </p>
+      ) : null}
+      {state.bridgeQuest.bridgeReady ? (
+        <p className="inventory cassette-chip" data-testid="civic-connector">
+          موصل السجل
+        </p>
+      ) : null}
+      {state.skillQuest.skillReady ? (
+        <p className="inventory cassette-chip" data-testid="skill-shelf">
+          رف المهارات
+        </p>
+      ) : null}
+      {state.approvalQuest.approvalReady ? (
+        <p className="inventory cassette-chip" data-testid="human-gate">
+          موافقة بشرية
+        </p>
+      ) : null}
+      {state.crewQuest.crewReady ? (
+        <p className="inventory cassette-chip" data-testid="crew-output">
+          ناتج مُراجع
+        </p>
+      ) : null}
+      {state.pathQuest.restored ? (
+        <p className="inventory cassette-chip" data-testid="restored-agent">
+          وكيل مُشرف
         </p>
       ) : null}
     </header>

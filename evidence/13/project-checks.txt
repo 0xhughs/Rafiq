@@ -1,0 +1,77 @@
+T05 project checks — Rafiq slice 13
+cwd: /workspace/app
+date: 2026-09-09T16:57:43Z
+node: v22.14.0
+npm: 10.9.7
+chrome: Google Chrome 148.0.7778.96    (/usr/bin/google-chrome)
+
+Note: this Cloud Agent environment had Vite already listening on 5173 (another
+checkout) and preview 4173. Playwright preview used free port 4410
+(`env -u BASE_URL PREVIEW_PORT=4410`). Dev e2e used a fresh Vite on
+5410 with BASE_URL=http://127.0.0.1:5410 and no reuseExistingServer.
+Stray BASE_URL was unset for the preview run (`env -u BASE_URL`).
+`grep -E 'fetch\(|Date.now|setInterval|MCP|harness' app/src/engine/skill.ts` matched nothing.
+`grep -E 'MCP|harness' app/src/ui/SkillOverlay.tsx` matched nothing.
+
+===== typecheck (npx tsc --noEmit) =====
+
+tsc_root_exit: 0
+
+===== typecheck (npx tsc --noEmit -p tsconfig.app.json) =====
+
+tsc_app_exit: 0
+
+===== lint (eslint .) =====
+
+
+> app@0.0.0 lint
+> eslint .
+
+
+lint exit: 0
+
+===== unit tests (npx vitest run) =====
+
+
+ RUN  v5.0.0 /workspace/app
+
+
+ Test Files  13 passed (13)
+      Tests  121 passed (121)
+   Start at  16:57:42
+   Duration  1.03s (transform 53%, import 24%, tests 20%, worker 2%)
+
+
+test exit: 0
+
+===== production build (tsc -b && vite build) =====
+
+
+> app@0.0.0 build
+> tsc -b && vite build
+
+vite v6.4.3 building for production...
+transforming...
+✓ 87 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                                      0.64 kB │ gzip:   0.39 kB
+dist/assets/index-DAArEcJf.css                                      20.74 kB │ gzip:   4.51 kB
+dist/assets/index-C2O0tjvI.js                                      552.24 kB │ gzip: 144.84 kB
+✓ built in 902ms
+
+build exit: 0
+
+===== playwright vs preview =====
+
+$ env -u BASE_URL PREVIEW_PORT=4410 npx playwright test
+webServer: npx vite preview --host 127.0.0.1 --port 4410 --strictPort
+54 passed (4.6m)
+exit: 0
+
+===== playwright vs vite dev =====
+
+$ npx vite --host 127.0.0.1 --port 5410
+$ BASE_URL=http://127.0.0.1:5410 npx playwright test
+54 passed (4.7m)
+exit: 0

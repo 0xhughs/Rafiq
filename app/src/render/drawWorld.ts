@@ -728,6 +728,54 @@ function drawWorkshop(ctx: CanvasRenderingContext2D): void {
   fillRound(ctx, prod.x + 4, prod.y + 6, prod.w - 8, prod.h - 10, 4, '#f3d0c4');
   ctx.fillStyle = '#7a241c';
   ctx.fillText('إنتاج', prod.x + prod.w / 2, prod.y + 28);
+  const agentConsole = FURNITURE.workshop.console;
+  fillRound(ctx, agentConsole.x + 4, agentConsole.y + 6, agentConsole.w - 8, agentConsole.h - 10, 4, '#dce8f4');
+  ctx.fillStyle = '#163238';
+  ctx.fillText('مشغّل', agentConsole.x + agentConsole.w / 2, agentConsole.y + 28);
+  const notice = FURNITURE.workshop.neighborNotice;
+  fillRound(ctx, notice.x + 4, notice.y + 6, notice.w - 8, notice.h - 10, 4, '#efe6d0');
+  ctx.fillStyle = '#2a2118';
+  ctx.fillText('حي', notice.x + notice.w / 2, notice.y + 28);
+  const connector = FURNITURE.workshop.connector;
+  fillRound(ctx, connector.x + 4, connector.y + 6, connector.w - 8, connector.h - 10, 4, '#dce8f4');
+  ctx.fillStyle = '#163238';
+  ctx.fillText('موصل', connector.x + connector.w / 2, connector.y + 28);
+  const civicBrowser = FURNITURE.workshop.civicBrowser;
+  fillRound(ctx, civicBrowser.x + 4, civicBrowser.y + 6, civicBrowser.w - 8, civicBrowser.h - 10, 4, '#efe6d0');
+  ctx.fillStyle = '#2a2118';
+  ctx.fillText('سجل', civicBrowser.x + civicBrowser.w / 2, civicBrowser.y + 28);
+  const skillDesk = FURNITURE.workshop.skillDesk;
+  fillRound(ctx, skillDesk.x + 4, skillDesk.y + 6, skillDesk.w - 8, skillDesk.h - 10, 4, '#dce8f4');
+  ctx.fillStyle = '#163238';
+  ctx.fillText('مهارة', skillDesk.x + skillDesk.w / 2, skillDesk.y + 28);
+  const hallClock = FURNITURE.workshop.hallClock;
+  fillRound(ctx, hallClock.x + 4, hallClock.y + 6, hallClock.w - 8, hallClock.h - 10, 4, '#efe6d0');
+  ctx.fillStyle = '#2a2118';
+  ctx.fillText('ساعة', hallClock.x + hallClock.w / 2, hallClock.y + 28);
+  const approvalDesk = FURNITURE.workshop.approvalDesk;
+  fillRound(ctx, approvalDesk.x + 4, approvalDesk.y + 6, approvalDesk.w - 8, approvalDesk.h - 10, 4, '#dce8f4');
+  ctx.fillStyle = '#163238';
+  ctx.fillText('موافقة', approvalDesk.x + approvalDesk.w / 2, approvalDesk.y + 28);
+  const personalCase = FURNITURE.workshop.personalCase;
+  fillRound(ctx, personalCase.x + 4, personalCase.y + 6, personalCase.w - 8, personalCase.h - 10, 4, '#efe6d0');
+  ctx.fillStyle = '#2a2118';
+  ctx.fillText('قرار', personalCase.x + personalCase.w / 2, personalCase.y + 28);
+  const crewTable = FURNITURE.workshop.crewTable;
+  fillRound(ctx, crewTable.x + 4, crewTable.y + 6, crewTable.w - 8, crewTable.h - 10, 4, '#dce8f4');
+  ctx.fillStyle = '#163238';
+  ctx.fillText('طاقم', crewTable.x + crewTable.w / 2, crewTable.y + 28);
+  const qualityBench = FURNITURE.workshop.qualityBench;
+  fillRound(ctx, qualityBench.x + 4, qualityBench.y + 6, qualityBench.w - 8, qualityBench.h - 10, 4, '#efe6d0');
+  ctx.fillStyle = '#2a2118';
+  ctx.fillText('جودة', qualityBench.x + qualityBench.w / 2, qualityBench.y + 28);
+  const pathTable = FURNITURE.workshop.pathTable;
+  fillRound(ctx, pathTable.x + 4, pathTable.y + 6, pathTable.w - 8, pathTable.h - 10, 4, '#dce8f4');
+  ctx.fillStyle = '#163238';
+  ctx.fillText('مسار', pathTable.x + pathTable.w / 2, pathTable.y + 28);
+  const sealBench = FURNITURE.workshop.sealBench;
+  fillRound(ctx, sealBench.x + 4, sealBench.y + 6, sealBench.w - 8, sealBench.h - 10, 4, '#efe6d0');
+  ctx.fillStyle = '#2a2118';
+  ctx.fillText('ختم', sealBench.x + sealBench.w / 2, sealBench.y + 28);
   const counter = FURNITURE.workshop.counter;
   fillRound(ctx, counter.x + 2, counter.y + 6, counter.w - 4, counter.h - 10, 6, PALETTE.workshop);
   ctx.fillStyle = '#ead9c0';
@@ -744,6 +792,8 @@ function drawRobot(
   companion: boolean,
   commsRepaired: boolean,
   contextModule: boolean,
+  planningCore: boolean,
+  restored: boolean,
 ): void {
   ctx.fillStyle = PALETTE.shadow;
   ctx.beginPath();
@@ -756,15 +806,17 @@ function drawRobot(
   ctx.moveTo(x - 6, y - 4);
   ctx.lineTo(x + 2, y + 10);
   ctx.stroke();
-  ctx.fillStyle = PALETTE.rust;
-  ctx.fillRect(x + 6, y + 2, 6, 8);
+  if (!restored) {
+    ctx.fillStyle = PALETTE.rust;
+    ctx.fillRect(x + 6, y + 2, 6, 8);
+  }
   fillRound(ctx, x + 10, y - 2, 8, 14, 3, PALETTE.robotDark);
-  ctx.fillStyle = companion ? PALETTE.robotEye : PALETTE.robotEyeDim;
+  ctx.fillStyle = companion || restored ? PALETTE.robotEye : PALETTE.robotEyeDim;
   ctx.beginPath();
   ctx.arc(x - 5, y - 4, 3, 0, Math.PI * 2);
   ctx.fill();
   const flicker = Math.sin(time / 180) > 0.2;
-  ctx.fillStyle = flicker ? PALETTE.robotEye : '#223';
+  ctx.fillStyle = restored ? PALETTE.robotEye : flicker ? PALETTE.robotEye : '#223';
   ctx.beginPath();
   ctx.arc(x + 5, y - 4, 3, 0, Math.PI * 2);
   ctx.fill();
@@ -773,9 +825,9 @@ function drawRobot(
   ctx.moveTo(x, y - 12);
   ctx.lineTo(x + 6, y - 22);
   ctx.stroke();
-  ctx.fillStyle = commsRepaired ? '#7fdbda' : PALETTE.rust;
+  ctx.fillStyle = commsRepaired || restored ? '#7fdbda' : PALETTE.rust;
   ctx.beginPath();
-  ctx.arc(x + 6, y - 22, commsRepaired ? 4 : 3, 0, Math.PI * 2);
+  ctx.arc(x + 6, y - 22, commsRepaired || restored ? 4 : 3, 0, Math.PI * 2);
   ctx.fill();
   if (commsRepaired) {
     fillRound(ctx, x - 16, y + 6, 10, 8, 2, '#2f5d62');
@@ -784,6 +836,21 @@ function drawRobot(
     fillRound(ctx, x - 18, y - 6, 12, 10, 2, '#1c3b40');
     ctx.fillStyle = '#7fdbda';
     ctx.fillRect(x - 16, y - 3, 8, 4);
+  }
+  if (planningCore) {
+    ctx.fillStyle = '#f4e4c4';
+    ctx.beginPath();
+    ctx.moveTo(x, y - 28);
+    ctx.lineTo(x + 6, y - 18);
+    ctx.lineTo(x - 6, y - 18);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#2f5d62';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+  if (restored) {
+    fillRound(ctx, x - 8, y + 4, 16, 10, 2, '#7fdbda');
   }
   if (companion) {
     ctx.strokeStyle = 'rgba(127, 219, 218, 0.6)';
@@ -843,6 +910,8 @@ export function drawWorld(ctx: CanvasRenderingContext2D, state: GameState, time:
       state.encounter === 'help_accepted',
       state.parcelQuest.commsRepaired,
       state.libraryQuest.contextModule,
+      state.agentQuest.agentReady,
+      state.pathQuest.restored,
     );
   }
   drawPlayer(ctx, state.position.x, state.position.y, state.facing);

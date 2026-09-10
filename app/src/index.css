@@ -372,6 +372,30 @@ input {
   font-family: ui-monospace, 'Cascadia Code', 'Noto Sans Mono', monospace;
 }
 
+.certificate-card {
+  width: min(720px, 94vw);
+  max-height: 92vh;
+}
+
+.certificate-name {
+  font-size: 1.45rem;
+  font-weight: 800;
+  margin: 8px 0 12px;
+  unicode-bidi: plaintext;
+  text-align: center;
+}
+
+.certificate-preview {
+  display: block;
+  width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  background: #f4e6d4;
+  border-radius: 12px;
+  margin: 12px 0;
+  border: 1px solid var(--line);
+}
+
 input.path-ltr {
   min-width: 12rem;
   padding: 6px 10px;

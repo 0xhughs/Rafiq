@@ -1,6 +1,6 @@
 import { playerHitsSolid } from './collision';
 import { JOURNAL_CAP, RESTORE_NOTICE, SAVE_BACKUP_KEY, SAVE_KEY } from './constants';
-import { OBJECTIVES } from './dialogue';
+import { endingObjective, OBJECTIVES } from './dialogue';
 import { syncInventory } from './inventory';
 import { getMap, MAPS } from './maps';
 import { validateName } from './names';
@@ -12,6 +12,13 @@ import { parseFestivalQuest } from './festival';
 import { parseWorkshopQuest } from './workshop';
 import { parseKioskQuest } from './kiosk';
 import { parseLabQuest } from './lab';
+import { parseAgentQuest } from './agent';
+import { parseBridgeQuest } from './bridge';
+import { parseSkillQuest } from './skill';
+import { parseApprovalQuest } from './approval';
+import { parseCrewQuest } from './crew';
+import { parsePathQuest } from './path';
+import { parsePassportQuest } from './passport';
 import type {
   EndingState,
   Facing,
@@ -107,6 +114,52 @@ const JOURNAL_IDS: readonly JournalEventId[] = [
   'log_selected',
   'frozen_published',
   'lab_ready',
+  'agent_opened',
+  'chat_plan_seen',
+  'job_configured',
+  'board_posted',
+  'missing_stopped',
+  'extra_stopped',
+  'agent_ready',
+  'bridge_opened',
+  'server_connected',
+  'tools_listed',
+  'grant_limited',
+  'civic_lookup',
+  'draft_saved',
+  'capability_denied',
+  'bridge_ready',
+  'skill_opened',
+  'oneshot_corrected',
+  'skill_saved',
+  'second_trial',
+  'clock_armed',
+  'routine_fired',
+  'routine_paused',
+  'skill_ready',
+  'approve_opened',
+  'send_rejected',
+  'send_approved',
+  'case_context',
+  'human_decided',
+  'approval_ready',
+  'crew_opened',
+  'roles_assigned',
+  'conflict_resolved',
+  'quality_repaired',
+  'quality_accepted',
+  'crew_ready',
+  'path_opened',
+  'source_verified',
+  'plan_bounded',
+  'pack_ready',
+  'skill_ran',
+  'night_rejected',
+  'night_sent',
+  'restored',
+  'passport_opened',
+  'name_confirmed',
+  'passport_issued',
 ];
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -164,8 +217,15 @@ export function toEnvelope(state: GameState): SaveEnvelope {
     workshopQuest: parseWorkshopQuest(state.workshopQuest),
     kioskQuest: parseKioskQuest(state.kioskQuest),
     labQuest: parseLabQuest(state.labQuest),
+    agentQuest: parseAgentQuest(state.agentQuest),
+    bridgeQuest: parseBridgeQuest(state.bridgeQuest),
+    skillQuest: parseSkillQuest(state.skillQuest),
+    approvalQuest: parseApprovalQuest(state.approvalQuest),
+    crewQuest: parseCrewQuest(state.crewQuest),
+    pathQuest: parsePathQuest(state.pathQuest),
+    passportQuest: parsePassportQuest(state.passportQuest),
     robot: { companion },
-    endingState: 'in_progress',
+    endingState: state.endingState,
     mapsVisited: state.mapsVisited.length > 0 ? [...state.mapsVisited] : [state.map],
   };
 }
@@ -269,7 +329,10 @@ export function validateSave(raw: unknown): SaveEnvelope | null {
   if (!journalEvents) return null;
   if (!isObject(data.evidence)) return null;
   if (!isObject(data.robot) || typeof data.robot.companion !== 'boolean') return null;
-  if (data.endingState !== 'in_progress') return null;
+  const endingState: EndingState =
+    data.endingState === 'invited' || data.endingState === 'issued' || data.endingState === 'in_progress'
+      ? data.endingState
+      : 'in_progress';
   const mapsVisited = parseMapsVisited(data.mapsVisited);
   if (!mapsVisited) return null;
   const companion = data.robot.companion;
@@ -303,8 +366,15 @@ export function validateSave(raw: unknown): SaveEnvelope | null {
     workshopQuest: parseWorkshopQuest(data.workshopQuest),
     kioskQuest: parseKioskQuest(data.kioskQuest),
     labQuest: parseLabQuest(data.labQuest),
+    agentQuest: parseAgentQuest(data.agentQuest),
+    bridgeQuest: parseBridgeQuest(data.bridgeQuest),
+    skillQuest: parseSkillQuest(data.skillQuest),
+    approvalQuest: parseApprovalQuest(data.approvalQuest),
+    crewQuest: parseCrewQuest(data.crewQuest),
+    pathQuest: parsePathQuest(data.pathQuest),
+    passportQuest: parsePassportQuest(data.passportQuest),
     robot: { companion },
-    endingState: 'in_progress' satisfies EndingState,
+    endingState,
     mapsVisited: mapsVisited.length > 0 ? mapsVisited : [data.map],
   };
 }
@@ -317,6 +387,28 @@ export function hydrateSave(
   const map = envelope.map;
   const position = snapIfUnsafe(map, envelope.position);
   const companion = envelope.robot.companion || envelope.encounter === 'help_accepted';
+  const labQuest = parseLabQuest(envelope.labQuest);
+  const agentQuest = parseAgentQuest(envelope.agentQuest);
+  const bridgeQuest = parseBridgeQuest(envelope.bridgeQuest);
+  const skillQuest = parseSkillQuest(envelope.skillQuest);
+  const approvalQuest = parseApprovalQuest(envelope.approvalQuest);
+  const crewQuest = parseCrewQuest(envelope.crewQuest);
+  const pathQuest = parsePathQuest(envelope.pathQuest);
+  const passportQuest = parsePassportQuest(envelope.passportQuest);
+  let storyObjective =
+    envelope.storyObjective || (companion ? OBJECTIVES.cornerStore : OBJECTIVES.takeTrash);
+  const ending = endingObjective({
+    endingState: envelope.endingState,
+    pathQuest,
+    passportQuest,
+  });
+  if (ending) storyObjective = ending;
+  else if (crewQuest.crewReady) storyObjective = OBJECTIVES.pathWork;
+  else if (approvalQuest.approvalReady) storyObjective = OBJECTIVES.crewWork;
+  else if (skillQuest.skillReady) storyObjective = OBJECTIVES.approvalWork;
+  else if (bridgeQuest.bridgeReady) storyObjective = OBJECTIVES.skillWork;
+  else if (agentQuest.agentReady) storyObjective = OBJECTIVES.bridgeWork;
+  else if (labQuest.labReady) storyObjective = OBJECTIVES.agentWork;
   return {
     playerName: envelope.playerName,
     nameDraft: envelope.playerName,
@@ -329,7 +421,7 @@ export function hydrateSave(
     encounter: companion ? 'help_accepted' : envelope.encounter === 'talking' ? 'available' : envelope.encounter,
     dialogueNode: null,
     conversationSeen: envelope.conversationSeen,
-    storyObjective: envelope.storyObjective || (companion ? OBJECTIVES.cornerStore : OBJECTIVES.takeTrash),
+    storyObjective,
     checkpointReached: companion || envelope.checkpointReached,
     inventory: syncInventory(envelope.inventory, envelope.trash),
     neighbor: persistableGreeting(envelope.neighbor),
@@ -348,13 +440,20 @@ export function hydrateSave(
     festivalQuest: parseFestivalQuest(envelope.festivalQuest),
     workshopQuest: parseWorkshopQuest(envelope.workshopQuest),
     kioskQuest: parseKioskQuest(envelope.kioskQuest),
-    labQuest: parseLabQuest(envelope.labQuest),
+    labQuest,
+    agentQuest,
+    bridgeQuest,
+    skillQuest,
+    approvalQuest,
+    crewQuest,
+    pathQuest,
+    passportQuest,
     calculator: createCalculator(),
     inspectTarget: null,
     explainTopic: null,
     robotUnderstood: null,
     shopFeedback: null,
-    endingState: 'in_progress',
+    endingState: envelope.endingState,
     mapsVisited: envelope.mapsVisited.length > 0 ? envelope.mapsVisited : [map],
     saveStatus,
     restoreNotice,
@@ -455,6 +554,14 @@ export function shouldPersist(prev: GameState, next: GameState, action: GameActi
   if (JSON.stringify(prev.workshopQuest) !== JSON.stringify(next.workshopQuest)) return true;
   if (JSON.stringify(prev.kioskQuest) !== JSON.stringify(next.kioskQuest)) return true;
   if (JSON.stringify(prev.labQuest) !== JSON.stringify(next.labQuest)) return true;
+  if (JSON.stringify(prev.agentQuest) !== JSON.stringify(next.agentQuest)) return true;
+  if (JSON.stringify(prev.bridgeQuest) !== JSON.stringify(next.bridgeQuest)) return true;
+  if (JSON.stringify(prev.skillQuest) !== JSON.stringify(next.skillQuest)) return true;
+  if (JSON.stringify(prev.approvalQuest) !== JSON.stringify(next.approvalQuest)) return true;
+  if (JSON.stringify(prev.crewQuest) !== JSON.stringify(next.crewQuest)) return true;
+  if (JSON.stringify(prev.pathQuest) !== JSON.stringify(next.pathQuest)) return true;
+  if (JSON.stringify(prev.passportQuest) !== JSON.stringify(next.passportQuest)) return true;
+  if (prev.endingState !== next.endingState) return true;
   if (persistableGreeting(prev.librarian) !== persistableGreeting(next.librarian)) return true;
   if (persistableGreeting(prev.editor) !== persistableGreeting(next.editor)) return true;
   if (persistableGreeting(prev.officer) !== persistableGreeting(next.officer)) return true;

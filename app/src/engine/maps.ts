@@ -75,7 +75,7 @@ export interface PortalDef {
   ends: [PortalEnd, PortalEnd];
 }
 
-const SOLID_LETTERS = new Set(['#', 'B', 'T', 'K', 'M', 'C', 'H', 'L', 'W', 'n', 'p', 'c', 'k', 'Q', 'b', 'y', 's', 'f', 'A', 'u', 'x', 'z', 'm', 'j', 'v', 't', 'U', 'X', 'q', 'a', 'e', 'w', 'l']);
+const SOLID_LETTERS = new Set(['#', 'B', 'T', 'K', 'M', 'C', 'H', 'L', 'W', 'n', 'p', 'c', 'k', 'Q', 'b', 'y', 's', 'f', 'A', 'u', 'x', 'z', 'm', 'j', 'v', 't', 'U', 'X', 'q', 'a', 'e', 'w', 'l', 'h', 'J', 'Z', 'O', 'V', '1', '2', '3', '4']);
 
 const APARTMENT_LEGEND = [
   '################',
@@ -206,9 +206,9 @@ const WORKSHOP_LEGEND = [
   '#..HHHHHHHH....#',
   '#...........e..#',
   '#u.z...a..m.j..#',
-  '#k.q......t....#',
+  '#k.q......t4...#',
   '#.......d......#',
-  '#..w........l..#',
+  '#O1wJfhZ.vx3l2V#',
   '################',
 ];
 
@@ -450,6 +450,15 @@ function kindFromLetter(letter: string): CellKind {
     case 'q':
     case 'w':
     case 'l':
+    case 'h':
+    case 'J':
+    case 'Z':
+    case 'O':
+    case 'V':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
       return 'file';
     case 'N':
       return 'neighbor';
@@ -559,6 +568,18 @@ export const FURNITURE = {
     kiosk: mergeRects(collectKind(WORKSHOP, ['q']))[0],
     lab: mergeRects(collectKind(WORKSHOP, ['w']))[0],
     prod: mergeRects(collectKind(WORKSHOP, ['l']))[0],
+    console: mergeRects(collectKind(WORKSHOP, ['h']))[0],
+    neighborNotice: mergeRects(collectKind(WORKSHOP, ['x']))[0],
+    connector: mergeRects(collectKind(WORKSHOP, ['f']))[0],
+    civicBrowser: mergeRects(collectKind(WORKSHOP, ['v']))[0],
+    skillDesk: mergeRects(collectKind(WORKSHOP, ['J']))[0],
+    hallClock: mergeRects(collectKind(WORKSHOP, ['Z']))[0],
+    approvalDesk: mergeRects(collectKind(WORKSHOP, ['O']))[0],
+    personalCase: mergeRects(collectKind(WORKSHOP, ['V']))[0],
+    crewTable: mergeRects(collectKind(WORKSHOP, ['1']))[0],
+    qualityBench: mergeRects(collectKind(WORKSHOP, ['2']))[0],
+    pathTable: mergeRects(collectKind(WORKSHOP, ['3']))[0],
+    sealBench: mergeRects(collectKind(WORKSHOP, ['4']))[0],
     walls: collectKind(WORKSHOP, ['#']),
   },
 };
@@ -788,6 +809,18 @@ export const WORLD_POS = {
   kioskFace: letterCenter(WORKSHOP, 'q'),
   labTerminal: letterCenter(WORKSHOP, 'w'),
   labProd: letterCenter(WORKSHOP, 'l'),
+  agentConsole: letterCenter(WORKSHOP, 'h'),
+  agentBoard: letterCenter(WORKSHOP, 'x'),
+  bridgeHost: letterCenter(WORKSHOP, 'f'),
+  bridgeBrowser: letterCenter(WORKSHOP, 'v'),
+  skillBench: letterCenter(WORKSHOP, 'J'),
+  skillClock: letterCenter(WORKSHOP, 'Z'),
+  approveDesk: letterCenter(WORKSHOP, 'O'),
+  decisionDesk: letterCenter(WORKSHOP, 'V'),
+  crewDesk: letterCenter(WORKSHOP, '1'),
+  qualityDesk: letterCenter(WORKSHOP, '2'),
+  pathDesk: letterCenter(WORKSHOP, '3'),
+  sealDesk: letterCenter(WORKSHOP, '4'),
   workshopTalk: cellCenter(4, 6),
   workshopWestWallInside: cellCenter(1, 4),
 };

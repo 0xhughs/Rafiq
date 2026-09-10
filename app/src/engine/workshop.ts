@@ -1,4 +1,5 @@
-import { OBJECTIVES, recordEvent } from './dialogue';
+import { endingObjective, OBJECTIVES, recordEvent } from './dialogue';
+import { markThanksHeard } from './passport';
 import type {
   AppointmentSlot,
   BoardKind,
@@ -297,7 +298,14 @@ function syncPhase(quest: WorkshopQuest): WorkshopQuest {
 
 export function workshopObjective(state: GameState): string {
   const quest = state.workshopQuest;
-  if (state.labQuest.labReady) return OBJECTIVES.labReady;
+  const ending = endingObjective(state);
+  if (ending) return ending;
+  if (state.crewQuest?.crewReady) return OBJECTIVES.pathWork;
+  if (state.approvalQuest?.approvalReady) return OBJECTIVES.crewWork;
+  if (state.skillQuest?.skillReady) return OBJECTIVES.approvalWork;
+  if (state.bridgeQuest?.bridgeReady) return OBJECTIVES.skillWork;
+  if (state.agentQuest?.agentReady) return OBJECTIVES.bridgeWork;
+  if (state.labQuest.labReady) return OBJECTIVES.agentWork;
   if (state.kioskQuest.kioskReady) return OBJECTIVES.labWork;
   if (quest.servicePosted) return OBJECTIVES.kioskWork;
   if (state.map === 'workshop' || quest.briefed || state.festivalQuest.workshopMaterials) {
@@ -337,6 +345,12 @@ export function awardWorkshopEvidence(state: GameState): GameState {
 
 export function managerNode(state: GameState): DialogueNodeId {
   const quest = state.workshopQuest;
+  if (state.pathQuest?.restored) return 'manager_restore_thanks';
+  if (state.crewQuest?.crewReady) return 'manager_crew_thanks';
+  if (state.approvalQuest?.approvalReady) return 'manager_approval_thanks';
+  if (state.skillQuest?.skillReady) return 'manager_skill_thanks';
+  if (state.bridgeQuest?.bridgeReady) return 'manager_bridge_thanks';
+  if (state.agentQuest?.agentReady) return 'manager_agent_thanks';
   if (state.labQuest.labReady) return 'manager_lab_thanks';
   if (state.kioskQuest.kioskReady) return 'manager_kiosk_thanks';
   if (quest.servicePosted) return 'manager_thanks';
@@ -365,8 +379,17 @@ export function closeWorkshopDialogue(state: GameState): GameState | null {
     node.startsWith('manager') ||
     node === 'companion_after_workshop' ||
     node === 'companion_after_kiosk' ||
-    node === 'companion_after_lab'
+    node === 'companion_after_lab' ||
+    node === 'companion_after_agent' ||
+    node === 'companion_after_bridge' ||
+    node === 'companion_after_skill' ||
+    node === 'companion_after_approval' ||
+    node === 'companion_after_crew' ||
+    node === 'companion_after_restore'
   ) {
+    if (node === 'companion_after_restore') {
+      return markThanksHeard(state);
+    }
     return {
       ...state,
       mode: 'playing',

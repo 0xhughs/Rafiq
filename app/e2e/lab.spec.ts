@@ -42,7 +42,7 @@ test('kiosk-success through lab success with physical actions', async ({ page })
   expect(afterKiosk.labQuest.labReady).toBe(false);
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-kiosk-ready', 'true');
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-lab-ready', 'false');
-  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '10');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '17');
 
   await page.waitForTimeout(200);
   await page.screenshot({ path: path.join(evidenceDir, 'interior.png'), fullPage: true });
@@ -124,6 +124,9 @@ test('kiosk-success through lab success with physical actions', async ({ page })
   expect(done.evidence['4.6']).toBe('demonstrated');
   expect(done.evidence['5.4']).toBe('demonstrated');
   expect(done.labQuest.labReady).toBe(true);
+  expect(done.evidence['5.1']).toBeUndefined();
+  expect(done.evidence['5.2']).toBeUndefined();
+  expect(done.agentQuest.agentReady).toBe(false);
 
   await interactAt(page, 'workshop', WORLD_POS.manager.x, WORLD_POS.manager.y);
   await expect(page.getByTestId('dialogue-text')).toContainText(/النسخة المجمّدة|الإنتاج/);

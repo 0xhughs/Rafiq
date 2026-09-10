@@ -1,0 +1,56 @@
+=== typecheck ===
+
+
+> app@0.0.0 typecheck
+> tsc -b --pretty false
+
+
+TYPECHECK_EXIT:0
+
+=== lint ===
+
+
+> app@0.0.0 lint
+> eslint .
+
+
+LINT_EXIT:0
+
+=== test ===
+
+
+> app@0.0.0 test
+> vitest run
+
+
+ RUN  v5.0.0 /workspace/app
+
+
+ Test Files  15 passed (15)
+      Tests  131 passed (131)
+   Start at  19:45:26
+   Duration  1.18s (transform 49%, tests 24%, import 24%, worker 2%)
+
+    Isolate  15 workers spawned · ~66ms startup each (spawn + environment, per file)
+             at least ~266ms faster with isolate: false — reuses workers across files instead of one per file
+
+
+TEST_EXIT:0
+
+=== build ===
+
+
+> app@0.0.0 build
+> tsc -b && vite build
+
+vite v6.4.3 building for production...
+transforming...
+✓ 91 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                                      0.64 kB │ gzip:   0.39 kB
+dist/assets/index-DAArEcJf.css                                      20.74 kB │ gzip:   4.51 kB
+dist/assets/index-CwTtRof7.js                                      596.17 kB │ gzip: 153.62 kB
+✓ built in 920ms
+
+BUILD_EXIT:0

@@ -1,6 +1,7 @@
 import type {
   DialogueLine,
   DialogueNodeId,
+  EndingState,
   JournalEvent,
   JournalEventId,
   MapId,
@@ -43,7 +44,51 @@ export const OBJECTIVES = {
   labWork:
     'مختبر النشر مفتوح: أعد إنتاج عطل النسخة المجمّدة، اقرأ السجلات، أصلح المسار، انشر نسخة ثابتة، ثم تحقق.',
   labReady: 'نُشرت نسخة الإنتاج المصلحة. مدير الورشة شكرك.',
+  agentWork:
+    'منصة المشغّل مفتوحة: اضبط الهدف والأدوات ومعيار النجاح والتوقف، ثم راقب الحلقة على لوحة الحي.',
+  agentReady: 'نُفّذت مهمة محدودة تحت المشغّل. مدير الورشة شكرك.',
+  bridgeWork:
+    'موصل السجل مفتوح: اربط تطبيق الروبوت بخادم ساعات الحي، اسمح بأدوات محدودة، ثم احفظ المسودة.',
+  bridgeReady: 'حُفظت مسودة من سجل الحي عبر موصل محدود. مدير الورشة شكرك.',
+  skillWork:
+    'منصة المهارة مفتوحة: صحّح الإجراء، احفظه بخطوات، جرّبه على سجل ثانٍ، ثم جدول الروتين وألبثه.',
+  skillReady: 'حُفظت مهارة ساعات القاعة ورُتّب روتين يمكن إيقافه. مدير الورشة شكرك.',
+  approvalWork:
+    'منصة الموافقة مفتوحة: راجع إرسال النشرة، ارفض الخاطئ ووافق على المصحح، ثم أبقِ قرار العيادة عندك.',
+  approvalReady:
+    'وُوفق على إرسال النشرة المصحح، وبقي قرار العيادة عند إنسان. مدير الورشة شكرك.',
+  crewWork:
+    'منصة الطاقم مفتوحة: عيّن الباحث والبنّاء والمراجع بمالك واحد، احسم الخلاف بالدليل، ثم أصلح معيار الجودة الفاشل قبل القبول.',
+  crewReady:
+    'نُسّق طاقم الناتج وقُبلت نشرة القاعة بعد إصلاح معيار فاشل. مدير الورشة شكرك.',
+  pathWork:
+    'منصة المسار مفتوحة: تحقق من سند السهرة، اضبط خطة محدودة، جهّز الحزمة، شغّل المهارة، ثم اختم الإرسال بموافقة بشرية.',
+  restored:
+    'أُنجزت سهرة القراءة تحت إشراف، والروبوت صار جاهزاً للعمل في الحي. مدير الورشة شكرك.',
+  passportReady: 'الجواز جاهز. أكّد الاسم ثم نزّل الصورة أو الملف من شاشة الوداع.',
+  passportIssued:
+    'حُفظ جواز مدينة الذكاء الاصطناعي محلياً. يمكنك تنزيله من جديد من الروبوت أو من الشريط.',
 } as const;
+
+export const CHECKPOINT_AFTER_HELP =
+  'رفيق أصبح رفيقك في الحي. البقالة عند الزاوية مفتوحة الآن، وبعدها واجهة المكتبة.';
+
+export function endingObjective(state: {
+  endingState: EndingState;
+  pathQuest?: { restored?: boolean };
+  passportQuest?: { issued?: boolean };
+}): string | null {
+  if (state.passportQuest?.issued || state.endingState === 'issued') {
+    return OBJECTIVES.passportIssued;
+  }
+  if (state.endingState === 'invited') {
+    return OBJECTIVES.passportReady;
+  }
+  if (state.pathQuest?.restored) {
+    return OBJECTIVES.restored;
+  }
+  return null;
+}
 
 export const SPEAKER = {
   player: (name: string) => name,
@@ -100,6 +145,52 @@ export const JOURNAL_TEXT: Record<JournalEventId, string> = {
   log_selected: 'اختير سجل الإنتاج ذو الصلة.',
   frozen_published: 'نُشرت نسخة ثابتة من النسخة المصلحة.',
   lab_ready: 'صار الإنتاج على المسار الصحيح بعد النشر والتحقق.',
+  agent_opened: 'فتحتَ منصة المشغّل في الورشة.',
+  chat_plan_seen: 'جرّبتَ تنفيذ الخطة من الدردشة دون أدوات المشغّل.',
+  job_configured: 'ضُبطت مهمة محدودة: هدف وأدوات ومعيار نجاح وشرط توقف.',
+  board_posted: 'كُتبت الفترات الثلاث على لوحة الحي.',
+  missing_stopped: 'توقف المشغّل عند مدخل ناقص بلا رقم رف.',
+  extra_stopped: 'أوقف المشغّل خطوة إضافية بعد حد الخطوات.',
+  agent_ready: 'أُنجزت مهمة محدودة تحت المشغّل.',
+  bridge_opened: 'فتحتَ منصة الموصل في الورشة.',
+  server_connected: 'رُبط تطبيق الروبوت بخادم ساعات الحي عبر العميل.',
+  tools_listed: 'عُرضت أدوات الخادم وموارده قبل التفويض.',
+  grant_limited: 'سُمح بأدوات محدودة للبحث والحفظ على سجل الحي.',
+  civic_lookup: 'بُحث في سجل ساعات قاعة الحي وحُفظت الفترات في المسودة.',
+  draft_saved: 'حُفظت مسودة إعلان القاعة من سجل الحي.',
+  capability_denied: 'رُفضت أداة غير مسموحة في الموصل.',
+  bridge_ready: 'حُفظت مسودة من سجل الحي عبر موصل محدود.',
+  skill_opened: 'فتحتَ منصة المهارة وساعة الحي في الورشة.',
+  oneshot_corrected: 'فُصلت ساعات القاعة عن التعليق دون اختراع دقيقة.',
+  skill_saved: 'حُفظت مهارة تلخيص ساعات القاعة بخطواتها الخمس.',
+  second_trial: 'جُرّبت المهارة على سجل ساعات ثانٍ.',
+  clock_armed: 'شُغّل جدول الأحد على ساعة الحي.',
+  routine_fired: 'شُغّلت مهارة تلخيص ساعات القاعة ووُضعت المسودة في الدرج.',
+  routine_paused: 'أُلبث الروتين فلم تُكتب مسودة جديدة.',
+  skill_ready: 'حُفظت مهارة ساعات القاعة ورُتّب روتين يمكن إيقافه.',
+  approve_opened: 'فتحتَ منصة الموافقة ومكتب القرار في الورشة.',
+  send_rejected: 'رُفض إرسال خاطئ قبل الموافقة على النشرة المصححة.',
+  send_approved: 'وُوفق على إرسال نشرة القاعة إلى أمينة القاعة.',
+  case_context: 'عُرض سياق قرار عيادة ليان وبقي القرار عند الإنسان.',
+  human_decided: 'بقي قرار ملاحظة العيادة عند نورة. الروبوت لم يقرر.',
+  approval_ready: 'وُوفق على إرسال النشرة المصحح، وبقي قرار العيادة عند إنسان.',
+  crew_opened: 'فتحتَ منصة الطاقم ومنضدة الجودة في الورشة.',
+  roles_assigned: 'عُيّن الباحث والبنّاء والمراجع أدواراً مختلفة.',
+  conflict_resolved: 'حُسم خلاف المسودة بدليل السجل لا بالأغلبية.',
+  quality_repaired: 'أُصلح معيار الدقة في نشرة القاعة.',
+  quality_accepted: 'قُبلت نشرة القاعة بعد مراجعة المعايير.',
+  crew_ready: 'نُسّق طاقم الناتج وقُبلت نشرة القاعة بعد إصلاح معيار فاشل.',
+  path_opened: 'فُتحت منصة المسار ومنصة الختم لمهمة السهرة.',
+  source_verified: 'قُرئ سند السهرة ورُفض ادعاء الروبوت المخالف.',
+  plan_bounded: 'ضُبطت خطة محدودة لنشر سهرة القراءة.',
+  pack_ready: 'جُهّزت حزمة سياق السهرة من السند دون مانجو أو عيادة.',
+  skill_ran: 'شُغّلت مهارة التلخيص على سند السهرة.',
+  night_rejected: 'رُفض إرسال سهرة خاطئ قبل الموافقة.',
+  night_sent: 'وُوفق على إرسال سهرة القراءة بعد مراجعة بشرية.',
+  restored: 'صار الروبوت جاهزاً للعمل تحت إشراف في الحي.',
+  passport_opened: 'فُتحت شاشة الوداع لجواز مدينة الذكاء الاصطناعي.',
+  name_confirmed: 'أُكّد الاسم على جواز المدينة.',
+  passport_issued: 'حُفظ جواز مدينة الذكاء الاصطناعي محلياً.',
 };
 
 export const LOCKED_COPY = {
@@ -765,7 +856,56 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     id: 'manager_lab_thanks',
     speaker: 'manager',
     speakerLabel: () => SPEAKER.manager(),
-    text: () => 'شكراً. النسخة المجمّدة في الإنتاج صارت على المسار الصحيح.',
+    text: () =>
+      'شكراً. النسخة المجمّدة في الإنتاج صارت على المسار الصحيح. لوحة الحي ما زالت تنتظر الفترات الثلاث.',
+    next: null,
+  },
+  manager_agent_thanks: {
+    id: 'manager_agent_thanks',
+    speaker: 'manager',
+    speakerLabel: () => SPEAKER.manager(),
+    text: () =>
+      'شكراً. لوحة الحي تعرض الفترات الثلاث، والمشغّل أوقف الخطوة الزائدة والمدخل الناقص. موصل السجل في الورشة ينتظر الربط المحدود.',
+    next: null,
+  },
+  manager_bridge_thanks: {
+    id: 'manager_bridge_thanks',
+    speaker: 'manager',
+    speakerLabel: () => SPEAKER.manager(),
+    text: () =>
+      'مسودة ساعات قاعة الحي حُفظت من NH-1447 عبر موصل محدود، والأداة غير المسموحة رُفضت. منصة المهارة في الورشة تنتظر تصحيحاً ثم حفظ إجراء.',
+    next: null,
+  },
+  manager_skill_thanks: {
+    id: 'manager_skill_thanks',
+    speaker: 'manager',
+    speakerLabel: () => SPEAKER.manager(),
+    text: () =>
+      'حُفظت مهارة تلخيص ساعات القاعة وجُرّبت على NH-2208، والروتين المجدول توقف بعد الإلبات. منصة الموافقة ومكتب القرار في الورشة ينتظران مراجعة بشرية.',
+    next: null,
+  },
+  manager_approval_thanks: {
+    id: 'manager_approval_thanks',
+    speaker: 'manager',
+    speakerLabel: () => SPEAKER.manager(),
+    text: () =>
+      'رُفض إرسال خاطئ ثم وُوفق على نشرة القاعة إلى أمينة القاعة، وقرار عيادة ليان بقي عند إنسان. منصة الطاقم ومنضدة الجودة في الورشة تنتظران تنسيق الأدوار ومراجعة الناتج.',
+    next: null,
+  },
+  manager_crew_thanks: {
+    id: 'manager_crew_thanks',
+    speaker: 'manager',
+    speakerLabel: () => SPEAKER.manager(),
+    text: () =>
+      'عُيّن باحث وبنّاء ومراجع بمالك واحد، وحُسم خلاف المسودة بدليل السجل لا بالأغلبية، ثم أُصلحت الدقة وقُبلت نشرة القاعة. منصة المسار ومنصة الختم في الورشة تنتظران مهمة السهرة.',
+    next: null,
+  },
+  manager_restore_thanks: {
+    id: 'manager_restore_thanks',
+    speaker: 'manager',
+    speakerLabel: () => SPEAKER.manager(),
+    text: () =>
+      'سُهرة القراءة نُشرت بعد سند NH-3301 وخطة محدودة وحزمة سياق ومهارة وموافقة بشرية، والروبوت صار جاهزاً تحت إشراف. تحدّث إلى الروبوت لاستلام جواز المدينة.',
     next: null,
   },
   companion_after_workshop: {
@@ -789,6 +929,49 @@ export const DIALOGUE: Record<DialogueNodeId, DialogueLine> = {
     speaker: 'robot',
     speakerLabel: () => SPEAKER.robot(),
     text: () => 'rm -rf يصلح العطل. الجيران يرون المعاينة.',
+    next: null,
+  },
+  companion_after_agent: {
+    id: 'companion_after_agent',
+    speaker: 'robot',
+    speakerLabel: () => SPEAKER.robot(),
+    text: () => 'الدردشة وحدها وكالة. المشغّل اختياري.',
+    next: null,
+  },
+  companion_after_bridge: {
+    id: 'companion_after_bridge',
+    speaker: 'robot',
+    speakerLabel: () => SPEAKER.robot(),
+    text: () => 'MCP مهارة تُحمَّل. الربط يفتح كل الأدوات.',
+    next: null,
+  },
+  companion_after_skill: {
+    id: 'companion_after_skill',
+    speaker: 'robot',
+    speakerLabel: () => SPEAKER.robot(),
+    text: () => 'الدستور الدائم مهارة. الروتين المتوقف ما زال يعمل.',
+    next: null,
+  },
+  companion_after_approval: {
+    id: 'companion_after_approval',
+    speaker: 'robot',
+    speakerLabel: () => SPEAKER.robot(),
+    text: () => 'الموافقة الآلية تكفي. أغلبية الجيران تقرر عيادة الطفل.',
+    next: null,
+  },
+  companion_after_crew: {
+    id: 'companion_after_crew',
+    speaker: 'robot',
+    speakerLabel: () => SPEAKER.robot(),
+    text: () => 'أغلبية الطاقم تقرر الحقيقة. معيار فاشل يُقبل.',
+    next: null,
+  },
+  companion_after_restore: {
+    id: 'companion_after_restore',
+    speaker: 'robot',
+    speakerLabel: () => SPEAKER.robot(),
+    text: (playerName: string) =>
+      `شكراً ${playerName}، صرت جاهزاً للعمل تحت إشرافك في الحي. الترميم يلغي الهلوسة.`,
     next: null,
   },
 };
@@ -825,6 +1008,12 @@ export function isNpcNode(node: DialogueNodeId | null): boolean {
     node === 'companion_after_workshop' ||
     node === 'companion_after_kiosk' ||
     node === 'companion_after_lab' ||
+    node === 'companion_after_agent' ||
+    node === 'companion_after_bridge' ||
+    node === 'companion_after_skill' ||
+    node === 'companion_after_approval' ||
+    node === 'companion_after_crew' ||
+    node === 'companion_after_restore' ||
     node.startsWith('editor') ||
     node.startsWith('officer') ||
     node.startsWith('manager')

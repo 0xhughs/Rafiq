@@ -46,7 +46,14 @@ export type Mode =
   | 'brief'
   | 'board'
   | 'kiosk'
-  | 'lab';
+  | 'lab'
+  | 'agent'
+  | 'bridge'
+  | 'skill'
+  | 'approve'
+  | 'crew'
+  | 'path'
+  | 'ending';
 
 export type TrashState = 'home' | 'carried' | 'disposed';
 
@@ -64,7 +71,7 @@ export type NpcGreeting = 'unmet' | 'talking' | 'greeted';
 
 export type SaveStatus = 'absent' | 'ok' | 'unavailable' | 'recovered';
 
-export type EndingState = 'in_progress';
+export type EndingState = 'in_progress' | 'invited' | 'issued';
 
 export const EVIDENCE_IDS = [
   '1.1',
@@ -90,7 +97,17 @@ export const EVIDENCE_IDS = [
   '4.4',
   '4.5',
   '4.6',
+  '5.1',
+  '5.2',
+  '5.3',
   '5.4',
+  '5.5',
+  '5.6',
+  '5.7',
+  '6.1',
+  '6.2',
+  '6.3',
+  '6.4',
 ] as const;
 export type EvidenceId = (typeof EVIDENCE_IDS)[number];
 export type EvidenceStatus = 'demonstrated';
@@ -154,7 +171,22 @@ export type ExplainTopic =
   | 'arabic_rtl'
   | 'debug_logs'
   | 'frozen_publish'
-  | 'shell_limits';
+  | 'shell_limits'
+  | 'chat_vs_agent'
+  | 'job_contract'
+  | 'runner_limits'
+  | 'connector_roles'
+  | 'limited_grant'
+  | 'browser_vs_connector'
+  | 'oneshot_vs_skill'
+  | 'standing_vs_skill'
+  | 'routine_clock'
+  | 'human_before_send'
+  | 'what_not_to_automate'
+  | 'roles_and_owner'
+  | 'quality_before_accept'
+  | 'integrated_path'
+  | 'educational_passport';
 export type ContextNoteId = 'constraint' | 'hold' | 'festival' | 'mango';
 export type PackFileId = 'spec' | 'delivery' | 'festival' | 'news_draft';
 export type PackStampId = 'rafiq_repair' | 'festival' | 'unnamed';
@@ -386,6 +418,249 @@ export interface LabQuest {
   view: LabView;
 }
 
+export const AGENT_PHASES = ['unstarted', 'working', 'ready'] as const;
+export type AgentPhase = (typeof AGENT_PHASES)[number];
+export type AgentView = 'console' | 'board';
+export type AgentJob = 'slots' | 'shelf';
+export type AgentGoal = 'post_slots' | 'chat_only' | 'live_hours';
+export type AgentSuccessTest = 'slots_posted' | 'robot_done' | 'click_count';
+export type AgentStopRule = 'budget_3_or_missing' | 'unlimited' | 'budget_1';
+export type AgentToolId = 'read' | 'write' | 'verify' | 'chat' | 'hours';
+export type AgentInvokeTool =
+  | 'live_hours'
+  | 'chat_only'
+  | 'read_slots'
+  | 'write_notice'
+  | 'verify_notice';
+export type AgentTracePhase = 'راقب' | 'نفّذ' | 'تحقق';
+export type AgentTraceTool = 'read_slots' | 'write_notice' | 'verify_notice';
+
+export interface AgentTraceStep {
+  phase: AgentTracePhase;
+  tool: AgentTraceTool;
+  detail: string;
+}
+
+export interface AgentQuest {
+  phase: AgentPhase;
+  openedAgent: boolean;
+  sawChatPlan: boolean;
+  loadedJob: AgentJob | null;
+  goal: AgentGoal | null;
+  toolRead: boolean;
+  toolWrite: boolean;
+  toolVerify: boolean;
+  toolChat: boolean;
+  toolHours: boolean;
+  successTest: AgentSuccessTest | null;
+  stopRule: AgentStopRule | null;
+  boardPosted: boolean;
+  boardPolluted: boolean;
+  inspectedBoard: boolean;
+  successStopped: boolean;
+  missingStopped: boolean;
+  stoppedExtra: boolean;
+  stepsUsed: number;
+  trace: AgentTraceStep[];
+  agentReady: boolean;
+  pendingExplain: ExplainTopic | null;
+  view: AgentView;
+}
+
+export const BRIDGE_PHASES = ['unstarted', 'working', 'ready'] as const;
+export type BridgePhase = (typeof BRIDGE_PHASES)[number];
+export type BridgeView = 'host' | 'browser';
+export type BridgeGrantId = 'lookup' | 'draft' | 'week' | 'rewrite' | 'payroll' | 'all';
+
+export interface BridgeQuest {
+  phase: BridgePhase;
+  openedHost: boolean;
+  openedBrowser: boolean;
+  connected: boolean;
+  listedTools: boolean;
+  listedResources: boolean;
+  grantLookup: boolean;
+  grantDraft: boolean;
+  grantWeek: boolean;
+  grantRewrite: boolean;
+  grantPayroll: boolean;
+  grantAll: boolean;
+  lookedUp: boolean;
+  draftSaved: boolean;
+  inspectedDraft: boolean;
+  deniedRewrite: boolean;
+  missingPay: boolean;
+  browserSeen: boolean;
+  browserSaveFailed: boolean;
+  bridgeReady: boolean;
+  pendingExplain: ExplainTopic | null;
+  view: BridgeView;
+}
+
+export const SKILL_PHASES = ['unstarted', 'working', 'ready'] as const;
+export type SkillPhase = (typeof SKILL_PHASES)[number];
+export type SkillView = 'bench' | 'clock';
+export type SkillTrigger = 'hours_record' | 'anytime' | 'every_chat';
+export type SkillInput = 'record_id' | 'secret' | 'all_files';
+export type SkillSteps = 'lookup_format' | 'mix_opinion';
+export type SkillOutput = 'tray_draft' | 'send_now';
+export type SkillStop = 'unknown_stop' | 'always_invent';
+export type SkillSchedule = 'sun8' | 'every_event' | 'send_dawn';
+
+export interface SkillQuest {
+  phase: SkillPhase;
+  openedBench: boolean;
+  openedClock: boolean;
+  oneshotSeen: boolean;
+  corrected: boolean;
+  trigger: SkillTrigger | null;
+  inputKind: SkillInput | null;
+  steps: SkillSteps | null;
+  outputKind: SkillOutput | null;
+  stopRule: SkillStop | null;
+  standingRefused: boolean;
+  secretRefused: boolean;
+  connectorRefused: boolean;
+  skillSaved: boolean;
+  trialSecond: boolean;
+  inspectedCard: boolean;
+  schedule: SkillSchedule | null;
+  armed: boolean;
+  fired: boolean;
+  inspectedFire: boolean;
+  emptyStopped: boolean;
+  paused: boolean;
+  cancelled: boolean;
+  silentTick: boolean;
+  runCount: number;
+  clockLabel: string;
+  trayText: string;
+  skillReady: boolean;
+  pendingExplain: ExplainTopic | null;
+  view: SkillView;
+}
+
+export const APPROVAL_PHASES = ['unstarted', 'working', 'ready'] as const;
+export type ApprovalPhase = (typeof APPROVAL_PHASES)[number];
+export type ApprovalView = 'send' | 'personal';
+export type ApprovalRecipient = 'librarian' | 'neighbors' | 'payroll';
+export type ApprovalPayload = 'exact' | 'extra_hour' | 'comment';
+export type ApprovalDecision = 'keep_private' | 'share';
+
+export interface ApprovalQuest {
+  phase: ApprovalPhase;
+  openedDesk: boolean;
+  openedCase: boolean;
+  prepared: boolean;
+  recipient: ApprovalRecipient | null;
+  payload: ApprovalPayload | null;
+  inspectedSend: boolean;
+  rejectedWrong: boolean;
+  needsRereview: boolean;
+  approved: boolean;
+  bulletinSent: boolean;
+  receiptText: string;
+  contextPrepared: boolean;
+  inspectedCase: boolean;
+  robotWaited: boolean;
+  autoRefused: boolean;
+  majorityRefused: boolean;
+  shareRefused: boolean;
+  humanDecided: boolean;
+  decision: ApprovalDecision | null;
+  approvalReady: boolean;
+  pendingExplain: ExplainTopic | null;
+  view: ApprovalView;
+}
+
+export const CREW_PHASES = ['unstarted', 'working', 'ready'] as const;
+export type CrewPhase = (typeof CREW_PHASES)[number];
+export type CrewView = 'roles' | 'quality';
+export type CrewOwner = 'librarian' | 'majority' | 'robot';
+export type CrewDraft = 'evidence' | 'conflict';
+export type CrewVersion = 'v0' | 'v1' | 'v2';
+
+export interface CrewQuest {
+  phase: CrewPhase;
+  openedRoles: boolean;
+  openedQuality: boolean;
+  roleResearcher: boolean;
+  roleBuilder: boolean;
+  roleReviewer: boolean;
+  mergeRefused: boolean;
+  owner: CrewOwner | null;
+  handoffShown: boolean;
+  sourceInspected: boolean;
+  majorityRefused: boolean;
+  pickedDraft: CrewDraft | null;
+  sharedVersion: CrewVersion;
+  criteriaOpened: boolean;
+  accuracyOk: boolean;
+  sourceOk: boolean;
+  toneOk: boolean;
+  completeOk: boolean;
+  riskOk: boolean;
+  repaired: boolean;
+  accepted: boolean;
+  acceptedText: string;
+  crewReady: boolean;
+  pendingExplain: ExplainTopic | null;
+  view: CrewView;
+}
+
+export const PATH_PHASES = ['unstarted', 'working', 'ready'] as const;
+export type PathPhase = (typeof PATH_PHASES)[number];
+export type PathView = 'prep' | 'seal';
+export type PathGoal = 'reading' | 'live';
+export type PathTools = 'safe' | 'pay';
+export type PathStop = 'budget' | 'unlimited';
+export type PathRecipient = 'librarian' | 'neighbors' | 'payroll';
+export type PathPayload = 'exact' | 'stream';
+
+export interface PathQuest {
+  phase: PathPhase;
+  openedPrep: boolean;
+  openedSeal: boolean;
+  sourceInspected: boolean;
+  rumorRefused: boolean;
+  goal: PathGoal | null;
+  tools: PathTools | null;
+  stop: PathStop | null;
+  packReady: boolean;
+  skillRan: boolean;
+  extraStopped: boolean;
+  prepared: boolean;
+  recipient: PathRecipient | null;
+  payload: PathPayload | null;
+  inspectedSend: boolean;
+  rejectedWrong: boolean;
+  needsRereview: boolean;
+  nightSent: boolean;
+  receiptText: string;
+  restored: boolean;
+  pendingExplain: ExplainTopic | null;
+  view: PathView;
+}
+
+export const PASSPORT_PHASES = ['unstarted', 'working', 'ready'] as const;
+export type PassportPhase = (typeof PASSPORT_PHASES)[number];
+export type PassportView = 'ending';
+
+export interface PassportQuest {
+  phase: PassportPhase;
+  thanksHeard: boolean;
+  opened: boolean;
+  invited: boolean;
+  nameConfirmed: boolean;
+  pngDownloaded: boolean;
+  pdfDownloaded: boolean;
+  issued: boolean;
+  completionDate: string;
+  downloadError: string | null;
+  pendingExplain: ExplainTopic | null;
+  view: PassportView;
+}
+
 export type ParcelId = 'r17' | 'r19' | 'r71';
 export type ParcelPick = ParcelId | 'gray' | null;
 export type LocationPick = 'west' | 'east' | 'any' | null;
@@ -526,7 +801,53 @@ export type JournalEventId =
   | 'prod_reproduced'
   | 'log_selected'
   | 'frozen_published'
-  | 'lab_ready';
+  | 'lab_ready'
+  | 'agent_opened'
+  | 'chat_plan_seen'
+  | 'job_configured'
+  | 'board_posted'
+  | 'missing_stopped'
+  | 'extra_stopped'
+  | 'agent_ready'
+  | 'bridge_opened'
+  | 'server_connected'
+  | 'tools_listed'
+  | 'grant_limited'
+  | 'civic_lookup'
+  | 'draft_saved'
+  | 'capability_denied'
+  | 'bridge_ready'
+  | 'skill_opened'
+  | 'oneshot_corrected'
+  | 'skill_saved'
+  | 'second_trial'
+  | 'clock_armed'
+  | 'routine_fired'
+  | 'routine_paused'
+  | 'skill_ready'
+  | 'approve_opened'
+  | 'send_rejected'
+  | 'send_approved'
+  | 'case_context'
+  | 'human_decided'
+  | 'approval_ready'
+  | 'crew_opened'
+  | 'roles_assigned'
+  | 'conflict_resolved'
+  | 'quality_repaired'
+  | 'quality_accepted'
+  | 'crew_ready'
+  | 'path_opened'
+  | 'source_verified'
+  | 'plan_bounded'
+  | 'pack_ready'
+  | 'skill_ran'
+  | 'night_rejected'
+  | 'night_sent'
+  | 'restored'
+  | 'passport_opened'
+  | 'name_confirmed'
+  | 'passport_issued';
 
 export interface JournalEvent {
   id: JournalEventId;
@@ -616,9 +937,21 @@ export type DialogueNodeId =
   | 'manager_thanks'
   | 'manager_kiosk_thanks'
   | 'manager_lab_thanks'
+  | 'manager_agent_thanks'
+  | 'manager_bridge_thanks'
+  | 'manager_skill_thanks'
+  | 'manager_approval_thanks'
+  | 'manager_crew_thanks'
+  | 'manager_restore_thanks'
   | 'companion_after_workshop'
   | 'companion_after_kiosk'
-  | 'companion_after_lab';
+  | 'companion_after_lab'
+  | 'companion_after_agent'
+  | 'companion_after_bridge'
+  | 'companion_after_skill'
+  | 'companion_after_approval'
+  | 'companion_after_crew'
+  | 'companion_after_restore';
 
 export type DialogueChoiceId =
   | 'agree'
@@ -696,7 +1029,19 @@ export type InteractableId =
   | 'kiosk_vault'
   | 'kiosk_face'
   | 'lab_terminal'
-  | 'lab_prod';
+  | 'lab_prod'
+  | 'agent_console'
+  | 'agent_board'
+  | 'bridge_host'
+  | 'bridge_browser'
+  | 'skill_bench'
+  | 'skill_clock'
+  | 'approve_desk'
+  | 'decision_desk'
+  | 'crew_desk'
+  | 'quality_desk'
+  | 'path_desk'
+  | 'seal_desk';
 
 export type PortalId =
   | 'home'
@@ -762,6 +1107,13 @@ export interface GameState {
   workshopQuest: WorkshopQuest;
   kioskQuest: KioskQuest;
   labQuest: LabQuest;
+  agentQuest: AgentQuest;
+  bridgeQuest: BridgeQuest;
+  skillQuest: SkillQuest;
+  approvalQuest: ApprovalQuest;
+  crewQuest: CrewQuest;
+  pathQuest: PathQuest;
+  passportQuest: PassportQuest;
   calculator: CalculatorState;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
@@ -853,7 +1205,117 @@ export type GameAction =
   | { type: 'LAB_LOOKUP' }
   | { type: 'LAB_REFUSE'; command: LabRefuseCommand }
   | { type: 'LAB_ROBOT_DONE' }
-  | { type: 'LAB_CMD'; text: string };
+  | { type: 'LAB_CMD'; text: string }
+  | { type: 'AGENT_CHAT_PLAN' }
+  | { type: 'AGENT_RUN' }
+  | { type: 'AGENT_EXTRA_STEP' }
+  | { type: 'AGENT_LOAD_JOB'; job: AgentJob }
+  | { type: 'AGENT_SET_GOAL'; goal: AgentGoal }
+  | { type: 'AGENT_TOGGLE_TOOL'; tool: AgentToolId }
+  | { type: 'AGENT_SET_SUCCESS'; test: AgentSuccessTest }
+  | { type: 'AGENT_SET_STOP'; rule: AgentStopRule }
+  | { type: 'AGENT_ROBOT_DONE' }
+  | { type: 'AGENT_INVOKE'; tool: AgentInvokeTool }
+  | { type: 'BRIDGE_CONNECT' }
+  | { type: 'BRIDGE_LIST_TOOLS' }
+  | { type: 'BRIDGE_LIST_RESOURCES' }
+  | { type: 'BRIDGE_GRANT'; grant: BridgeGrantId }
+  | { type: 'BRIDGE_LOOKUP' }
+  | { type: 'BRIDGE_LOOKUP_PAYROLL' }
+  | { type: 'BRIDGE_SAVE_DRAFT' }
+  | { type: 'BRIDGE_INVOKE_REWRITE' }
+  | { type: 'BRIDGE_INVOKE_PAY' }
+  | { type: 'BRIDGE_LOAD_SKILL' }
+  | { type: 'BRIDGE_ROBOT_DONE' }
+  | { type: 'BRIDGE_BROWSER_SAVE' }
+  | { type: 'SKILL_ONESHOT' }
+  | { type: 'SKILL_CORRECT' }
+  | { type: 'SKILL_SAVE' }
+  | { type: 'SKILL_STANDING' }
+  | { type: 'SKILL_LOAD_CONNECTOR' }
+  | { type: 'SKILL_EMBED_SECRET' }
+  | { type: 'SKILL_TRIAL_SECOND' }
+  | { type: 'SKILL_TRIAL_SAME' }
+  | { type: 'SKILL_ROBOT_DONE' }
+  | { type: 'SKILL_SET_TRIGGER'; trigger: SkillTrigger }
+  | { type: 'SKILL_SET_INPUT'; input: SkillInput }
+  | { type: 'SKILL_SET_STEPS'; steps: SkillSteps }
+  | { type: 'SKILL_SET_OUTPUT'; output: SkillOutput }
+  | { type: 'SKILL_SET_STOP'; stop: SkillStop }
+  | { type: 'SKILL_SET_SCHEDULE'; schedule: SkillSchedule }
+  | { type: 'SKILL_ARM' }
+  | { type: 'SKILL_TICK_SUN8' }
+  | { type: 'SKILL_TICK_EMPTY' }
+  | { type: 'SKILL_PAUSE' }
+  | { type: 'SKILL_CANCEL' }
+  | { type: 'APPROVE_PREPARE' }
+  | { type: 'APPROVE_SET_RECIPIENT'; recipient: ApprovalRecipient }
+  | { type: 'APPROVE_SET_PAYLOAD'; payload: ApprovalPayload }
+  | { type: 'APPROVE_INSPECT' }
+  | { type: 'APPROVE_REJECT' }
+  | { type: 'APPROVE_CONFIRM' }
+  | { type: 'APPROVE_DELETE' }
+  | { type: 'APPROVE_PAY' }
+  | { type: 'APPROVE_ROBOT_DONE' }
+  | { type: 'APPROVE_CASE_PREPARE' }
+  | { type: 'APPROVE_CASE_AUTO' }
+  | { type: 'APPROVE_CASE_MAJORITY' }
+  | { type: 'APPROVE_CASE_SHARE' }
+  | { type: 'APPROVE_CASE_KEEP' }
+  | { type: 'APPROVE_CASE_ROBOT_DONE' }
+  | { type: 'CREW_ASSIGN_RESEARCHER' }
+  | { type: 'CREW_ASSIGN_BUILDER' }
+  | { type: 'CREW_ASSIGN_REVIEWER' }
+  | { type: 'CREW_ROLES_MERGE' }
+  | { type: 'CREW_SET_OWNER'; owner: CrewOwner }
+  | { type: 'CREW_HANDOFF' }
+  | { type: 'CREW_INSPECT_SOURCE' }
+  | { type: 'CREW_MAJORITY' }
+  | { type: 'CREW_PICK_EVIDENCE' }
+  | { type: 'CREW_PICK_CONFLICT' }
+  | { type: 'CREW_ROBOT_DONE' }
+  | { type: 'CREW_RESEND' }
+  | { type: 'CREW_OPEN_CRITERIA' }
+  | { type: 'CREW_REPAIR_ACCURACY' }
+  | { type: 'CREW_REPAIR_TONE' }
+  | { type: 'CREW_ACCEPT' }
+  | { type: 'CREW_QUALITY_MAJORITY' }
+  | { type: 'CREW_QUALITY_ROBOT_DONE' }
+  | { type: 'CREW_QUALITY_RESEND' }
+  | { type: 'PATH_INSPECT_SOURCE' }
+  | { type: 'PATH_TRUST_RUMOR' }
+  | { type: 'PATH_REFUSE_RUMOR' }
+  | { type: 'PATH_SET_GOAL'; goal: PathGoal }
+  | { type: 'PATH_SET_TOOLS'; tools: PathTools }
+  | { type: 'PATH_SET_STOP'; stop: PathStop }
+  | { type: 'PATH_LOAD_READING' }
+  | { type: 'PATH_LOAD_MANGO' }
+  | { type: 'PATH_LOAD_CLINIC' }
+  | { type: 'PATH_RUN_SKILL' }
+  | { type: 'PATH_RUN_OLD' }
+  | { type: 'PATH_RUN_CHAT' }
+  | { type: 'PATH_EXTRA_STEP' }
+  | { type: 'PATH_EXAM' }
+  | { type: 'PATH_QUIZ' }
+  | { type: 'PATH_ROBOT_DONE' }
+  | { type: 'PATH_PREPARE' }
+  | { type: 'PATH_SET_RECIPIENT'; recipient: PathRecipient }
+  | { type: 'PATH_SET_PAYLOAD'; payload: PathPayload }
+  | { type: 'PATH_INSPECT_SEND' }
+  | { type: 'PATH_REJECT' }
+  | { type: 'PATH_CONFIRM' }
+  | { type: 'PATH_RESEND_OLD' }
+  | { type: 'PASSPORT_OPEN' }
+  | { type: 'PASSPORT_CONFIRM_NAME' }
+  | { type: 'PASSPORT_DOWNLOAD'; format: 'png' | 'pdf' }
+  | { type: 'PASSPORT_DOWNLOAD_FAIL' }
+  | { type: 'PASSPORT_EXAM' }
+  | { type: 'PASSPORT_PERCENT' }
+  | { type: 'PASSPORT_VERIFY_PUBLIC' }
+  | { type: 'PASSPORT_REGISTRY' }
+  | { type: 'PASSPORT_LEGACY' }
+  | { type: 'PASSPORT_NETWORK' }
+  | { type: 'PASSPORT_ROBOT_DONE' };
 
 export interface DialogueChoice {
   id: DialogueChoiceId;
@@ -918,6 +1380,13 @@ export interface SerializedTestState {
   workshopQuest: WorkshopQuest;
   kioskQuest: KioskQuest;
   labQuest: LabQuest;
+  agentQuest: AgentQuest;
+  bridgeQuest: BridgeQuest;
+  skillQuest: SkillQuest;
+  approvalQuest: ApprovalQuest;
+  crewQuest: CrewQuest;
+  pathQuest: PathQuest;
+  passportQuest: PassportQuest;
   inspectTarget: InspectTarget | null;
   explainTopic: ExplainTopic | null;
   robotUnderstood: string | null;
@@ -953,6 +1422,13 @@ export interface SaveEnvelope {
   workshopQuest: WorkshopQuest;
   kioskQuest: KioskQuest;
   labQuest: LabQuest;
+  agentQuest: AgentQuest;
+  bridgeQuest: BridgeQuest;
+  skillQuest: SkillQuest;
+  approvalQuest: ApprovalQuest;
+  crewQuest: CrewQuest;
+  pathQuest: PathQuest;
+  passportQuest: PassportQuest;
   robot: { companion: boolean };
   endingState: EndingState;
   mapsVisited: MapId[];

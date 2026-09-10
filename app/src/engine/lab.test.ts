@@ -488,11 +488,17 @@ describe('lab stations after kioskReady', () => {
     expect(MAP_IDS).toContain('workshop');
     expect(WORKSHOP.legend[4]).toBe('#...........e..#');
     expect(WORKSHOP.legend[5]).toBe('#u.z...a..m.j..#');
-    expect(WORKSHOP.legend[6]).toBe('#k.q......t....#');
+    expect(WORKSHOP.legend[6]).toBe('#k.q......t4...#');
     expect(WORKSHOP.legend[7]).toBe('#.......d......#');
-    expect(WORKSHOP.legend[8]).toBe('#..w........l..#');
+    expect(WORKSHOP.legend[8]).toBe('#O1wJfhZ.vx3l2V#');
     expect(WORKSHOP.legend[8][3]).toBe('w');
+    expect(WORKSHOP.legend[8][4]).toBe('J');
+    expect(WORKSHOP.legend[8][5]).toBe('f');
+    expect(WORKSHOP.legend[8][6]).toBe('h');
+    expect(WORKSHOP.legend[8][7]).toBe('Z');
     expect(WORKSHOP.legend[8][8]).toBe('.');
+    expect(WORKSHOP.legend[8][9]).toBe('v');
+    expect(WORKSHOP.legend[8][10]).toBe('x');
     expect(WORKSHOP.legend[8][12]).toBe('l');
     expect(JSON.stringify(WORKSHOP.legend.join(''))).not.toMatch(/[PEIRFDGY]/);
     const street = STREET.legend.join('');
@@ -506,7 +512,7 @@ describe('lab stations after kioskReady', () => {
     expect(playerHitsSolid('workshop', WORLD_POS.labProd.x, WORLD_POS.labProd.y)).toBe(true);
     expect(playerHitsSolid('workshop', WORLD_POS.kioskFace.x, WORLD_POS.kioskFace.y)).toBe(true);
     expect(playerHitsSolid('workshop', WORKSHOP.spawn.x, WORKSHOP.spawn.y)).toBe(false);
-    expect(JOURNAL_CAP).toBe(56);
+    expect(JOURNAL_CAP).toBe(112);
 
     let state = playToWorkshopDone(checkpoint());
     const beforeReady = listInteractables(state).map((item) => item.id);
@@ -694,7 +700,10 @@ describe('lab success', () => {
     expect(state.evidence['4.6']).toBe('demonstrated');
     expect(state.labQuest.labReady).toBe(true);
     expect(state.labQuest.publishedVersion).toBe(2);
-    expect(state.storyObjective).toBe(OBJECTIVES.labReady);
+    expect(state.evidence['5.1']).toBeUndefined();
+    expect(state.evidence['5.2']).toBeUndefined();
+    expect(state.agentQuest.agentReady).toBe(false);
+    expect(state.storyObjective).toBe(OBJECTIVES.agentWork);
     expect(state.journalEvents.some((event) => event.id === 'lab_ready')).toBe(true);
     expect(state.journalEvents.some((event) => event.id === 'frozen_published')).toBe(true);
     state = playing(state);

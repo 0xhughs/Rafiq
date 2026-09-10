@@ -1,4 +1,4 @@
-import { OBJECTIVES, recordEvent } from './dialogue';
+import { endingObjective, OBJECTIVES, recordEvent } from './dialogue';
 import type {
   AppointmentSlot,
   EvidenceMap,
@@ -175,7 +175,14 @@ function syncPhase(quest: KioskQuest): KioskQuest {
 }
 
 export function kioskObjective(state: GameState): string {
-  if (state.labQuest.labReady) return OBJECTIVES.labReady;
+  const ending = endingObjective(state);
+  if (ending) return ending;
+  if (state.crewQuest?.crewReady) return OBJECTIVES.pathWork;
+  if (state.approvalQuest?.approvalReady) return OBJECTIVES.crewWork;
+  if (state.skillQuest?.skillReady) return OBJECTIVES.approvalWork;
+  if (state.bridgeQuest?.bridgeReady) return OBJECTIVES.skillWork;
+  if (state.agentQuest?.agentReady) return OBJECTIVES.bridgeWork;
+  if (state.labQuest.labReady) return OBJECTIVES.agentWork;
   if (state.kioskQuest.kioskReady) return OBJECTIVES.labWork;
   if (state.workshopQuest.servicePosted) return OBJECTIVES.kioskWork;
   return state.storyObjective;

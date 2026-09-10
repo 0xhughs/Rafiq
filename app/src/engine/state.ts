@@ -108,6 +108,176 @@ import {
   skipLabExplain,
 } from './lab';
 import {
+  closeAgentOverlay,
+  createAgentQuest,
+  isAgentExplain,
+  isAgentOverlay,
+  openAgentBoard,
+  openAgentConsole,
+  reduceAgentChatPlan,
+  reduceAgentExtraStep,
+  reduceAgentInvoke,
+  reduceAgentLoadJob,
+  reduceAgentRobotDone,
+  reduceAgentRun,
+  reduceAgentSetGoal,
+  reduceAgentSetStop,
+  reduceAgentSetSuccess,
+  reduceAgentToggleTool,
+  skipAgentExplain,
+} from './agent';
+import {
+  closeBridgeOverlay,
+  createBridgeQuest,
+  isBridgeExplain,
+  isBridgeOverlay,
+  openBridgeBrowser,
+  openBridgeHost,
+  reduceBridgeBrowserSave,
+  reduceBridgeConnect,
+  reduceBridgeGrant,
+  reduceBridgeInvokePay,
+  reduceBridgeInvokeRewrite,
+  reduceBridgeListResources,
+  reduceBridgeListTools,
+  reduceBridgeLoadSkill,
+  reduceBridgeLookup,
+  reduceBridgeLookupPayroll,
+  reduceBridgeRobotDone,
+  reduceBridgeSaveDraft,
+  skipBridgeExplain,
+} from './bridge';
+import {
+  closeSkillOverlay,
+  createSkillQuest,
+  isSkillExplain,
+  isSkillOverlay,
+  openSkillBench,
+  openSkillClock,
+  reduceSkillArm,
+  reduceSkillCancel,
+  reduceSkillCorrect,
+  reduceSkillEmbedSecret,
+  reduceSkillLoadConnector,
+  reduceSkillOneshot,
+  reduceSkillPause,
+  reduceSkillRobotDone,
+  reduceSkillSave,
+  reduceSkillSetInput,
+  reduceSkillSetOutput,
+  reduceSkillSetSchedule,
+  reduceSkillSetSteps,
+  reduceSkillSetStop,
+  reduceSkillSetTrigger,
+  reduceSkillStanding,
+  reduceSkillTickEmpty,
+  reduceSkillTickSun8,
+  reduceSkillTrialSame,
+  reduceSkillTrialSecond,
+  skipSkillExplain,
+} from './skill';
+import {
+  closeApproveOverlay,
+  createApprovalQuest,
+  isApproveExplain,
+  isApproveOverlay,
+  openApproveDesk,
+  openDecisionDesk,
+  reduceApproveCaseAuto,
+  reduceApproveCaseKeep,
+  reduceApproveCaseMajority,
+  reduceApproveCasePrepare,
+  reduceApproveCaseRobotDone,
+  reduceApproveCaseShare,
+  reduceApproveConfirm,
+  reduceApproveDelete,
+  reduceApproveInspect,
+  reduceApprovePay,
+  reduceApprovePrepare,
+  reduceApproveReject,
+  reduceApproveRobotDone,
+  reduceApproveSetPayload,
+  reduceApproveSetRecipient,
+  skipApproveExplain,
+} from './approval';
+import {
+  closeCrewOverlay,
+  createCrewQuest,
+  isCrewExplain,
+  isCrewOverlay,
+  openCrewDesk,
+  openQualityDesk,
+  reduceCrewAccept,
+  reduceCrewAssignBuilder,
+  reduceCrewAssignResearcher,
+  reduceCrewAssignReviewer,
+  reduceCrewHandoff,
+  reduceCrewInspectSource,
+  reduceCrewMajority,
+  reduceCrewOpenCriteria,
+  reduceCrewPickConflict,
+  reduceCrewPickEvidence,
+  reduceCrewQualityMajority,
+  reduceCrewQualityResend,
+  reduceCrewQualityRobotDone,
+  reduceCrewRepairAccuracy,
+  reduceCrewRepairTone,
+  reduceCrewResend,
+  reduceCrewRobotDone,
+  reduceCrewRolesMerge,
+  reduceCrewSetOwner,
+  skipCrewExplain,
+} from './crew';
+import {
+  closePathOverlay,
+  createPathQuest,
+  isPathExplain,
+  isPathOverlay,
+  openPathDesk,
+  openSealDesk,
+  reducePathConfirm,
+  reducePathExam,
+  reducePathExtraStep,
+  reducePathInspectSend,
+  reducePathInspectSource,
+  reducePathLoadClinic,
+  reducePathLoadMango,
+  reducePathLoadReading,
+  reducePathPrepare,
+  reducePathQuiz,
+  reducePathRefuseRumor,
+  reducePathReject,
+  reducePathResendOld,
+  reducePathRobotDone,
+  reducePathRunChat,
+  reducePathRunOld,
+  reducePathRunSkill,
+  reducePathSetGoal,
+  reducePathSetPayload,
+  reducePathSetRecipient,
+  reducePathSetStop,
+  reducePathSetTools,
+  reducePathTrustRumor,
+  skipPathExplain,
+} from './path';
+import {
+  closePassportOverlay,
+  createPassportQuest,
+  isPassportExplain,
+  reducePassportConfirmName,
+  reducePassportDownload,
+  reducePassportDownloadFail,
+  reducePassportExam,
+  reducePassportLegacy,
+  reducePassportNetwork,
+  reducePassportOpen,
+  reducePassportPercent,
+  reducePassportRegistry,
+  reducePassportRobotDone,
+  reducePassportVerifyPublic,
+  skipPassportExplain,
+} from './passport';
+import {
   closeNewsroomDialogue,
   closeNewsroomOverlay,
   createNewsroomQuest,
@@ -201,6 +371,13 @@ export function createInitialState(): GameState {
     workshopQuest: createWorkshopQuest(),
     kioskQuest: createKioskQuest(),
     labQuest: createLabQuest(),
+    agentQuest: createAgentQuest(),
+    bridgeQuest: createBridgeQuest(),
+    skillQuest: createSkillQuest(),
+    approvalQuest: createApprovalQuest(),
+    crewQuest: createCrewQuest(),
+    pathQuest: createPathQuest(),
+    passportQuest: createPassportQuest(),
     calculator: createCalculator(),
     inspectTarget: null,
     explainTopic: null,
@@ -527,6 +704,13 @@ export function reduce(state: GameState, action: GameAction): GameState {
         workshopQuest: createWorkshopQuest(),
         kioskQuest: createKioskQuest(),
         labQuest: createLabQuest(),
+        agentQuest: createAgentQuest(),
+        bridgeQuest: createBridgeQuest(),
+        skillQuest: createSkillQuest(),
+        approvalQuest: createApprovalQuest(),
+        crewQuest: createCrewQuest(),
+        pathQuest: createPathQuest(),
+        passportQuest: createPassportQuest(),
         calculator: createCalculator(),
         inspectTarget: null,
         explainTopic: null,
@@ -680,6 +864,30 @@ export function reduce(state: GameState, action: GameAction): GameState {
           return openLabTerminal(state);
         case 'lab_prod':
           return openLabProd(state);
+        case 'agent_console':
+          return openAgentConsole(state);
+        case 'agent_board':
+          return openAgentBoard(state);
+        case 'bridge_host':
+          return openBridgeHost(state);
+        case 'bridge_browser':
+          return openBridgeBrowser(state);
+        case 'skill_bench':
+          return openSkillBench(state);
+        case 'skill_clock':
+          return openSkillClock(state);
+        case 'approve_desk':
+          return openApproveDesk(state);
+        case 'decision_desk':
+          return openDecisionDesk(state);
+        case 'crew_desk':
+          return openCrewDesk(state);
+        case 'quality_desk':
+          return openQualityDesk(state);
+        case 'path_desk':
+          return openPathDesk(state);
+        case 'seal_desk':
+          return openSealDesk(state);
         default:
           return state;
       }
@@ -700,6 +908,27 @@ export function reduce(state: GameState, action: GameAction): GameState {
     case 'CLOSE_OVERLAY':
       if (state.mode === 'dialogue') return closeDialogue(state);
       if (state.mode === 'paused') return { ...state, mode: 'playing' };
+      if (state.mode === 'ending') {
+        return closePassportOverlay(state);
+      }
+      if (isPathOverlay(state.mode)) {
+        return closePathOverlay(state);
+      }
+      if (isCrewOverlay(state.mode)) {
+        return closeCrewOverlay(state);
+      }
+      if (isApproveOverlay(state.mode)) {
+        return closeApproveOverlay(state);
+      }
+      if (isSkillOverlay(state.mode)) {
+        return closeSkillOverlay(state);
+      }
+      if (isBridgeOverlay(state.mode)) {
+        return closeBridgeOverlay(state);
+      }
+      if (isAgentOverlay(state.mode)) {
+        return closeAgentOverlay(state);
+      }
       if (isLabOverlay(state.mode)) {
         return closeLabOverlay(state);
       }
@@ -725,6 +954,27 @@ export function reduce(state: GameState, action: GameAction): GameState {
           }
           if (isLabExplain(state.explainTopic)) {
             return skipLabExplain(state);
+          }
+          if (isPathExplain(state.explainTopic)) {
+            return skipPathExplain(state);
+          }
+          if (isPassportExplain(state.explainTopic)) {
+            return skipPassportExplain(state);
+          }
+          if (isCrewExplain(state.explainTopic)) {
+            return skipCrewExplain(state);
+          }
+          if (isApproveExplain(state.explainTopic)) {
+            return skipApproveExplain(state);
+          }
+          if (isSkillExplain(state.explainTopic)) {
+            return skipSkillExplain(state);
+          }
+          if (isBridgeExplain(state.explainTopic)) {
+            return skipBridgeExplain(state);
+          }
+          if (isAgentExplain(state.explainTopic)) {
+            return skipAgentExplain(state);
           }
           if (isKioskExplain(state.explainTopic)) {
             return skipKioskExplain(state);
@@ -799,6 +1049,27 @@ export function reduce(state: GameState, action: GameAction): GameState {
       }
       if (isLabExplain(state.explainTopic)) {
         return skipLabExplain(state);
+      }
+      if (isPathExplain(state.explainTopic)) {
+        return skipPathExplain(state);
+      }
+      if (isPassportExplain(state.explainTopic)) {
+        return skipPassportExplain(state);
+      }
+      if (isCrewExplain(state.explainTopic)) {
+        return skipCrewExplain(state);
+      }
+      if (isApproveExplain(state.explainTopic)) {
+        return skipApproveExplain(state);
+      }
+      if (isSkillExplain(state.explainTopic)) {
+        return skipSkillExplain(state);
+      }
+      if (isBridgeExplain(state.explainTopic)) {
+        return skipBridgeExplain(state);
+      }
+      if (isAgentExplain(state.explainTopic)) {
+        return skipAgentExplain(state);
       }
       if (isKioskExplain(state.explainTopic)) {
         return skipKioskExplain(state);
@@ -936,6 +1207,226 @@ export function reduce(state: GameState, action: GameAction): GameState {
       return reduceLabRobotDone(state);
     case 'LAB_CMD':
       return reduceLabCmd(state, action.text);
+    case 'AGENT_CHAT_PLAN':
+      return reduceAgentChatPlan(state);
+    case 'AGENT_RUN':
+      return reduceAgentRun(state);
+    case 'AGENT_EXTRA_STEP':
+      return reduceAgentExtraStep(state);
+    case 'AGENT_LOAD_JOB':
+      return reduceAgentLoadJob(state, action.job);
+    case 'AGENT_SET_GOAL':
+      return reduceAgentSetGoal(state, action.goal);
+    case 'AGENT_TOGGLE_TOOL':
+      return reduceAgentToggleTool(state, action.tool);
+    case 'AGENT_SET_SUCCESS':
+      return reduceAgentSetSuccess(state, action.test);
+    case 'AGENT_SET_STOP':
+      return reduceAgentSetStop(state, action.rule);
+    case 'AGENT_ROBOT_DONE':
+      return reduceAgentRobotDone(state);
+    case 'AGENT_INVOKE':
+      return reduceAgentInvoke(state, action.tool);
+    case 'BRIDGE_CONNECT':
+      return reduceBridgeConnect(state);
+    case 'BRIDGE_LIST_TOOLS':
+      return reduceBridgeListTools(state);
+    case 'BRIDGE_LIST_RESOURCES':
+      return reduceBridgeListResources(state);
+    case 'BRIDGE_GRANT':
+      return reduceBridgeGrant(state, action.grant);
+    case 'BRIDGE_LOOKUP':
+      return reduceBridgeLookup(state);
+    case 'BRIDGE_LOOKUP_PAYROLL':
+      return reduceBridgeLookupPayroll(state);
+    case 'BRIDGE_SAVE_DRAFT':
+      return reduceBridgeSaveDraft(state);
+    case 'BRIDGE_INVOKE_REWRITE':
+      return reduceBridgeInvokeRewrite(state);
+    case 'BRIDGE_INVOKE_PAY':
+      return reduceBridgeInvokePay(state);
+    case 'BRIDGE_LOAD_SKILL':
+      return reduceBridgeLoadSkill(state);
+    case 'BRIDGE_ROBOT_DONE':
+      return reduceBridgeRobotDone(state);
+    case 'BRIDGE_BROWSER_SAVE':
+      return reduceBridgeBrowserSave(state);
+    case 'SKILL_ONESHOT':
+      return reduceSkillOneshot(state);
+    case 'SKILL_CORRECT':
+      return reduceSkillCorrect(state);
+    case 'SKILL_SAVE':
+      return reduceSkillSave(state);
+    case 'SKILL_STANDING':
+      return reduceSkillStanding(state);
+    case 'SKILL_LOAD_CONNECTOR':
+      return reduceSkillLoadConnector(state);
+    case 'SKILL_EMBED_SECRET':
+      return reduceSkillEmbedSecret(state);
+    case 'SKILL_TRIAL_SECOND':
+      return reduceSkillTrialSecond(state);
+    case 'SKILL_TRIAL_SAME':
+      return reduceSkillTrialSame(state);
+    case 'SKILL_ROBOT_DONE':
+      return reduceSkillRobotDone(state);
+    case 'SKILL_SET_TRIGGER':
+      return reduceSkillSetTrigger(state, action.trigger);
+    case 'SKILL_SET_INPUT':
+      return reduceSkillSetInput(state, action.input);
+    case 'SKILL_SET_STEPS':
+      return reduceSkillSetSteps(state, action.steps);
+    case 'SKILL_SET_OUTPUT':
+      return reduceSkillSetOutput(state, action.output);
+    case 'SKILL_SET_STOP':
+      return reduceSkillSetStop(state, action.stop);
+    case 'SKILL_SET_SCHEDULE':
+      return reduceSkillSetSchedule(state, action.schedule);
+    case 'SKILL_ARM':
+      return reduceSkillArm(state);
+    case 'SKILL_TICK_SUN8':
+      return reduceSkillTickSun8(state);
+    case 'SKILL_TICK_EMPTY':
+      return reduceSkillTickEmpty(state);
+    case 'SKILL_PAUSE':
+      return reduceSkillPause(state);
+    case 'SKILL_CANCEL':
+      return reduceSkillCancel(state);
+    case 'APPROVE_PREPARE':
+      return reduceApprovePrepare(state);
+    case 'APPROVE_SET_RECIPIENT':
+      return reduceApproveSetRecipient(state, action.recipient);
+    case 'APPROVE_SET_PAYLOAD':
+      return reduceApproveSetPayload(state, action.payload);
+    case 'APPROVE_INSPECT':
+      return reduceApproveInspect(state);
+    case 'APPROVE_REJECT':
+      return reduceApproveReject(state);
+    case 'APPROVE_CONFIRM':
+      return reduceApproveConfirm(state);
+    case 'APPROVE_DELETE':
+      return reduceApproveDelete(state);
+    case 'APPROVE_PAY':
+      return reduceApprovePay(state);
+    case 'APPROVE_ROBOT_DONE':
+      return reduceApproveRobotDone(state);
+    case 'APPROVE_CASE_PREPARE':
+      return reduceApproveCasePrepare(state);
+    case 'APPROVE_CASE_AUTO':
+      return reduceApproveCaseAuto(state);
+    case 'APPROVE_CASE_MAJORITY':
+      return reduceApproveCaseMajority(state);
+    case 'APPROVE_CASE_SHARE':
+      return reduceApproveCaseShare(state);
+    case 'APPROVE_CASE_KEEP':
+      return reduceApproveCaseKeep(state);
+    case 'APPROVE_CASE_ROBOT_DONE':
+      return reduceApproveCaseRobotDone(state);
+    case 'CREW_ASSIGN_RESEARCHER':
+      return reduceCrewAssignResearcher(state);
+    case 'CREW_ASSIGN_BUILDER':
+      return reduceCrewAssignBuilder(state);
+    case 'CREW_ASSIGN_REVIEWER':
+      return reduceCrewAssignReviewer(state);
+    case 'CREW_ROLES_MERGE':
+      return reduceCrewRolesMerge(state);
+    case 'CREW_SET_OWNER':
+      return reduceCrewSetOwner(state, action.owner);
+    case 'CREW_HANDOFF':
+      return reduceCrewHandoff(state);
+    case 'CREW_INSPECT_SOURCE':
+      return reduceCrewInspectSource(state);
+    case 'CREW_MAJORITY':
+      return reduceCrewMajority(state);
+    case 'CREW_PICK_EVIDENCE':
+      return reduceCrewPickEvidence(state);
+    case 'CREW_PICK_CONFLICT':
+      return reduceCrewPickConflict(state);
+    case 'CREW_ROBOT_DONE':
+      return reduceCrewRobotDone(state);
+    case 'CREW_RESEND':
+      return reduceCrewResend(state);
+    case 'CREW_OPEN_CRITERIA':
+      return reduceCrewOpenCriteria(state);
+    case 'CREW_REPAIR_ACCURACY':
+      return reduceCrewRepairAccuracy(state);
+    case 'CREW_REPAIR_TONE':
+      return reduceCrewRepairTone(state);
+    case 'CREW_ACCEPT':
+      return reduceCrewAccept(state);
+    case 'CREW_QUALITY_MAJORITY':
+      return reduceCrewQualityMajority(state);
+    case 'CREW_QUALITY_ROBOT_DONE':
+      return reduceCrewQualityRobotDone(state);
+    case 'CREW_QUALITY_RESEND':
+      return reduceCrewQualityResend(state);
+    case 'PATH_INSPECT_SOURCE':
+      return reducePathInspectSource(state);
+    case 'PATH_TRUST_RUMOR':
+      return reducePathTrustRumor(state);
+    case 'PATH_REFUSE_RUMOR':
+      return reducePathRefuseRumor(state);
+    case 'PATH_SET_GOAL':
+      return reducePathSetGoal(state, action.goal);
+    case 'PATH_SET_TOOLS':
+      return reducePathSetTools(state, action.tools);
+    case 'PATH_SET_STOP':
+      return reducePathSetStop(state, action.stop);
+    case 'PATH_LOAD_READING':
+      return reducePathLoadReading(state);
+    case 'PATH_LOAD_MANGO':
+      return reducePathLoadMango(state);
+    case 'PATH_LOAD_CLINIC':
+      return reducePathLoadClinic(state);
+    case 'PATH_RUN_SKILL':
+      return reducePathRunSkill(state);
+    case 'PATH_RUN_OLD':
+      return reducePathRunOld(state);
+    case 'PATH_RUN_CHAT':
+      return reducePathRunChat(state);
+    case 'PATH_EXTRA_STEP':
+      return reducePathExtraStep(state);
+    case 'PATH_EXAM':
+      return reducePathExam(state);
+    case 'PATH_QUIZ':
+      return reducePathQuiz(state);
+    case 'PATH_ROBOT_DONE':
+      return reducePathRobotDone(state);
+    case 'PATH_PREPARE':
+      return reducePathPrepare(state);
+    case 'PATH_SET_RECIPIENT':
+      return reducePathSetRecipient(state, action.recipient);
+    case 'PATH_SET_PAYLOAD':
+      return reducePathSetPayload(state, action.payload);
+    case 'PATH_INSPECT_SEND':
+      return reducePathInspectSend(state);
+    case 'PATH_REJECT':
+      return reducePathReject(state);
+    case 'PATH_CONFIRM':
+      return reducePathConfirm(state);
+    case 'PATH_RESEND_OLD':
+      return reducePathResendOld(state);
+    case 'PASSPORT_OPEN':
+      return reducePassportOpen(state);
+    case 'PASSPORT_CONFIRM_NAME':
+      return reducePassportConfirmName(state);
+    case 'PASSPORT_DOWNLOAD':
+      return reducePassportDownload(state, action.format);
+    case 'PASSPORT_DOWNLOAD_FAIL':
+      return reducePassportDownloadFail(state);
+    case 'PASSPORT_EXAM':
+      return reducePassportExam(state);
+    case 'PASSPORT_PERCENT':
+      return reducePassportPercent(state);
+    case 'PASSPORT_VERIFY_PUBLIC':
+      return reducePassportVerifyPublic(state);
+    case 'PASSPORT_REGISTRY':
+      return reducePassportRegistry(state);
+    case 'PASSPORT_LEGACY':
+      return reducePassportLegacy(state);
+    case 'PASSPORT_NETWORK':
+      return reducePassportNetwork(state);
+    case 'PASSPORT_ROBOT_DONE':
+      return reducePassportRobotDone(state);
     case 'CONFIRM_NEW_ADVENTURE':
       return createInitialState();
     case 'DISMISS_RESTORE_NOTICE':
@@ -1001,6 +1492,13 @@ export function serializeState(state: GameState): SerializedTestState {
     workshopQuest: { ...state.workshopQuest },
     kioskQuest: { ...state.kioskQuest },
     labQuest: { ...state.labQuest },
+    agentQuest: { ...state.agentQuest },
+    bridgeQuest: { ...state.bridgeQuest },
+    skillQuest: { ...state.skillQuest },
+    approvalQuest: { ...state.approvalQuest },
+    crewQuest: { ...state.crewQuest },
+    pathQuest: { ...state.pathQuest },
+    passportQuest: { ...state.passportQuest },
     inspectTarget: state.inspectTarget,
     explainTopic: state.explainTopic,
     robotUnderstood: state.robotUnderstood,

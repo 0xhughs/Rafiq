@@ -94,6 +94,30 @@ function workshopRect(id: InteractableId): { x: number; y: number; w: number; h:
       return room.lab;
     case 'lab_prod':
       return room.prod;
+    case 'agent_console':
+      return room.console;
+    case 'agent_board':
+      return room.neighborNotice;
+    case 'bridge_host':
+      return room.connector;
+    case 'bridge_browser':
+      return room.civicBrowser;
+    case 'skill_bench':
+      return room.skillDesk;
+    case 'skill_clock':
+      return room.hallClock;
+    case 'approve_desk':
+      return room.approvalDesk;
+    case 'decision_desk':
+      return room.personalCase;
+    case 'crew_desk':
+      return room.crewTable;
+    case 'quality_desk':
+      return room.qualityBench;
+    case 'path_desk':
+      return room.pathTable;
+    case 'seal_desk':
+      return room.sealBench;
     default:
       return null;
   }
@@ -257,7 +281,10 @@ export function listInteractables(state: GameState): Actionable[] {
     const robot = npcPosition(state, 'robot');
     items.push({
       id: 'robot',
-      label: HINT_LABELS.robot,
+      label:
+        state.pathQuest.restored && state.passportQuest.thanksHeard
+          ? HINT_LABELS.robotPassport
+          : HINT_LABELS.robot,
       x: robot.x,
       y: robot.y,
     });
@@ -565,6 +592,108 @@ export function listInteractables(state: GameState): Actionable[] {
         label: HINT_LABELS.labProd,
         x: WORLD_POS.labProd.x,
         y: WORLD_POS.labProd.y,
+      },
+    );
+  }
+
+  if (state.map === 'workshop' && state.labQuest.labReady) {
+    items.push(
+      {
+        id: 'agent_console',
+        label: HINT_LABELS.agentConsole,
+        x: WORLD_POS.agentConsole.x,
+        y: WORLD_POS.agentConsole.y,
+      },
+      {
+        id: 'agent_board',
+        label: HINT_LABELS.agentBoard,
+        x: WORLD_POS.agentBoard.x,
+        y: WORLD_POS.agentBoard.y,
+      },
+    );
+  }
+
+  if (state.map === 'workshop' && state.agentQuest.agentReady) {
+    items.push(
+      {
+        id: 'bridge_host',
+        label: HINT_LABELS.bridgeHost,
+        x: WORLD_POS.bridgeHost.x,
+        y: WORLD_POS.bridgeHost.y,
+      },
+      {
+        id: 'bridge_browser',
+        label: HINT_LABELS.bridgeBrowser,
+        x: WORLD_POS.bridgeBrowser.x,
+        y: WORLD_POS.bridgeBrowser.y,
+      },
+    );
+  }
+
+  if (state.map === 'workshop' && state.bridgeQuest.bridgeReady) {
+    items.push(
+      {
+        id: 'skill_bench',
+        label: HINT_LABELS.skillBench,
+        x: WORLD_POS.skillBench.x,
+        y: WORLD_POS.skillBench.y,
+      },
+      {
+        id: 'skill_clock',
+        label: HINT_LABELS.skillClock,
+        x: WORLD_POS.skillClock.x,
+        y: WORLD_POS.skillClock.y,
+      },
+    );
+  }
+
+  if (state.map === 'workshop' && state.skillQuest.skillReady) {
+    items.push(
+      {
+        id: 'approve_desk',
+        label: HINT_LABELS.approveDesk,
+        x: WORLD_POS.approveDesk.x,
+        y: WORLD_POS.approveDesk.y,
+      },
+      {
+        id: 'decision_desk',
+        label: HINT_LABELS.decisionDesk,
+        x: WORLD_POS.decisionDesk.x,
+        y: WORLD_POS.decisionDesk.y,
+      },
+    );
+  }
+
+  if (state.map === 'workshop' && state.approvalQuest.approvalReady) {
+    items.push(
+      {
+        id: 'crew_desk',
+        label: HINT_LABELS.crewDesk,
+        x: WORLD_POS.crewDesk.x,
+        y: WORLD_POS.crewDesk.y,
+      },
+      {
+        id: 'quality_desk',
+        label: HINT_LABELS.qualityDesk,
+        x: WORLD_POS.qualityDesk.x,
+        y: WORLD_POS.qualityDesk.y,
+      },
+    );
+  }
+
+  if (state.map === 'workshop' && state.crewQuest.crewReady) {
+    items.push(
+      {
+        id: 'path_desk',
+        label: HINT_LABELS.pathDesk,
+        x: WORLD_POS.pathDesk.x,
+        y: WORLD_POS.pathDesk.y,
+      },
+      {
+        id: 'seal_desk',
+        label: HINT_LABELS.sealDesk,
+        x: WORLD_POS.sealDesk.x,
+        y: WORLD_POS.sealDesk.y,
       },
     );
   }

@@ -34,7 +34,7 @@ Authorized target for this run: complete and independently accept slices **01–
 Current authorization: On 8 September 2026 the user asked to read the project files, start the loop, and complete each loop until the full website is fully built. That request adopts slices 01–17. Slice 18 remains outside the target. This checkout (`github.com/0xhughs/Rafiq`) is the implementation repository. The adventure is a separate Vite + React + TypeScript app under `app/`; joufbot/LearnAI is curriculum/reference only and is not modified.
 
 ## Run status
-Running
+Human required
 
 ## Open decisions
 - Product name, robot name and final art treatment: working title and visual baseline are provisional; settle before production-art approval. They do not block the opening prototype.
@@ -54,11 +54,13 @@ Running
 - RG08 — LOOP finalization independently verifies accepted archives, current identities, an empty Now section, preserved outside-target work and no unresolved blockers. “Complete” is acceptance of the implementation target, not publication permission.
 
 ## Release evidence
-Pending finalization.
-Failed release reviews for this target: 0
+Release review d-20260909-074-release returned HUMAN_REQUIRED.
+Failed release reviews for this target: 2
 Pending release result: none
-Release review events / last consumed dispatch: none
-No game build, playtest, independent plan review or release review has occurred in preparing this pack.
+Release review events / last consumed dispatch:
+- ev-r001 / d-20260909-069-release / release / HUMAN_REQUIRED / candidate:b680867179a7973832bbe4e06a99a3f77a8cde3ede5a507902af9eee879e07c0 impl-contract:b760de08209f685da8d8418cebe7d8bf6536e8c722ec1b4a583809ae75849a2e current-contract:8eeede8266fadcb2ac14081f4648fe8b6fbdf8a6a6ea0e1a95c109be8574a8f7 / reviewer:bc-e1991baa-e3d7-59d5-851d-f7f92d807cea / RG01 pass-with-limits; RG02 fail (no e2e reload of unfinished later puzzle or issued ending); RG03 fail (Chrome/Linux only; Edge/Firefox/Safari/Windows/macOS not run); RG04 fail (no five-beginner pilot; leftover checkpoint copy); RG05 pass; RG06 pass-with-notes; RG07 pass; RG08 bookkeeping pass / last consumed: d-20260909-069-release
+- ev-r002 / d-20260909-074-release / release / HUMAN_REQUIRED / candidate:c3abdf149d10df285548c23525e96cd0769bb5cb1bf3481108d1a2a88d2cc44f impl-contract:3611159b659f758cdea14412072b10733df4b9993ceeb894de461647b56f13a5 current-contract:d7cfa81c195b954a03fec35624967ad5929f8f04c48d9f5a0720863aa102a3b4 / reviewer:bc-bea54416-7443-517c-af6e-fa7a8514a0a5 / RG01 pass-with-limits; RG02 pass after R1; RG03 fail (Chrome/Linux only; Edge/Firefox/Safari/Windows/macOS not run); RG04 fail (no five-beginner pilot; leftover copy closed); RG05 pass; RG06 pass-with-notes; RG07 pass; RG08 bookkeeping pass, cannot authorize Complete / last consumed: d-20260909-074-release
+Target slices 01–17 and repair R1 independently accepted. Now empty. Slice 18 preserved outside target. Shipped is not publication permission. Complete still needs RG03 matrix evidence or an explicit scope decision, plus RG04 beginner pilot.
 
 ## Curriculum translation
 The 34 IDs and Arabic titles below are taken from the actual [LearnAI curriculum](https://github.com/joufbot/LearnAI/blob/c4125df8c0490024715f21e21c78c9403e9cdf51/src/lib/curriculum.ts). The corresponding 34 Markdown lesson files were retrieved; their topics and teaching/exercise sections informed this map. This is a redesigned learning plan, not endorsement of every claim or product-specific statement in those lessons.
@@ -219,7 +221,6 @@ Approved contract: `45f68f8987d184ba72f15970270aa506737e5bd37ec2b7efdc3123d0bfc5
 Approved candidate: `a6c3018582acd8bf0737ff9e684ed063eeb4a9ed32a8d3362184e1af3bc248b6`
 Implementation approval dispatch: `d-20260908-035-implrev-09`
 
-## Now
 ### 10 Fix the version people actually use
 Goal: Diagnose and repair the kiosk's simulated deployed version within a safe scope.
 Provides:
@@ -227,8 +228,10 @@ Provides:
 - Rejection of an unsafe/out-of-scope command; no real shell or deployment is accessible. Covers 4.5, 4.6, 5.4.
 Depends on: 09
 Target membership: inside
-
-## Later
+Archive: `slices/10-fix-the-version-people-actually-use.md`
+Approved contract: `0e6d7f4d7cc607b401b35ab541646c8ae3ca5cf9bf271461fcc1b604d3ad61c5`
+Approved candidate: `4849c5ae734e5476a7d86cfc2bd98cf8b013c9b5c3a53883eb867e4921cf1fdc`
+Implementation approval dispatch: `d-20260909-040-implrev-10`
 
 ### 11 Give the robot a bounded job
 Goal: Turn the robot's plan into supervised action with visible limits.
@@ -237,6 +240,10 @@ Provides:
 - Visible planning-core restoration without implying perfect judgment. Covers 5.1, 5.2 and harness.
 Depends on: 10
 Target membership: inside
+Archive: `slices/11-give-the-robot-a-bounded-job.md`
+Approved contract: `d3177010296a62ed75ad2e9d5a3d03a0524bc7ee0bf315d7f134242c5cc6e6d9`
+Approved candidate: `4f375e9d461727666a465d2f9de132e3fbed7ab4a422f526fb4b3851a15e57ea`
+Implementation approval dispatch: `d-20260909-044-implrev-11`
 
 ### 12 The bridge between systems
 Goal: Connect the robot to a narrowly permitted civic information service.
@@ -245,6 +252,10 @@ Provides:
 - A contrasting browser interaction and explicit denied/missing-capability recovery. Covers 5.3 and MCP.
 Depends on: 11
 Target membership: inside
+Archive: `slices/12-the-bridge-between-systems.md`
+Approved contract: `0ff46be3707c88cc9d283045710b455f5c78f379cea710c517419b5bf49db399`
+Approved candidate: `bcf132db68e8047cc451af252f2fc3ec4ce4c881e5a202d41b2aaa13317cae5b`
+Implementation approval dispatch: `d-20260909-048-implrev-12`
 
 ### 13 A skill worth repeating
 Goal: Make a corrected procedure reusable and run it only when intended.
@@ -253,6 +264,10 @@ Provides:
 - An in-game routine using that skill, pause/cancel behavior and visible skill storage. Covers 5.5, 5.6.
 Depends on: 12
 Target membership: inside
+Archive: `slices/13-a-skill-worth-repeating.md`
+Approved contract: `8a9aea48eb6b70ada4fe0a79f97acd0388af396fd1827e123bbfb8e522506d04`
+Approved candidate: `2c6b74d809f5ef24180183524179624c81d2f05b774bf0c8d79efe5ec44b6881`
+Implementation approval dispatch: `d-20260909-052-implrev-13`
 
 ### 14 The decision stays with you
 Goal: Keep consequential choices with a responsible person.
@@ -261,6 +276,10 @@ Provides:
 - Fictional high-stakes case routed to a human; the robot supplies useful context and waits. Covers 5.7, 6.3.
 Depends on: 13
 Target membership: inside
+Archive: `slices/14-the-decision-stays-with-you.md`
+Approved contract: `6156df03218e506f066a3192b50be2cf1d9773ced8391c4781666c856956c2bb`
+Approved candidate: `4d122eda21ed6315dfeeeec5b8f650f13be2f1dce77b88500d4d637b244ac629`
+Implementation approval dispatch: `d-20260909-056-implrev-14`
 
 ### 15 One result, several helpers
 Goal: Coordinate distinct helper roles and accept one verified city output.
@@ -269,6 +288,10 @@ Provides:
 - Conflicting drafts and failed criteria resolved using evidence, not majority agreement. Covers 6.1, 6.2.
 Depends on: 14
 Target membership: inside
+Archive: `slices/15-one-result-several-helpers.md`
+Approved contract: `722db4a4435bff7d87c38da436c28402dbb7df706d06444efaca3f5ebab9bef9`
+Approved candidate: `48a12a7ba2ff1e1f28aaa2f9239618609235bc9cb791e9754deb37ea339e3b7f`
+Implementation approval dispatch: `d-20260909-060-implrev-15`
 
 ### 16 Ready for the city
 Goal: Demonstrate the combined learning in a new task and complete the robot's restoration.
@@ -278,6 +301,10 @@ Provides:
 Depends on: 15
 Target membership: inside
 Out: timed examination and multiple-choice mastery gate.
+Archive: `slices/16-ready-for-the-city.md`
+Approved contract: `0b9a0c2d6339a2e33b443476d1ac70bf87b3d70c213436748092d7b643461053`
+Approved candidate: `67b49f4efc910e807c33ce974e3b4c08f8fcd1f1d52c6324621cc8250227927e`
+Implementation approval dispatch: `d-20260909-064-implrev-16`
 
 ### 17 Your passport
 Goal: Receive and download the earned certificate as the story's ending.
@@ -287,6 +314,28 @@ Provides:
 Depends on: 16
 Target membership: inside
 Out: public certificate registry or external publication without a separate product decision.
+Archive: `slices/17-your-passport.md`
+Approved contract: `b760de08209f685da8d8418cebe7d8bf6536e8c722ec1b4a583809ae75849a2e`
+Approved candidate: `b680867179a7973832bbe4e06a99a3f77a8cde3ede5a507902af9eee879e07c0`
+Implementation approval dispatch: `d-20260909-068-implrev-17`
+
+### R1 Resume and leftover opening copy
+Goal: Close in-authority release-review gaps that do not require other browsers or a beginner pilot.
+Provides:
+- Save/reload of an unfinished later-arc puzzle and of the issued ending, with no duplicate credit or premature certificate.
+- Opening checkpoint copy that no longer says remaining puzzles are still in development.
+Depends on: 17
+Target membership: inside
+Out: slice 18 gameplay; claiming untested Windows/macOS/Firefox/Edge/Safari support; five-beginner usability pilot; publish/deploy.
+Archive: `slices/r1-resume-and-leftover-opening-copy.md`
+Approved contract: `3611159b659f758cdea14412072b10733df4b9993ceeb894de461647b56f13a5`
+Approved candidate: `c3abdf149d10df285548c23525e96cd0769bb5cb1bf3481108d1a2a88d2cc44f`
+Implementation approval dispatch: `d-20260909-073-implrev-r1`
+
+## Now
+None — target complete
+
+## Later
 
 ### 18 Beyond the AI-city gate
 Goal: Preserve the invitation to new adventures without inventing their curriculum or release date.

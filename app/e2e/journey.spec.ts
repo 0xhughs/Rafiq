@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WORLD_POS } from '../src/engine/maps';
+import { CHECKPOINT_AFTER_HELP, OBJECTIVES } from '../src/engine/dialogue';
 import {
   assertNoLessonUi,
   getState,
@@ -65,7 +66,9 @@ test('happy path: name, trash, street, dumpster, robot, agree', async ({ page })
   await expect(page.getByTestId('dialogue-text')).toContainText('المتجر عند الزاوية');
   await page.getByTestId('dialogue-advance').click();
   await expect(page.getByTestId('slice-checkpoint')).toBeVisible();
-  await expect(page.getByTestId('hud-objective')).toContainText('المتجر عند الزاوية');
+  await expect(page.getByTestId('slice-checkpoint')).toHaveText(CHECKPOINT_AFTER_HELP);
+  await expect(page.getByTestId('slice-checkpoint')).not.toHaveText(/قيد التطوير/);
+  await expect(page.getByTestId('hud-objective')).toHaveText(OBJECTIVES.cornerStore);
   await expect(page.getByTestId('game-root')).toHaveAttribute('data-evidence', '');
   await assertNoLessonUi(page);
   await page.waitForTimeout(250);

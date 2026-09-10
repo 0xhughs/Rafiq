@@ -1,3 +1,5 @@
+import { CHECKPOINT_AFTER_HELP, OBJECTIVES } from '../engine/dialogue';
+
 interface Props {
   visible: boolean;
   shopHelped: boolean;
@@ -11,6 +13,14 @@ interface Props {
   servicePosted: boolean;
   kioskReady: boolean;
   labReady: boolean;
+  agentReady: boolean;
+  bridgeReady: boolean;
+  skillReady: boolean;
+  approvalReady: boolean;
+  crewReady: boolean;
+  restored: boolean;
+  invited: boolean;
+  issued: boolean;
 }
 
 export function CheckpointNote({
@@ -26,12 +36,35 @@ export function CheckpointNote({
   servicePosted,
   kioskReady,
   labReady,
+  agentReady,
+  bridgeReady,
+  skillReady,
+  approvalReady,
+  crewReady,
+  restored,
+  invited,
+  issued,
 }: Props) {
   if (!visible) return null;
-  let text =
-    'رفيق أصبح رفيقك في الحي. البقالة عند الزاوية مفتوحة الآن، وبعدها واجهة المكتبة. بقية ألغاز المغامرة ما زالت قيد التطوير.';
-  if (labReady) {
-    text = 'نُشرت نسخة الإنتاج المصلحة. مدير الورشة شكرك.';
+  let text = CHECKPOINT_AFTER_HELP;
+  if (issued) {
+    text = OBJECTIVES.passportIssued;
+  } else if (invited) {
+    text = OBJECTIVES.passportReady;
+  } else if (restored) {
+    text = OBJECTIVES.restored;
+  } else if (crewReady) {
+    text = OBJECTIVES.pathWork;
+  } else if (approvalReady) {
+    text = OBJECTIVES.crewWork;
+  } else if (skillReady) {
+    text = OBJECTIVES.approvalWork;
+  } else if (bridgeReady) {
+    text = OBJECTIVES.skillWork;
+  } else if (agentReady) {
+    text = OBJECTIVES.bridgeWork;
+  } else if (labReady) {
+    text = OBJECTIVES.agentWork;
   } else if (kioskReady) {
     text =
       'مختبر النشر مفتوح: أعد إنتاج عطل النسخة المجمّدة، اقرأ السجلات، أصلح المسار، انشر نسخة ثابتة، ثم تحقق.';

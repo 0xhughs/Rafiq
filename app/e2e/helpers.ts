@@ -1,10 +1,11 @@
 import { expect, type Page } from '@playwright/test';
 import { WORLD_POS } from '../src/engine/maps';
 import type { GameAction, MapId, SerializedTestState } from '../src/engine/types';
+import { EVIDENCE_IDS } from '../src/engine/types';
 
 export async function waitForGame(page: Page): Promise<void> {
   await page.waitForFunction(() => Boolean(window.__RAFIQ_TEST__));
-  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '10');
+  await expect(page.getByTestId('game-root')).toHaveAttribute('data-slice', '17');
 }
 
 export async function getState(page: Page): Promise<SerializedTestState> {
@@ -198,7 +199,8 @@ export async function playToParcelDone(page: Page, name = 'علي حسن'): Prom
   await page.getByTestId('dialogue-advance').click();
   await skipExplainIfOpen(page);
   await interactAt(page, 'parcel', WORLD_POS.instructionDesk.x, WORLD_POS.instructionDesk.y);
-  await fillCompleteInstruction(page, 'r17');
+  await page.getByTestId('instruction-ambiguous').click();
+  await fillCompleteInstruction(page, 'r19');
   await page.getByTestId('instruction-send').click();
   await page.getByTestId('dialogue-advance').click();
   await skipExplainIfOpen(page);
@@ -478,3 +480,234 @@ export async function playToKioskDone(page: Page, name = 'علي حسن'): Promi
   expect(done.evidence['5.4']).toBeUndefined();
   expect(done.labQuest.labReady).toBe(false);
 }
+
+export async function playToLabDone(page: Page, name = 'علي حسن'): Promise<void> {
+  await playToKioskDone(page, name);
+  await interactAt(page, 'workshop', WORLD_POS.labProd.x, WORLD_POS.labProd.y);
+  await page.getByTestId('lab-lookup').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'workshop', WORLD_POS.labTerminal.x, WORLD_POS.labTerminal.y);
+  await page.getByTestId('lab-ls').click();
+  await page.getByTestId('lab-cat-preview-log').click();
+  await page.getByTestId('lab-cat-prod-log').click();
+  await page.getByTestId('lab-select-prod-log').click();
+  await page.getByTestId('lab-patch-prod').click();
+  await page.getByTestId('lab-rm').click();
+  await page.getByTestId('lab-publish').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'workshop', WORLD_POS.labProd.x, WORLD_POS.labProd.y);
+  await page.getByTestId('lab-lookup').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  const done = await getState(page);
+  expect(done.evidence['4.5']).toBe('demonstrated');
+  expect(done.evidence['4.6']).toBe('demonstrated');
+  expect(done.evidence['5.4']).toBe('demonstrated');
+  expect(done.labQuest.labReady).toBe(true);
+  expect(done.evidence['5.1']).toBeUndefined();
+  expect(done.evidence['5.2']).toBeUndefined();
+  expect(done.agentQuest.agentReady).toBe(false);
+}
+
+export async function playToAgentDone(page: Page, name = 'علي حسن'): Promise<void> {
+  await playToLabDone(page, name);
+  await interactAt(page, 'workshop', WORLD_POS.agentBoard.x, WORLD_POS.agentBoard.y);
+  await expect(page.getByTestId('agent-board-text')).toBeVisible();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'workshop', WORLD_POS.agentConsole.x, WORLD_POS.agentConsole.y);
+  await page.getByTestId('agent-chat-plan').click();
+  await page.getByTestId('agent-job-slots').click();
+  await page.getByTestId('agent-goal-slots').click();
+  await page.getByTestId('agent-tool-read').click();
+  await page.getByTestId('agent-tool-write').click();
+  await page.getByTestId('agent-tool-verify').click();
+  await page.getByTestId('agent-success-slots').click();
+  await page.getByTestId('agent-stop-budget3').click();
+  await page.getByTestId('agent-job-shelf').click();
+  await page.getByTestId('agent-run').click();
+  await page.getByTestId('agent-job-slots').click();
+  await page.getByTestId('agent-run').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'workshop', WORLD_POS.agentBoard.x, WORLD_POS.agentBoard.y);
+  await expect(page.getByTestId('agent-board-text')).toContainText('sun-pm');
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'workshop', WORLD_POS.agentConsole.x, WORLD_POS.agentConsole.y);
+  await page.getByTestId('agent-extra-step').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  const done = await getState(page);
+  expect(done.evidence['5.1']).toBe('demonstrated');
+  expect(done.evidence['5.2']).toBe('demonstrated');
+  expect(done.agentQuest.agentReady).toBe(true);
+  expect(done.evidence['5.3']).toBeUndefined();
+  expect(done.bridgeQuest.bridgeReady).toBe(false);
+}
+
+export async function playToBridgeDone(page: Page, name = 'علي حسن'): Promise<void> {
+  await playToAgentDone(page, name);
+  await interactAt(page, 'workshop', WORLD_POS.bridgeHost.x, WORLD_POS.bridgeHost.y);
+  await page.getByTestId('bridge-connect').click();
+  await page.getByTestId('bridge-list-tools').click();
+  await page.getByTestId('bridge-list-resources').click();
+  await page.getByTestId('bridge-grant-lookup').click();
+  await page.getByTestId('bridge-grant-draft').click();
+  await page.getByTestId('bridge-grant-week').click();
+  await page.getByTestId('bridge-lookup').click();
+  await page.getByTestId('bridge-save-draft').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'workshop', WORLD_POS.bridgeBrowser.x, WORLD_POS.bridgeBrowser.y);
+  await page.getByTestId('bridge-browser-save').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'workshop', WORLD_POS.bridgeHost.x, WORLD_POS.bridgeHost.y);
+  await page.getByTestId('bridge-invoke-rewrite').click();
+  await page.getByTestId('bridge-invoke-pay').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  const done = await getState(page);
+  expect(done.evidence['5.3']).toBe('demonstrated');
+  expect(done.bridgeQuest.bridgeReady).toBe(true);
+  expect(done.evidence['5.5']).toBeUndefined();
+  expect(done.evidence['5.6']).toBeUndefined();
+  expect(done.skillQuest.skillReady).toBe(false);
+}
+
+export async function playToSkillDone(page: Page, name = 'علي حسن'): Promise<void> {
+  await playToBridgeDone(page, name);
+  await interactAt(page, 'workshop', WORLD_POS.skillBench.x, WORLD_POS.skillBench.y);
+  await page.getByTestId('skill-oneshot').click();
+  await page.getByTestId('skill-correct').click();
+  await page.getByTestId('skill-standing').click();
+  await page.getByTestId('skill-trigger-hours').click();
+  await page.getByTestId('skill-input-record').click();
+  await page.getByTestId('skill-steps-lookup-format').click();
+  await page.getByTestId('skill-output-draft').click();
+  await page.getByTestId('skill-stop-unknown').click();
+  await page.getByTestId('skill-save').click();
+  await page.getByTestId('skill-trial-second').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'workshop', WORLD_POS.skillClock.x, WORLD_POS.skillClock.y);
+  await page.getByTestId('skill-schedule-sun8').click();
+  await page.getByTestId('skill-arm').click();
+  await page.getByTestId('skill-tick-sun8').click();
+  await page.getByTestId('skill-pause').click();
+  await page.getByTestId('skill-tick-sun8').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  const done = await getState(page);
+  expect(done.evidence['5.5']).toBe('demonstrated');
+  expect(done.evidence['5.6']).toBe('demonstrated');
+  expect(done.skillQuest.skillReady).toBe(true);
+  expect(done.evidence['5.7']).toBeUndefined();
+  expect(done.evidence['6.3']).toBeUndefined();
+  expect(done.approvalQuest.approvalReady).toBe(false);
+}
+
+export async function playToApprovalDone(page: Page, name = 'علي حسن'): Promise<void> {
+  await playToSkillDone(page, name);
+  await interactAt(page, 'workshop', WORLD_POS.approveDesk.x, WORLD_POS.approveDesk.y);
+  await page.getByTestId('approve-prepare').click();
+  await page.getByTestId('approve-inspect').click();
+  await page.getByTestId('approve-reject').click();
+  await page.getByTestId('approve-recipient-librarian').click();
+  await page.getByTestId('approve-payload-exact').click();
+  await page.getByTestId('approve-confirm').click();
+  await expect(page.getByTestId('approve-feedback')).toHaveText(
+    'بعد التعديل أعد المراجعة. لا إرسال صامت.',
+  );
+  await page.getByTestId('approve-inspect').click();
+  await page.getByTestId('approve-confirm').click();
+  await expect(page.getByTestId('approve-receipt')).toBeVisible();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'workshop', WORLD_POS.decisionDesk.x, WORLD_POS.decisionDesk.y);
+  await page.getByTestId('approve-case-prepare').click();
+  await page.getByTestId('approve-case-auto').click();
+  await page.getByTestId('approve-case-majority').click();
+  await page.getByTestId('approve-case-keep').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  const done = await getState(page);
+  expect(done.evidence['5.7']).toBe('demonstrated');
+  expect(done.evidence['6.3']).toBe('demonstrated');
+  expect(done.approvalQuest.approvalReady).toBe(true);
+  expect(done.evidence['6.1']).toBeUndefined();
+  expect(done.evidence['6.2']).toBeUndefined();
+  expect(done.crewQuest.crewReady).toBe(false);
+}
+
+export async function playToCrewDone(page: Page, name = 'علي حسن'): Promise<void> {
+  await playToApprovalDone(page, name);
+  await interactAt(page, 'workshop', WORLD_POS.crewDesk.x, WORLD_POS.crewDesk.y);
+  await page.getByTestId('crew-assign-researcher').click();
+  await page.getByTestId('crew-assign-builder').click();
+  await page.getByTestId('crew-assign-reviewer').click();
+  await page.getByTestId('crew-owner-librarian').click();
+  await page.getByTestId('crew-handoff-btn').click();
+  await page.getByTestId('crew-inspect-source').click();
+  await page.getByTestId('crew-majority').click();
+  await page.getByTestId('crew-pick-evidence').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'workshop', WORLD_POS.qualityDesk.x, WORLD_POS.qualityDesk.y);
+  await page.getByTestId('crew-open-criteria').click();
+  await page.getByTestId('crew-repair-accuracy').click();
+  await page.getByTestId('crew-accept').click();
+  await dispatch(page, { type: 'CLOSE_OVERLAY' });
+  await skipExplainIfOpen(page);
+  const done = await getState(page);
+  expect(done.evidence['6.1']).toBe('demonstrated');
+  expect(done.evidence['6.2']).toBe('demonstrated');
+  expect(done.crewQuest.crewReady).toBe(true);
+  expect(done.evidence['6.4']).toBeUndefined();
+  expect(done.pathQuest.restored).toBe(false);
+}
+
+export async function completePathQuest(page: Page): Promise<void> {
+  await interactAt(page, 'workshop', WORLD_POS.pathDesk.x, WORLD_POS.pathDesk.y);
+  await page.getByTestId('path-inspect-source').click();
+  await page.getByTestId('path-refuse-rumor').click();
+  await page.getByTestId('path-goal-reading').click();
+  await page.getByTestId('path-tools-safe').click();
+  await page.getByTestId('path-stop-budget').click();
+  await page.getByTestId('path-load-reading').click();
+  await page.getByTestId('path-run-skill').click();
+  await page.getByTestId('path-extra-step').click();
+  await closeOverlay(page);
+  await skipExplainIfOpen(page);
+  await interactAt(page, 'workshop', WORLD_POS.sealDesk.x, WORLD_POS.sealDesk.y);
+  await page.getByTestId('path-prepare').click();
+  await page.getByTestId('path-inspect-send').click();
+  await page.getByTestId('path-reject').click();
+  await page.getByTestId('path-recipient-librarian').click();
+  await page.getByTestId('path-payload-exact').click();
+  await page.getByTestId('path-confirm').click();
+  await page.getByTestId('path-inspect-send').click();
+  await page.getByTestId('path-confirm').click();
+  await closeOverlay(page);
+  await skipExplainIfOpen(page);
+}
+
+export async function playToPathDone(page: Page, name = 'علي حسن'): Promise<void> {
+  await playToCrewDone(page, name);
+  await completePathQuest(page);
+  const done = await getState(page);
+  expect(done.pathQuest.restored).toBe(true);
+  expect(done.evidence['6.4']).toBe('demonstrated');
+  for (const id of EVIDENCE_IDS) {
+    expect(done.evidence[id], id).toBe('demonstrated');
+  }
+  expect(done.endingState).toBe('in_progress');
+  expect(done.passportQuest.issued).toBe(false);
+  expect(done.passportQuest.thanksHeard).toBe(false);
+  await expect(page.getByTestId('certificate')).toHaveCount(0);
+  await expect(page.getByTestId('open-passport')).toHaveCount(0);
+}
+
